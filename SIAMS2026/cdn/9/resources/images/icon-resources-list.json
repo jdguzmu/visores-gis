@@ -1,0 +1,22 @@
+{
+  "1786344508811.jpg": {
+    "svg": "${appResourceUrl}/images/icon_picker_in_setting/1786344508811.jpg",
+    "properties": {
+      "filename": "1786344508811.jpg",
+      "originalName": "Visor_SIAMS_v2_2026-06-23.jpg",
+      "path": "${appResourceUrl}/images/icon_picker_in_setting/1786344508811.jpg",
+      "isUploaded": true,
+      "inlineSvg": false
+    }
+  },
+  "1786344584837.png": {
+    "svg": "${appResourceUrl}/images/icon_picker_in_setting/1786344584837.png",
+    "properties": {
+      "filename": "1786344584837.png",
+      "originalName": "VICE3 + MTERD.Gob + CHM-S-2025.png",
+      "path": "${appResourceUrl}/images/icon_picker_in_setting/1786344584837.png",
+      "isUploaded": true,
+      "inlineSvg": false
+    }
+  }
+}
