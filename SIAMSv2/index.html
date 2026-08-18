@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Visor SIAMS v2</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/5.0/esri/themes/light/main.css">
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="https://js.arcgis.com/5.0/"></script>
+</head>
+<body>
+    <div id="loginOverlay"><div class="loginBox"><img src="img/logo.png" class="loginLogo" alt="CHMS"><h2>Acceso al visor</h2><input id="loginUser" type="text" placeholder="Usuario" autocomplete="username"><input id="loginPass" type="password" placeholder="Contraseña" autocomplete="current-password"><button id="loginBtn" type="button">Entrar</button><p id="loginError"></p></div></div>
+    <div class="app">
+        <div class="header"><div class="logo"><img src="img/logo.png" alt="CHMS"></div><div class="title">Visor SIAMS v2</div>
+        <div class="toptools">
+        <button class="toolbtn" type="button" onclick="toggleSidebar()">Capas</button>
+        <button class="toolbtn" type="button" onclick="toggleBox('baseBox')">Mapas base</button>
+        <button class="toolbtn" type="button" onclick="toggleBox('infoBox')">Info</button>
+        <button class="toolbtn" type="button" onclick="toggleBox('addressSearchBox')">Buscar dirección</button>
+        <button class="toolbtn" type="button" onclick="toggleBox('coordSearchBox')">Buscar XY</button>
+        <button class="toolbtn" type="button" onclick="toggleMeasureBox()">Medir</button>
+        <button class="toolbtn" type="button" onclick="toggleAttributeTable()">Tabla atributos</button>
+        <button class="toolbtn" type="button" onclick="toggleBox('printBox')">Imprimir</button>
+        <button class="toolbtn" type="button" onclick="toggleBox('bookmarkBox')">Marcadores</button>
+        </div></div>
+        <div class="main">
+            <aside class="left resizable-sidebar"><div class="panel-head">Gestor de contenidos</div><div class="tabs"><button class="tab active" type="button" data-tab="layers">Capas</button><button class="tab" type="button" data-tab="legend">Leyenda</button><button class="tab" type="button" data-tab="searchPanel">Buscar</button></div><section id="layers" class="panel active"><div class="searchbar"><input id="layerSearch" placeholder="Buscar servicio..."><button class="smallbtn" type="button" onclick="showAllServices()">Todo</button><button class="smallbtn" type="button" onclick="hideAllServices()">Nada</button></div><div id="serviceList" class="toc"></div></section><section id="legend" class="panel"><div id="legendWidget" class="legend-list"></div></section><section id="searchPanel" class="panel"><div class="search-form"><label>Servicio visible</label><select id="searchLayer"></select><label>Subcapa</label><select id="searchSubLayer"></select><label>Campo</label><select id="searchField"></select><label>Texto a buscar</label><input id="searchValue" placeholder="Texto o valor..."><div class="search-actions"><button class="smallbtn" type="button" onclick="runAttributeSearch()">Buscar</button><button class="smallbtn" type="button" onclick="clearSearch()">Limpiar</button></div><small>Consulta por REST contra ArcGIS Server usando LIKE.</small></div><div id="searchResults" class="results">Sin búsqueda todavía.</div></section></aside>
+            <div class="mapwrap"><div id="viewDiv"></div>
+             <div id="baseBox" class="floatbox tool-window">
+    <div class="tool-window-header">
+        <span>Mapas base</span>
+        <button class="window-close" type="button" onclick="toggleBox('baseBox')">×</button>
+    </div>
+
+    <div class="body">
+        <div id="baseGrid" class="basemap-grid"></div>
+
+        <div class="historical-pnoa-control">
+            <label>Año PNOA histórico</label>
+
+            <select id="pnoaYearSelect" onchange="setPnoaHistoricalYear(this.value)">
+                <option value="PNOA2023">2023</option>
+                <option value="PNOA2020">2020</option>
+                <option value="PNOA2017">2017</option>
+                <option value="PNOA2014">2014</option>
+                <option value="PNOA2010,PNOA2011">2010-2011</option>
+                <option value="PNOA2008,PNOA2009">2008-2009</option>
+                <option value="PNOA2004,PNOA2005,PNOA2006,PNOA2007">2004-2007</option>
+            </select>
+        </div>
+    </div>
+</div>
+                <div id="infoBox" class="floatbox tool-window"><div class="tool-window-header"><span>Información</span><button class="window-close" type="button" onclick="toggleBox('infoBox')">×</button></div><div id="infoBody" class="body">Haz clic sobre el mapa para consultar las capas visibles.</div></div>
+                <div id="addressSearchBox" class="floatbox tool-window"><div class="tool-window-header"><span>Buscar dirección o lugar</span><button class="window-close" type="button" onclick="toggleBox('addressSearchBox')">×</button></div><div class="body coord-search-form"><label>Dirección, municipio o lugar</label><input id="addressSearchValue" type="text" placeholder="Ej: Ourense, Calle Real A Coruña..."><div class="search-actions"><button class="smallbtn primary" type="button" onclick="runAddressSearch()">Buscar</button><button class="smallbtn" type="button" onclick="clearAddressSearch()">Limpiar</button></div><small>Búsqueda mediante el localizador mundial de Esri.</small><div id="addressSearchResults" class="results">Sin búsqueda todavía.</div></div></div>
+                <div id="measureBox" class="floatbox tool-window"><div class="tool-window-header"><span>Herramienta de medidas</span><button class="window-close" type="button" onclick="toggleMeasureBox()">×</button></div><div class="body"><div class="measure-actions"><button class="smallbtn" type="button" onclick="setMeasureTool('distance')">Distancia</button><button class="smallbtn" type="button" onclick="setMeasureTool('area')">Área</button><button class="smallbtn" type="button" onclick="clearMeasurement()">Limpiar</button></div><div id="measurementWidget"></div></div></div>
+                <div id="printBox" class="floatbox tool-window">
+                    <div class="tool-window-header">
+                        <span>Imprimir mapa</span>
+                        <button class="window-close" type="button" onclick="toggleBox('printBox')">×</button>
+                    </div>
+
+                    <div class="body print-form">
+                        <label>Título del mapa</label>
+                        <input id="printTitle" value="Visor SIAMS v2">
+
+                        <label>Subtítulo / observaciones</label>
+                        <input id="printSubtitle" value="Confederación Hidrográfica del Miño-Sil">
+
+                        <label>Tamaño</label>
+                        <select id="printSize">
+                            <option value="A4">A4</option>
+                            <option value="A3">A3</option>
+                        </select>
+
+                        <label>Orientación</label>
+                        <select id="printOrientation">
+                            <option value="landscape">Horizontal</option>
+                            <option value="portrait">Vertical</option>
+                        </select>
+
+                        <div class="search-actions" style="margin-top:8px; flex-wrap:wrap;">
+                            <button class="smallbtn" type="button" onclick="quickPrintPreset('A4','landscape')">A4 H</button>
+                            <button class="smallbtn" type="button" onclick="quickPrintPreset('A4','portrait')">A4 V</button>
+                            <button class="smallbtn" type="button" onclick="quickPrintPreset('A3','landscape')">A3 H</button>
+                            <button class="smallbtn" type="button" onclick="quickPrintPreset('A3','portrait')">A3 V</button>
+                        </div>
+
+                        <label style="margin-top:8px; display:flex; gap:6px; align-items:center;">
+                            <input id="printShowLegend" type="checkbox" checked>
+                            Incluir leyenda / capas visibles
+                        </label>
+
+                        <label style="display:flex; gap:6px; align-items:center;">
+                            <input id="printShowLayerList" type="checkbox" checked>
+                            Incluir listado de capas en el pie
+                        </label>
+
+                        <label style="display:flex; gap:6px; align-items:center;">
+                            <input id="printShowMetadata" type="checkbox" checked>
+                            Incluir escala, EPSG, mapa base y coordenadas
+                        </label>
+
+                        <div class="search-actions" style="margin-top:10px; flex-wrap:wrap;">
+                            <button class="smallbtn primary" type="button" onclick="printMapTemplate()">Vista previa</button>
+                            <button class="smallbtn" type="button" onclick="downloadMapImage('png')">Descargar PNG</button>
+                            <button class="smallbtn" type="button" onclick="downloadMapImage('jpg')">Descargar JPG</button>
+                            <button class="smallbtn" type="button" onclick="copyMapImageToClipboard()">Copiar imagen</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="attributeTableBox" class="attribute-table-box">
+                    <div class="attribute-table-header">
+                        <div class="attribute-title-group"><strong>Tabla de atributos</strong><span id="attributeTableRecordCount" class="attribute-record-count">0 registros</span></div>
+                        <div class="attribute-source-controls"><select id="tableLayerSelect" title="Servicios visibles"></select><select id="tableSubLayerSelect" title="Subcapas"></select><button class="smallbtn primary" type="button" onclick="loadAttributeTable()">Cargar</button></div>
+                        <div class="attribute-table-actions"><div class="attribute-filter-wrap"><span>⌕</span><input id="tableFilter" type="search" placeholder="Buscar en todos los campos..."></div><button class="smallbtn" type="button" onclick="exportAttributeTableCsv()" title="Exportar los registros filtrados">Exportar CSV</button><div class="attribute-pager"><button id="attributeFirstPage" class="smallbtn" type="button" onclick="firstAttributePage()" title="Primera página">⏮</button><button id="attributePrevPage" class="smallbtn" type="button" onclick="prevAttributePage()" title="Página anterior">◀</button><span id="attributeTablePageInfo">0 / 0</span><button id="attributeNextPage" class="smallbtn" type="button" onclick="nextAttributePage()" title="Página siguiente">▶</button><button id="attributeLastPage" class="smallbtn" type="button" onclick="lastAttributePage()" title="Última página">⏭</button></div><button class="smallbtn close-table" type="button" onclick="toggleAttributeTable()">Cerrar</button></div>
+                    </div>
+                    <div id="attributeTableContent" class="attribute-table-content"><div class="attribute-empty">Selecciona un servicio visible y una subcapa.</div></div>
+                </div>
+                <div id="coords" class="coords">X/Y EPSG:25829: -</div><div class="scale">EPSG:25829 · ETRS89 / UTM 29N</div>
+                <div id="coordSearchBox" class="floatbox tool-window">
+                    <div class="tool-window-header">
+                        <span>Búsqueda por coordenadas</span>
+                        <button class="window-close" type="button" onclick="toggleBox('coordSearchBox')">×</button>
+                    </div>
+
+                    <div class="body coord-search-form">
+                        <label>X / Este</label>
+                        <input id="coordX" type="number" placeholder="Ej: 610640">
+
+                        <label>Y / Norte</label>
+                        <input id="coordY" type="number" placeholder="Ej: 4705080">
+
+                        <div class="search-actions">
+                            <button class="smallbtn primary" type="button" onclick="goToCoordinates()">Ir a coordenadas</button>
+                            <button class="smallbtn" type="button" onclick="clearCoordinateMarker()">Limpiar</button>
+                        </div>
+
+                        <small>Introduce coordenadas en EPSG:25829 · ETRS89 / UTM zona 29N.</small>
+                    </div>
+                </div>
+                <div id="bookmarkBox" class="floatbox tool-window">
+                    <div class="tool-window-header">
+                        <span>Marcadores</span>
+                        <button class="window-close" type="button" onclick="toggleBox('bookmarkBox')">×</button>
+                    </div>
+
+                    <div class="body">
+                        <button class="smallbtn primary" type="button" onclick="saveBookmark()">Guardar vista actual</button>
+                        <button class="smallbtn" type="button" onclick="exportBookmarks()">Exportar JSON</button>
+                        <button class="smallbtn" type="button" onclick="importBookmarks()">Importar JSON</button>
+                        <button class="smallbtn" type="button" onclick="clearBookmarks()">Eliminar todos</button>
+
+                        <div id="bookmarkList" class="results">No hay marcadores guardados.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="layers.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
