@@ -1,0 +1,10 @@
+[
+  { "id": "pnoa-ma", "label": "PNOA Máxima Actualidad", "type": "wmts", "url": "https://www.ign.es/wmts/pnoa-ma", "layerId": "OI.OrthoimageCoverage", "tileMatrixSetId": "GoogleMapsCompatible" },
+  { "id": "americano-1956", "label": "Americano Serie B 1956-1957", "type": "wms", "url": "https://www.ign.es/wms/pnoa-historico", "sublayers": ["AMS_1956-1957"] },
+  { "id": "ign-raster", "label": "Mapa Raster IGN", "type": "wms", "url": "https://www.ign.es/wms-inspire/mapa-raster", "sublayers": ["mtn_rasterizado"] },
+  { "id": "osm", "label": "OpenStreetMap", "type": "osm" },
+  { "id": "pnoa-2023", "label": "PNOA 2023", "type": "wms", "url": "https://www.ign.es/wms/pnoa-historico", "sublayers": ["PNOA2023"] },
+  { "id": "pnoa-2020", "label": "PNOA 2020", "type": "wms", "url": "https://www.ign.es/wms/pnoa-historico", "sublayers": ["PNOA2020"] },
+  { "id": "pnoa-2017", "label": "PNOA 2017", "type": "wms", "url": "https://www.ign.es/wms/pnoa-historico", "sublayers": ["PNOA2017"] },
+  { "id": "pnoa-2014", "label": "PNOA 2014", "type": "wms", "url": "https://www.ign.es/wms/pnoa-historico", "sublayers": ["PNOA2014"] }
+]
