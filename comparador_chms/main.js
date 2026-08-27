@@ -25,10 +25,20 @@ const showError = message => { elements.error.textContent = message; elements.er
 const setConnected = connected => { elements.status.textContent = connected ? '● Sincronizado' : '○ Sin conexión con el visor principal'; elements.status.className = `status ${connected ? 'connected' : 'disconnected'}` }
 const scaleText = value => `Escala 1:${Math.round(value).toLocaleString('es-ES')}`
 
+const waitForArcGIS = async (timeoutMs = 15000) => {
+  const startedAt = performance.now()
+  while (typeof globalThis.$arcgis?.import !== 'function') {
+    if (performance.now() - startedAt >= timeoutMs) throw new Error('No se pudo cargar ArcGIS Maps SDK for JavaScript 5.1.')
+    await new Promise(resolve => window.setTimeout(resolve, 25))
+  }
+  return globalThis.$arcgis
+}
+
 try {
+  const arcgis = await waitForArcGIS()
   const [Map, MapView, Basemap, WMSLayer, WMTSLayer, OpenStreetMapLayer, reactiveUtils] = await Promise.all([
-    $arcgis.import('@arcgis/core/Map.js'), $arcgis.import('@arcgis/core/views/MapView.js'), $arcgis.import('@arcgis/core/Basemap.js'),
-    $arcgis.import('@arcgis/core/layers/WMSLayer.js'), $arcgis.import('@arcgis/core/layers/WMTSLayer.js'), $arcgis.import('@arcgis/core/layers/OpenStreetMapLayer.js'), $arcgis.import('@arcgis/core/core/reactiveUtils.js')
+    arcgis.import('@arcgis/core/Map.js'), arcgis.import('@arcgis/core/views/MapView.js'), arcgis.import('@arcgis/core/Basemap.js'),
+    arcgis.import('@arcgis/core/layers/WMSLayer.js'), arcgis.import('@arcgis/core/layers/WMTSLayer.js'), arcgis.import('@arcgis/core/layers/OpenStreetMapLayer.js'), arcgis.import('@arcgis/core/core/reactiveUtils.js')
   ])
   const modules = { Basemap, WMSLayer, WMTSLayer, OpenStreetMapLayer }
   const catalog = await loadCatalog()
