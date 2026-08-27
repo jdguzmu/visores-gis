@@ -1,0 +1,21 @@
+{
+  "name": "chms-buffer-seleccion-pro",
+  "label": "Buffer Pro v2",
+  "type": "widget",
+  "version": "2.0.0",
+  "exbVersion": "1.21.0",
+  "author": "CHMS GIS Suite",
+  "description": "Crea múltiples buffers desde una entidad del mapa o una geometría dibujada.",
+  "license": "http://www.apache.org/licenses/LICENSE-2.0",
+  "dependency": [
+    "jimu-arcgis"
+  ],
+  "properties": {},
+  "translatedLocales": [
+    "es"
+  ],
+  "defaultSize": {
+    "width": 380,
+    "height": 520
+  }
+}
