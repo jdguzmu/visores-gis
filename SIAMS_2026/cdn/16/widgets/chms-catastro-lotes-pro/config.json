@@ -1,8 +1,0 @@
-{
-  "wfsUrl": "https://ovc.catastro.meh.es/INSPIRE/wfsCP.aspx",
-  "srsName": "EPSG::25829",
-  "wkid": 25829,
-  "batchDelayMs": 200,
-  "maxReferences": 2000,
-  "zoomToResults": true
-}

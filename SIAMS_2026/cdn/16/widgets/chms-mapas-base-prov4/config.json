@@ -1,8 +1,0 @@
-{
-  "defaultBasemapId": "pnoa-ma",
-  "showPnoaYears": true,
-  "showHistoricalFlights": true,
-  "showCartography": true,
-  "enableCustomBasemaps": true,
-  "customBasemaps": []
-}
