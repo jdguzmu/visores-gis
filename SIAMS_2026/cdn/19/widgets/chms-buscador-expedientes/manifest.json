@@ -1,0 +1,21 @@
+{
+  "name": "chms-buscador-expedientes",
+  "label": "Buscador de Expedientes",
+  "type": "widget",
+  "version": "1.0.0",
+  "exbVersion": "1.21.0",
+  "author": "CHMS GIS Suite",
+  "description": "Buscador compacto de expedientes por número sobre seis capas del servicio EXPEDIENTES.",
+  "license": "http://www.apache.org/licenses/LICENSE-2.0",
+  "dependency": [
+    "jimu-arcgis"
+  ],
+  "properties": {},
+  "translatedLocales": [
+    "es"
+  ],
+  "defaultSize": {
+    "width": 390,
+    "height": 620
+  }
+}

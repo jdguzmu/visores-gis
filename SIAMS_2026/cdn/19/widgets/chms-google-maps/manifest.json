@@ -1,0 +1,23 @@
+{
+  "name": "chms-google-maps",
+  "label": "Google Maps",
+  "type": "widget",
+  "version": "1.0.0",
+  "exbVersion": "1.21.0",
+  "author": "CHMS GIS Suite",
+  "description": "Abre Google Maps en el centro actual del visor.",
+  "license": "http://www.apache.org/licenses/LICENSE-2.0",
+  "dependency": [
+    "jimu-arcgis"
+  ],
+  "properties": {
+    "hasSettingPage": true
+  },
+  "defaultSize": {
+    "width": 220,
+    "height": 64
+  },
+  "translatedLocales": [
+    "es"
+  ]
+}
