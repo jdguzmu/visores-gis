@@ -1,0 +1,1 @@
+export default { mapSection: 'Map Widget', comparatorSection: 'Comparador', comparatorUrl: 'URL del Comparador', comparatorUrlHint: 'Para BroadcastChannel debe compartir protocolo, host y puerto con Experience Builder.', invalidUrl: 'Introduzca una URL HTTP/HTTPS válida.' }

@@ -1,0 +1,23 @@
+{
+  "name": "chms-comparador-mapas",
+  "label": "Comparador de mapas",
+  "type": "widget",
+  "version": "1.0.0",
+  "exbVersion": "1.21.0",
+  "author": "CHMS GIS Suite",
+  "description": "Abre y sincroniza un comparador cartográfico externo con la vista actual.",
+  "license": "http://www.apache.org/licenses/LICENSE-2.0",
+  "dependency": [
+    "jimu-arcgis"
+  ],
+  "properties": {
+    "hasSettingPage": true
+  },
+  "defaultSize": {
+    "width": 300,
+    "height": 220
+  },
+  "translatedLocales": [
+    "es"
+  ]
+}
