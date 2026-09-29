@@ -1,0 +1,21 @@
+{
+  "name": "chms-seleccion-espacial-pro",
+  "label": "Selección Espacial v2",
+  "type": "widget",
+  "version": "1.1.0",
+  "exbVersion": "1.21.0",
+  "author": "CHMS GIS Suite",
+  "description": "Selección espacial INTERSECTS con sincronización de selección con la Tabla de atributos.",
+  "license": "http://www.apache.org/licenses/LICENSE-2.0",
+  "dependency": [
+    "jimu-arcgis"
+  ],
+  "properties": {},
+  "translatedLocales": [
+    "es"
+  ],
+  "defaultSize": {
+    "width": 390,
+    "height": 520
+  }
+}

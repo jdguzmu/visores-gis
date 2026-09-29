@@ -1,0 +1,15 @@
+{
+  "urlCatastro": "https://ovc.catastro.meh.es/ovcservweb/OVCSWLocalizacionRC/OVCCallejero.asmx",
+  "peticionProvincias": "/ConsultaProvincia",
+  "peticionMunicipios": "/ConsultaMunicipio",
+  "peticionReferenciaCatastral": "/Consulta_DNPRC",
+  "peticionParcela": "/Consulta_DNPPP",
+  "urlServicioCoordenadas": "https://ovc.catastro.meh.es/ovcservweb/OVCSWLocalizacionRC/OVCCoordenadas.asmx",
+  "peticionCoordenadas": "/Consulta_CPMRC",
+  "urlServicioCatastro": "https://ovc.catastro.meh.es/Cartografia/WMS/ServidorWMS.aspx",
+  "proxyCors": "https://siams.chminosil.es/proxy/proxy.jsp?",
+  "useProxy": true,
+  "nivelZoom": 16,
+  "wmsLayerName": "Catastro",
+  "wmsTitle": "Catastro"
+}

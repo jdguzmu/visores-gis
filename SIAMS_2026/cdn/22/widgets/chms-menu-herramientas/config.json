@@ -1,0 +1,15 @@
+{
+  "groups": [],
+  "appearance": {
+    "buttonStyle": "rounded",
+    "buttonSize": "normal",
+    "customButtonWidth": 82,
+    "customButtonHeight": 56,
+    "iconSize": 28,
+    "showLabel": true,
+    "toolLayout": "grid",
+    "popupColumns": 4,
+    "iconBoxSize": 46,
+    "showGroupHeader": true
+  }
+}
