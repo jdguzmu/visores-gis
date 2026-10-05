@@ -1,0 +1,21 @@
+{
+  "name": "afeccion-inundabilidad-espana",
+  "label": "Afección por inundabilidad - España",
+  "type": "widget",
+  "version": "1.0.0",
+  "exbVersion": "1.21.0",
+  "author": "CHMS",
+  "description": "Consulta catastral individual y por lotes con superficies geodésicas y análisis nacional T10/T100/T500.",
+  "license": "http://www.apache.org/licenses/LICENSE-2.0",
+  "dependency": [
+    "jimu-arcgis"
+  ],
+  "properties": {},
+  "translatedLocales": [
+    "es"
+  ],
+  "defaultSize": {
+    "width": 380,
+    "height": 360
+  }
+}
