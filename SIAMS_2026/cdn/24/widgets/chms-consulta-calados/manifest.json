@@ -1,0 +1,23 @@
+{
+  "name": "chms-consulta-calados",
+  "label": "Consulta de Calados",
+  "type": "widget",
+  "version": "1.0.0",
+  "exbVersion": "1.21.0",
+  "author": "CHMS GIS Suite",
+  "description": "Consulta puntual de calados T10, T100 y T500 y cota del MDT.",
+  "license": "http://www.apache.org/licenses/LICENSE-2.0",
+  "dependency": [
+    "jimu-arcgis"
+  ],
+  "properties": {
+    "hasSettingPage": true
+  },
+  "defaultSize": {
+    "width": 360,
+    "height": 480
+  },
+  "translatedLocales": [
+    "es"
+  ]
+}

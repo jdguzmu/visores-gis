@@ -1,0 +1,1 @@
+export default { widgetLabel: 'Menú de herramientas CHMS', empty: 'Configure los grupos.', managedWidgets: 'Widgets disponibles' }
