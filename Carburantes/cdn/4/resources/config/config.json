@@ -1,0 +1,493 @@
+{
+  "pages": {
+    "page_0": {
+      "id": "page_0",
+      "mode": "FIT_WINDOW",
+      "type": "NORMAL",
+      "layout": {
+        "LARGE": "layout_0"
+      },
+      "isDefault": true,
+      "isVisible": true,
+      "label": "Página"
+    }
+  },
+  "layouts": {
+    "layout_0": {
+      "type": "FIXED",
+      "content": {
+        "0": {
+          "type": "WIDGET",
+          "widgetId": "widget_1",
+          "bbox": {
+            "left": "0.00%",
+            "right": "64.9%",
+            "top": "0.00%",
+            "bottom": "22.0%",
+            "width": "100.00%",
+            "height": "100.00%"
+          },
+          "setting": {
+            "autoProps": {
+              "left": false,
+              "right": true,
+              "top": false,
+              "bottom": true
+            }
+          }
+        }
+      },
+      "order": [
+        "0"
+      ]
+    },
+    "layout_1": {
+      "content": {
+        "0": {
+          "type": "WIDGET",
+          "widgetId": "widget_2",
+          "bbox": {
+            "width": "100.00%",
+            "height": "80.00px"
+          },
+          "setting": {
+            "autoProps": {
+              "width": "CUSTOM",
+              "height": "CUSTOM"
+            }
+          }
+        },
+        "1": {
+          "type": "WIDGET",
+          "widgetId": "widget_4",
+          "bbox": {
+            "height": "190.00px",
+            "width": "760px"
+          }
+        },
+        "2": {
+          "type": "WIDGET",
+          "widgetId": "widget_5",
+          "bbox": {
+            "height": "400px",
+            "width": "800px"
+          },
+          "setting": {
+            "autoProps": {
+              "height": "STRETCH"
+            }
+          }
+        }
+      },
+      "type": "COLUMN",
+      "label": "Default",
+      "order": [
+        "0",
+        "1",
+        "2"
+      ],
+      "setting": {
+        "space": 0
+      }
+    },
+    "layout_2": {
+      "content": {
+        "0": {
+          "type": "WIDGET",
+          "widgetId": "widget_3",
+          "setting": {
+            "autoProps": {
+              "height": "STRETCH"
+            }
+          },
+          "bbox": {
+            "left": 0,
+            "width": 12,
+            "height": "60px"
+          }
+        }
+      },
+      "type": "ROW",
+      "label": "Default",
+      "order": [
+        "0"
+      ]
+    },
+    "layout_3": {
+      "content": {
+        "0": {
+          "type": "WIDGET",
+          "widgetId": "widget_6",
+          "setting": {
+            "autoProps": {
+              "height": "STRETCH"
+            }
+          },
+          "bbox": {
+            "left": 0,
+            "width": 8,
+            "height": "400px"
+          }
+        },
+        "1": {
+          "type": "WIDGET",
+          "widgetId": "widget_7",
+          "setting": {
+            "autoProps": {
+              "height": "STRETCH"
+            }
+          },
+          "bbox": {
+            "left": 8,
+            "width": 2,
+            "height": "560px"
+          }
+        },
+        "2": {
+          "type": "WIDGET",
+          "widgetId": "widget_8",
+          "setting": {
+            "autoProps": {
+              "height": "STRETCH"
+            }
+          },
+          "bbox": {
+            "left": 10,
+            "width": 2,
+            "height": 650
+          }
+        }
+      },
+      "type": "ROW",
+      "label": "Default",
+      "order": [
+        "0",
+        "1",
+        "2"
+      ],
+      "setting": {
+        "space": 0,
+        "style": {
+          "padding": {
+            "number": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "layout_4": {
+      "content": {},
+      "type": "FIXED",
+      "label": "Map FixedLayout"
+    }
+  },
+  "exbVersion": "1.21.0",
+  "mainSizeMode": "LARGE",
+  "theme": "themes/master/",
+  "forBuilderAttributes": {
+    "lockLayout": false
+  },
+  "template": "blankfullscreen",
+  "widgets": {
+    "widget_1": {
+      "uri": "widgets/layout/column/",
+      "version": "1.21.0",
+      "label": "Columna",
+      "config": {
+        "space": {
+          "distance": 0,
+          "unit": "px"
+        },
+        "style": {
+          "padding": {
+            "space": [
+              10
+            ],
+            "unit": "px"
+          },
+          "justifyContent": "flex-start",
+          "alignItems": "stretch"
+        }
+      },
+      "id": "widget_1",
+      "layouts": {
+        "DEFAULT": {
+          "LARGE": "layout_1"
+        }
+      }
+    },
+    "widget_2": {
+      "uri": "widgets/layout/row/",
+      "version": "1.21.0",
+      "label": "Fila",
+      "config": {
+        "space": 10,
+        "style": {
+          "padding": {
+            "number": [
+              10
+            ],
+            "unit": "px"
+          }
+        }
+      },
+      "id": "widget_2",
+      "layouts": {
+        "DEFAULT": {
+          "LARGE": "layout_2"
+        }
+      },
+      "style": {
+        "background": {
+          "color": "#152438",
+          "fillType": "fill",
+          "image": {
+            "url": ""
+          }
+        },
+        "textColor": "#ffffff"
+      }
+    },
+    "widget_3": {
+      "uri": "widgets/common/text/",
+      "version": "1.21.0",
+      "label": "Texto",
+      "config": {
+        "text": "<p style=\"text-align: center;\"><strong style=\"font-size: 28px;\">﻿</strong><strong style=\"font-size: 26px;\">PRECIOS DE CARBURANTES EN ESPAÑA POR ESTACIONES DE SERVICIO</strong></p>",
+        "placeholder": "Haga doble clic para editar texto",
+        "style": {
+          "wrap": true
+        }
+      },
+      "id": "widget_3"
+    },
+    "widget_4": {
+      "uri": "widgets/carburantes-kpi/",
+      "version": "1.0.0",
+      "label": "Carburantes · KPI",
+      "config": {
+        "product": "GASOLINA95",
+        "unit": ""
+      },
+      "id": "widget_4",
+      "useDataSources": [
+        {
+          "dataSourceId": "dataSource_1-1a0c8ada52d-layer-2",
+          "mainDataSourceId": "dataSource_1-1a0c8ada52d-layer-2",
+          "rootDataSourceId": "dataSource_1",
+          "fields": [
+            "GASOLINA95",
+            "FECHA_ACT"
+          ]
+        }
+      ]
+    },
+    "widget_5": {
+      "uri": "widgets/layout/row/",
+      "version": "1.21.0",
+      "label": "Fila 2",
+      "config": {
+        "space": 10,
+        "style": {
+          "padding": {
+            "number": [
+              10
+            ],
+            "unit": "px"
+          }
+        }
+      },
+      "id": "widget_5",
+      "layouts": {
+        "DEFAULT": {
+          "LARGE": "layout_3"
+        }
+      }
+    },
+    "widget_6": {
+      "uri": "widgets/arcgis/arcgis-map/",
+      "version": "1.21.0",
+      "label": "Mapa",
+      "config": {
+        "toolConfig": {
+          "canZoom": true,
+          "canHome": true,
+          "canSearch": true,
+          "canNavigation": true,
+          "canBaseMap": true,
+          "canScaleBar": true,
+          "canLocate": true,
+          "canLayers": true
+        },
+        "isUseCustomMapState": false,
+        "initialMapDataSourceID": "dataSource_1",
+        "initialMapState": null,
+        "scaleRange": null,
+        "customLODs": null,
+        "toolOptions": {
+          "ScaleBar": {
+            "style": "number",
+            "unit": null,
+            "decimalPlace": 0,
+            "thousandSeparator": false
+          }
+        }
+      },
+      "id": "widget_6",
+      "layouts": {
+        "MapFixedLayout": {
+          "LARGE": "layout_4"
+        }
+      },
+      "dataActions": {
+        "showOnMap": {
+          "config": {
+            "isUseCustomSymbol": true,
+            "isOperationalLayer": true,
+            "symbolOption": {
+              "pointSymbol": {
+                "type": "esriSMS",
+                "color": [
+                  255,
+                  255,
+                  0,
+                  150
+                ],
+                "angle": 0,
+                "xoffset": 0,
+                "yoffset": 0,
+                "size": 12,
+                "style": "esriSMSCircle",
+                "outline": {
+                  "type": "esriSLS",
+                  "color": [
+                    255,
+                    255,
+                    0,
+                    150
+                  ],
+                  "width": 1,
+                  "style": "esriSLSSolid"
+                }
+              },
+              "polylineSymbol": {
+                "type": "esriSLS",
+                "color": [
+                  255,
+                  255,
+                  0,
+                  150
+                ],
+                "width": 0.75,
+                "style": "esriSLSSolid"
+              },
+              "polygonSymbol": {
+                "type": "esriSFS",
+                "color": [
+                  255,
+                  255,
+                  0,
+                  150
+                ],
+                "outline": {
+                  "type": "esriSLS",
+                  "color": [
+                    255,
+                    255,
+                    0,
+                    150
+                  ],
+                  "width": 1,
+                  "style": "esriSLSSolid"
+                },
+                "style": "esriSFSSolid"
+              }
+            }
+          }
+        }
+      },
+      "useDataSources": [
+        {
+          "dataSourceId": "dataSource_1",
+          "mainDataSourceId": "dataSource_1"
+        }
+      ]
+    },
+    "widget_7": {
+      "uri": "widgets/carburantes-filtros/",
+      "version": "1.0.0",
+      "label": "Carburantes · Filtros",
+      "config": {
+        "kpiWidgetId": "widget_4"
+      },
+      "id": "widget_7",
+      "useMapWidgetIds": [
+        "widget_6"
+      ],
+      "useDataSources": [
+        {
+          "dataSourceId": "dataSource_1-1a0c8ada52d-layer-2",
+          "mainDataSourceId": "dataSource_1-1a0c8ada52d-layer-2",
+          "rootDataSourceId": "dataSource_1",
+          "fields": [
+            "IDPROVINCIA",
+            "PROVINCIA",
+            "IDMUNICIPIO",
+            "MUNICIPIO",
+            "ROTULO"
+          ]
+        }
+      ]
+    },
+    "widget_8": {
+      "uri": "widgets/carburantes-ranking/",
+      "version": "1.0.0",
+      "label": "Carburantes - Ranking",
+      "config": {
+        "filtersWidgetId": "",
+        "units": {}
+      },
+      "id": "widget_8",
+      "useMapWidgetIds": [
+        "widget_6"
+      ],
+      "useDataSources": [
+        {
+          "dataSourceId": "dataSource_1-1a0c8ada52d-layer-2",
+          "mainDataSourceId": "dataSource_1-1a0c8ada52d-layer-2",
+          "rootDataSourceId": "dataSource_1"
+        }
+      ]
+    }
+  },
+  "widgetsManifest": {},
+  "views": {},
+  "sections": {},
+  "dialogs": {},
+  "messageConfigs": {},
+  "attributes": {
+    "portalUrl": "https://juanezentis.maps.arcgis.com"
+  },
+  "timestamp": 1792513469243,
+  "sharedThemeVariables": null,
+  "mainLocale": "es",
+  "dataSources": {
+    "dataSource_1": {
+      "id": "dataSource_1",
+      "type": "WEB_MAP",
+      "sourceLabel": "Gasolineras España - Precios de carburantes",
+      "itemId": "4c0551a3e1724bc5997f5f1c51510d58",
+      "portalUrl": "https://juanezentis.maps.arcgis.com"
+    }
+  },
+  "pageStructure": [
+    {
+      "page_0": []
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "carburantes-filtros",
+  "label": "Carburantes · Filtros",
+  "type": "widget",
+  "version": "1.0.0",
+  "exbVersion": "1.21.0",
+  "author": "CHMS",
+  "description": "Filtros compartidos de carburantes.",
+  "copyright": "",
+  "license": "",
+  "properties": {},
+  "translatedLocales": [
+    "es"
+  ],
+  "defaultSize": {
+    "width": 320,
+    "height": 560
+  },
+  "dependency": [
+    "jimu-arcgis"
+  ]
+}

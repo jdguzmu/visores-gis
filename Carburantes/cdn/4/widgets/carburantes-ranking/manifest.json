@@ -1,0 +1,22 @@
+{
+  "name": "carburantes-ranking",
+  "label": "Carburantes - Ranking",
+  "type": "widget",
+  "version": "1.0.0",
+  "exbVersion": "1.21.0",
+  "author": "CHMS",
+  "description": "Ranking de estaciones del ambito filtrado.",
+  "copyright": "",
+  "license": "",
+  "properties": {},
+  "dependency": [
+    "jimu-arcgis"
+  ],
+  "translatedLocales": [
+    "es"
+  ],
+  "defaultSize": {
+    "width": 360,
+    "height": 650
+  }
+}
