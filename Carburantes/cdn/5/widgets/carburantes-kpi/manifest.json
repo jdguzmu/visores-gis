@@ -1,0 +1,19 @@
+{
+  "name": "carburantes-kpi",
+  "label": "Carburantes · KPI",
+  "type": "widget",
+  "version": "1.0.0",
+  "exbVersion": "1.21.0",
+  "author": "CHMS",
+  "description": "Indicadores de precios sobre una fuente de datos filtrada.",
+  "copyright": "",
+  "license": "",
+  "properties": {},
+  "translatedLocales": [
+    "es"
+  ],
+  "defaultSize": {
+    "width": 760,
+    "height": 380
+  }
+}
