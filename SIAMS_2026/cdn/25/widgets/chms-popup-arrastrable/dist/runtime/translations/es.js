@@ -1,0 +1,1 @@
+System.register([],function(e){return{execute:function(){e({_widgetLabel:"Popup arrastrable CHMS",chmsPopupSelect:"Seleccione un mapa en la configuraci\xf3n.",chmsPopupHelp:"Arrastre la cabecera del popup cuando est\xe9 desacoplado."})}}});

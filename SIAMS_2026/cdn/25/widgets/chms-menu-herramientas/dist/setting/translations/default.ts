@@ -1,0 +1,1 @@
+export default { groups: 'Grupos', addGroup: 'Añadir grupo', addTool: 'Añadir herramienta' }
