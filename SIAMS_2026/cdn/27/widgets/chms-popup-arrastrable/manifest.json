@@ -1,0 +1,20 @@
+{
+  "name": "chms-popup-arrastrable",
+  "label": "Popup arrastrable CHMS",
+  "type": "widget",
+  "version": "1.0.0",
+  "exbVersion": "1.21.0",
+  "author": "CHMS",
+  "description": "Arrastre del popup nativo del mapa.",
+  "copyright": "",
+  "license": "",
+  "dependency": "jimu-arcgis",
+  "properties": {},
+  "translatedLocales": [
+    "es"
+  ],
+  "defaultSize": {
+    "width": 300,
+    "height": 100
+  }
+}
