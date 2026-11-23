@@ -1,0 +1,29 @@
+<div>
+	<div data-dojo-attach-point="envelopeNode">
+		<table class="widgetTable" style="height:100px;">
+			<tr>
+				<br>Elige la fuente de busqueda:</br>
+			</tr>
+			<tr>
+				<td colspan="6" style="padding:0px 5px 15px 15px;">
+					<select style="width:250px;" id="Eleccion" data-dojo-attach-point="identifyLayer" data-dojo-type="dijit/form/Select">
+						<option value="vacio" selected="selected"> - Elija una opcion - </option>
+						<option value="NGN">Nomenclator Geográfico Nacional</option>
+						<option value="Cartociudad">Cartociudad</option>
+					</select>
+				</td>
+			</tr>		
+			<tr>
+				<td colspan="3" style="padding-left:15px;">
+					<input id="nombreBuscarToponimos" name="consulta" dojoType="dijit.form.TextBox" style="width:200px;"/>
+				</td>
+				<td colspan="1" style="padding-left:20px;">
+					<div id="btnBuscarToponimos" name="btnBuscar" class="jimu-btn">Buscar</div>			
+				</td>
+			</tr>
+		</table>
+		<div style="padding-left:15px;" class="toponimosModoBusqueda"></div>
+		<div id="resultsMsgConsGeom" style="padding:15px;" class="resultsMsgConsGeom"></div>
+		<div id="resultsConsGeom" name="resultsConsGeom" style="max-width: 370px; overflow-x:hidden;" dojoType="ResultList"></div>
+	</div>
+</div>

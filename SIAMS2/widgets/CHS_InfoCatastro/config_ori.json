@@ -1,0 +1,8 @@
+{
+  "style": "vertical",
+  "scopeSize": "medium",
+  "layers": [],
+  "swipeLayerHeight": 160,
+  "proxyCors": "http://localhost:8080/LoginChsPortal/proxy.jsp?",
+  "folderUrl": "widgets/CHS_InfoCatastro/images/"
+}

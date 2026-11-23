@@ -1,0 +1,1490 @@
+dojo.provide("nim.controlador.GestorConsultaGeometrica");
+
+dojo.require("nim.controlador.Aplicacion");
+dojo.require("dojo.store.DataStore");
+
+/**
+ * Se encarga de gestionar las acciones de la ventana ConsultaGeometricaWidget, y
+ * de hacer las peticiones necesarias al servidor
+ * @author VMSANTOS
+ * @version 1.0
+ * @created 29-ago-2011 13:41:14
+ */
+dojo.declare(
+		"nim.controlador.GestorConsultaGeometrica",
+		null,
+		{   
+
+				/*nim.controlador.AplicacionImpl*/  
+				 aplicacion:null,
+				 TODAS_CAPAS: 'Todas las capas',
+				 //TODAS_CAPAS: -1,
+				 geometryTodasCapas:null,
+				 iteracionTodasCapas:null,
+				 nivelZoom: null,
+				 puntoZoom:null,
+				 
+				 constructor:function(app){
+						this.aplicacion = app; 
+						
+						//this.proxy = "proxyImpresion?url=";
+						this.proxy = "ArcGISProxy/";
+						//this.widget = widget;	
+						//this.nivelZoom = this.widget.configData.nivelZoom;
+						this.modoSeleccion = dojo.subscribe("ModoSeleccionElementos",this,this.desconectarActivo);
+						dojo.subscribe("infoPopupClose",this,this.onClosePopup);
+						
+						dojo.subscribe("mapLoadedEvent",this,this.onMapLoadEvent);
+						
+						this.toolbarConnets = {};
+						
+						this.puntoActivo = false;
+						this.rectanguloActivo = false;
+						this.poligonoActivo = false;
+						this.circuloActivo = false;
+						
+						dojo.subscribe("widgetDrawRequestEvent",this,this.onDrawRequest);
+				 },
+				 onMapLoadEvent: function() {
+					
+					 if(this.widget) {
+						this.cargaComboCapas();
+						this.connectZoomComboBox();
+					}
+					 
+				 },
+				 onDrawRequest: function(params) {
+					 
+					 if(params==null) {
+						 if(this.modoMouseDown) {
+							 this.modoMouseDown.remove();
+							 this.modoMouseMove.remove();
+							 this.modoMouseDown=null;
+							 this.modoMouseMove=null;
+						 }
+						 
+						 if(this.modoIdentify) {
+							 this.modoIdentify.remove();
+							 this.modoIdentify = null;
+						 }
+						 
+					 }
+				 },
+				 onClosePopup: function() {
+					 if(this.elementoSeleccionado) {
+						 this.aplicacion.getGestorCapas().map.graphics.remove(this.elementoSeleccionado);
+						 this.elementoSeleccionado = null;
+					 }
+				 },
+				 setWidget: function(widget) {
+					 this.widget = widget;
+					 this.widget.map = nim.controlador.Aplicacion.getInstancia().getGestorCapas().map;
+					 //this.nivelZoom = this.widget.configData.nivelZoom;
+				 },
+				 getIndent: function(layerDetail,padre) {
+					var indent = "";
+					var gCapas = nim.controlador.Aplicacion.getInstancia().getGestorCapas();
+					while(layerDetail.parentLayer!=null) {
+						layerDetail = gCapas.getLayerDetail(layerDetail.parentLayer.id,padre);
+						indent +="--";
+					}
+					return indent;
+				},
+				cargaComboCapas: function(ignorarVisible){
+
+					this.aplicacion = nim.controlador.Aplicacion.getInstancia();
+					
+
+					//var idRotulos = -1;
+					var listaCapas = {
+							identifier: "id",
+							label: "name",
+							url:"url",
+							items: []
+						};
+					
+					var gestorCapas = nim.controlador.Aplicacion.getInstancia().getGestorCapas();
+					/*var layerPrincipal = gestorCapas.getLayerPrincipal();
+					
+					if(!layerPrincipal) {
+						return;
+					}*/
+					
+					var contId = 0;
+					
+					for (var i=0; i<gestorCapas.layers.length; i++){
+						
+						var layer = gestorCapas.layers[i];
+						//var dinamico = (layer instanceof  esri.layers.ArcGISDynamicMapServiceLayer);
+						//if (layer.name == layerPrincipal.nombre){
+						if(gestorCapas.isLayerPrincipal(layer.name) || 
+							gestorCapas.isDynamicLayer(layer.name) ||
+							gestorCapas.isLayerWMS(layer.name)) {
+							listaCapas.items.push(
+									{
+										name: "<b>"+layer.name+"</b>",
+										id: contId++,
+										layerId:-1,
+										//dinamico:dinamico,
+										parent:layer.name,
+										url:url
+									}
+								);
+							for (var j=0; j< layer.layerInfos.length;j++) {
+								
+								var layerInfo = layer.layerInfos[j];
+								var indent = "";
+								var layerDetail = null;
+								var name;
+								var url = layer.url.replace(this.aplicacion.getProxy(),"");
+								url = url + "/" + layerInfo.id;
+								/*if(dinamico) {
+									indent = this.getIndentDinamico(layer.layerInfos,layerInfo);
+									name = layerInfo.name;
+								}
+								else {*/
+									
+								layerDetail = gestorCapas.getLayerDetail(layerInfo.id,layer.name);
+								indent = this.getIndent(layerDetail,layer.name)+"-";
+								name =  layerDetail.name;
+									
+								if(!layerDetail.description =="rotulo" || layerDetail.isAnotacion) {
+									continue;
+								}
+								else if(!layerInfo.subLayerIds || layerInfo.subLayerIds.length==0) {
+									name = "<i>"+name+"</i>";
+								}
+								/*}*/
+								if(ignorarVisible || 
+									(layerDetail.isWMS && layerDetail.queryable && gestorCapas.isCapaVisible(layerInfo.id,layer.name)) || 
+									(!layerDetail.isWMS && gestorCapas.isCapaVisible(layerInfo.id,layer.name))) {
+									
+									listaCapas.items.push(
+										{
+												name: indent+"@;"+name,
+												id: contId++,
+												layerId:layerInfo.id,
+												//dinamico:dinamico,
+												parent:layer.name,
+												url:url
+										}
+									);
+									
+								}
+
+							}
+						}
+					}
+					
+					//listaCapas.items.sort(this.metodoOrdenacion);
+					var itemTodos = {
+							name: this.TODAS_CAPAS, 
+							url: '', 
+							id:-1};
+					listaCapas.items.splice(0,0,itemTodos
+							);
+					this.currentSelection = itemTodos;
+					
+					var listaCapasDataStore = new dojo.data.ItemFileReadStore({
+						data: listaCapas
+					});
+					
+					this.widget.widgets.cboTipo.labelType = "html";
+
+					this.widget.widgets.cboTipo.labelFunc = function(item) {
+						
+						var txt = null;
+						
+						if(dojo.version.major == 1 && dojo.version.minor>6) {
+							txt = item.name;
+						}
+						else {
+							txt = item.name[0];
+						}
+						
+						var idx = txt.indexOf("@;");
+						
+						if(idx!=-1) {
+							var indent = txt.substring(0,idx).length;
+							txt = "<span style='padding-left:"+indent+"em;'>"+txt.substring(idx+2)+"</span>";
+						}
+
+						return txt;
+					};
+					
+					
+					if(dojo.version.major == 1 && dojo.version.minor>6) {
+						var store = new dojo.store.DataStore({store:listaCapasDataStore});
+						this.widget.widgets.cboTipo.store = store;
+					}
+					else {
+						this.widget.widgets.cboTipo.store = listaCapasDataStore;
+					}
+					
+					//this.widget.widgets.cboTipo.searchAttr = "name";
+					
+					//Colocamos como elemento seleccionado el primer elemento
+					this.widget.widgets.cboTipo.set("value",this.TODAS_CAPAS);
+					
+				},
+				getIndentDinamico: function(layerInfos, layerInfo) {
+					var indent = "--";
+					
+					while(layerInfo.parentLayerId != -1) {
+						
+						for(var i=0;i<layerInfos.length;i++) {
+							if(layerInfos[i].id == layerInfo.parentLayerId) {
+								layerInfo = layerInfos[i];
+								indent+="--";
+								break;
+							}
+						}
+					}
+					return indent;
+				},
+				onSelectCapa: function() {
+					var map = this.aplicacion.getGestorCapas().map;
+					
+					try {
+						if(this.widget.widgets.cboTipo.item) {
+							this.currentSelection = this.widget.widgets.cboTipo.item;
+							
+							if(this.currentSelection.layerId!=-1 && !this.currentSelection.dinamico) {
+								var layer = this.aplicacion.getGestorCapas().getLayerDetail(this.currentSelection.layerId,
+											this.currentSelection.parent);
+								
+								if(layer.parentLayer) {
+									var layerPadre = this.aplicacion.getGestorCapas().getLayerDetail(
+												layer.parentLayer.id,
+												this.currentSelection.parent
+											);
+									var displayName = "["+layerPadre.name+"] "+layer.name;
+									this.widget.widgets.cboTipo.setDisplayedValue(displayName);
+								}
+								else {
+									this.widget.widgets.cboTipo.setDisplayedValue(layer.name);
+								}
+							}
+							else if (this.currentSelection.dinamico){
+								var layerPadre = map.getLayer(this.currentSelection.parent);
+								
+								for(var i=0;i<layerPadre.layerInfos.length;i++) {
+									if(layerPadre.layerInfos[i].id == this.currentSelection.layerId) {
+										this.widget.widgets.cboTipo.setDisplayedValue(layerPadre.layerInfos[i].name);	
+									}
+								}
+							}
+							else {
+								this.widget.widgets.cboTipo.setDisplayedValue(this.currentSelection.parent);
+							}
+						}
+					}
+					catch(e) {
+						
+					}
+				},
+				metodoOrdenacion: function(a,b){
+					if (a.name < b.name){
+						return -1;
+					}else if (a.name > b.name){
+						return 1;
+					}else{
+						return 0;
+					}
+						
+				},
+				
+				establecerIdioma: function(){
+					nim.utils.Gis.traducirWidget(this.widget);
+				},
+				
+				operacionGeometrica: function(evt) {
+					
+					this.widget.widgets.resultsConsGeom.clear();
+					//var seleccion = this.widget.widgets.cboTipo.item;
+					var seleccion=null;
+					
+					if(this.currentSelection) {
+						seleccion = this.currentSelection.id;
+					}
+					
+					this.setModoIdentify(false);
+					
+					if (evt && evt.target && seleccion) {
+						var params = {
+								onDrawEnd: dojo.hitch(this, function(geometry) {
+										this.capasBusqueda = this.getCapasBusqueda();
+										this.busquedaGeometrica(geometry); 
+									}),
+								label: evt.target.title
+							};
+						
+						switch (evt.target.title) {
+							case (nim.utils.Gis.cambiarlenguaje("busquedaRectangulo")):
+								params.geometryType = esri.toolbars.Draw.EXTENT;
+								break;
+							case (nim.utils.Gis.cambiarlenguaje("busquedaPoligono")):
+								params.geometryType = esri.toolbars.Draw.POLYGON;
+								break;
+							case (nim.utils.Gis.cambiarlenguaje("busquedaPunto")):
+								this.setModoIdentify(true);
+								break;
+							case (nim.utils.Gis.cambiarlenguaje("busquedaCirculo")):
+								this.modoMouseDown = this.aplicacion.getGestorCapas().map.on("click",dojo.hitch(this,this.onMouseClick));
+								this.modoMouseMove = this.aplicacion.getGestorCapas().map.on("mouse-move",dojo.hitch(this,this.onMouseMove));
+								this.aplicacion.getGestorCapas().map.disablePan();
+								
+								params =  {
+									onDrawEnd: dojo.hitch(this, function(geometry) {}),
+									geometryType: esri.toolbars.Draw.POLYGON,
+									label: evt.target.title
+								};
+								
+								break;
+						}
+						dojo.publish("ModoSeleccionConsultaGeometrica",[true]);
+						dojo.publish("widgetDrawRequestEvent", [params]);
+					}
+				},
+				onMouseClick: function(mapEvent) {		
+					var map = this.aplicacion.getGestorCapas().map;
+					
+					if(!this.primerClick) {
+						this.centroCirculo = mapEvent.mapPoint;
+						this.primerClick = true;
+					}
+					else {
+						dojo.publish("widgetDrawRequestEvent", null);
+						if(this.modoMouseDown) {
+							this.modoMouseDown.remove();
+							this.modoMouseDown=null;
+						}
+						if(this.modoMouseMove) {
+							this.modoMouseMove.remove();
+							this.modoMouseMove=null;
+						}
+						
+						
+						this.primerClick = false;
+						this.centroCirculo = null;
+						this.radio = null;
+						map.graphics.remove(this.circle);
+						this.capasBusqueda = this.getCapasBusqueda();
+						this.busquedaGeometrica(this.circle.geometry);
+					}
+				},
+				onMouseMove: function(mapEvent) {
+					if(this.primerClick) {
+						this.radio = esri.geometry.getLength(this.centroCirculo,mapEvent.mapPoint);
+						this.drawCircle();
+					}
+				},
+				getCapasBusqueda: function(ignorarVisible) {
+					var capasBusqueda = [];
+					var gCapas = this.aplicacion.getGestorCapas();
+					
+					if(this.currentSelection) {
+						var id = null;
+						if(this.currentSelection) {
+							id = this.currentSelection.layerId;
+							
+							if(id==null) {
+								id = -1;
+							}
+							
+						}
+						else {
+							id = -1;
+						}
+						
+						if(id == -1 && this.currentSelection.layerId!=-1) {
+							// Todas las capas.
+							
+							var layers = gCapas.layers;
+							
+							
+							for(var i=0;i<layers.length;i++) {
+								var subBusqueda = [];
+								if(gCapas.isLayerPrincipal(layers[i].name) || 
+									gCapas.isDynamicLayer(layers[i].name) ||
+									gCapas.isLayerWMS(layers[i].name)) {
+									var layerDetails = null;
+									
+									if(gCapas.layerDetails[layers[i].id]) {
+										layerDetails = gCapas.layerDetails[layers[i].id].layers;
+									}
+									else {
+										layerDetails = gCapas.dynamicLayers[layers[i].id].layers;
+									}
+										
+									if(layerDetails) {
+										for(var j=0;j<layerDetails.length;j++) {
+											
+											if(layerDetails[j].subLayers==null ||
+												layerDetails[j].subLayers.length==0) {
+												if(ignorarVisible || 
+													gCapas.isCapaVisible(layerDetails[j].id,layers[i].id)) {
+													/*capasBusqueda.push(
+														{
+															parent: layers[i].id,
+															id: layerDetails[j].id
+														}
+														);*/
+													subBusqueda.push({
+														parent: layers[i].id,
+														id: layerDetails[j].id
+													});
+												}
+											}
+											
+										}
+										subBusqueda=subBusqueda.reverse();
+										capasBusqueda = capasBusqueda.concat(subBusqueda);
+									}
+								}
+							}
+						}	
+						else {
+							var parent = this.currentSelection.parent;
+							
+							if(this.currentSelection.layerId == -1) {
+								id = 0;
+							}
+							
+							var layerDetail = null;
+							
+								
+							layerDetail = this.aplicacion.getGestorCapas().getLayerDetail(id,parent);
+							var listaCapas = [];
+							
+							if(layerDetail) {
+								listaCapas.push(layerDetail.id);
+							}
+							
+							while(listaCapas.length>0) {
+								id = listaCapas.pop();
+								
+								layerDetail = this.aplicacion.getGestorCapas().getLayerDetail(id,parent);
+								
+								if(layerDetail.subLayers) {
+									for(var i=0;i<layerDetail.subLayers.length;i++) {
+										var unLayer = layerDetail.subLayers[i];
+										listaCapas.push(unLayer.id);
+									}
+								}
+								
+								if(ignorarVisible ||
+									gCapas.isCapaVisible(id,parent)) {
+									capasBusqueda.push(
+											{
+												id:id,
+												parent:parent
+											});
+								}
+							}
+							capasBusqueda = capasBusqueda.reverse();
+						}
+					}
+					return capasBusqueda;
+				},
+				getUrlForLayer: function(currentCapa) {
+					var gestorCapas = this.aplicacion.getGestorCapas();
+					
+					var map = gestorCapas.map;
+					
+					var layerDetail = null;
+					var name = "";
+					var mapLayer = null;
+					layerDetail = gestorCapas.getLayerDetail(currentCapa.id,currentCapa.parent);
+
+					var url ="";
+					
+					if(layerDetail) {
+						if(layerDetail.parentLayer) {
+							name = "["+layerDetail.parentLayer.name+"] "+layerDetail.name;
+						}
+						else {
+							name = layerDetail.name;
+						}
+
+						if(layerDetail.layerName) { 
+							mapLayer= map.getLayer(layerDetail.layerName);
+						}
+						else if(gestorCapas.isDynamicLayer(currentCapa.parent)) {
+							mapLayer = map.getLayer(currentCapa.parent);
+						}
+					}
+						
+					if(mapLayer==null) {
+						url = map.getLayer(currentCapa.parent).url;
+					}
+					else {
+						url = mapLayer.url;
+					}
+					if(gestorCapas.isDynamicLayer(currentCapa.parent)) {
+						var pos = url.indexOf("/"+currentCapa.id);
+						
+						if(pos==-1 || pos==url.length-4) {
+							url+="/"+currentCapa.id;
+						}
+					}
+					var data = {
+						name: name,
+						url: url,
+						layerDetail :layerDetail
+					};
+					return data;
+				},
+				busquedaGeometrica: function(geometry, vuelta){
+					var map = nim.controlador.Aplicacion.getInstancia().getGestorCapas().map;
+					this.widget.disableToolbar();
+					
+					this.geometryTodasCapas = geometry;
+					var currentCapa;
+					
+					if (this.capasBusqueda.length==0) {
+						this.capasBusqueda = null;
+
+						if(this.widget.widgets.resultsConsGeom.getChildren().length==0) {
+								var msg = nim.utils.Gis.cambiarlenguaje("noResultados");
+								this.setMessage(msg);
+						}
+						else {
+							this.setMessage("");
+						}
+
+						this.conectarActivo();
+						this.widget.enableToolbar();
+						return;						
+					}
+					else {
+						currentCapa = this.capasBusqueda.pop();
+						this.currentExtent = null;
+						this.cleanAllGraphics();
+						
+						if(vuelta==null) {
+							this.widget.widgets.resultsConsGeom.clear();
+							var symbol = new esri.symbol.SimpleFillSymbol(esri.symbol.SimpleFillSymbol.STYLE_SOLID, 
+										new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([0,0,255]), 2), 
+										new dojo.Color([201,216,252,0.5]));
+							this.zonaBusqueda = new esri.Graphic(geometry, symbol);
+							this.zonaBusqueda.owner="ConsultaGeometrica";
+							map.graphics.add(this.zonaBusqueda);
+							
+							setTimeout(dojo.hitch(this, function() {
+								for(var i=0;i<map.graphics.graphics.length;i++) {
+									var gr = map.graphics.graphics[i];
+									if(gr.owner=="ConsultaGeometrica") {
+										map.graphics.remove(gr);		
+									}
+								}
+								
+							}),2000);
+						}
+					}
+					
+					
+					dojo.publish("widgetDrawRequestEvent");
+					
+					
+
+					var gestorCapas = this.aplicacion.getGestorCapas();
+					
+					var layerDetail = null;
+						
+					layerDetail = gestorCapas.getLayerDetail(currentCapa.id,currentCapa.parent);
+					
+					//var mapLayer=null;
+					var name=null;
+					
+					var data = this.getUrlForLayer(currentCapa);
+					var url = data.url;
+					name = data.name;
+												
+					var tipoGeometria;
+					if (geometry.type == "extent"){
+							tipoGeometria = "esriGeometryEnvelope"; 
+					}else{
+							tipoGeometria = "esriGeometryPolygon";
+					}
+
+					var mensaje = nim.utils.Gis.cambiarlenguaje("buscando") +" ["+layerDetail.name+"]...";
+					this.setMessage(mensaje);
+
+					if(layerDetail && layerDetail.isWMS) {
+						//var punto = geometry.getCenter();
+						var layerPadre = gestorCapas.map.getLayer(currentCapa.parent);
+						this.lanzarBusquedaWMS(layerPadre,layerDetail,
+								geometry.getExtent());
+					}
+					else {
+						var peticion = new nim.datos.Peticion(); 
+						//peticion.url = this.proxy+url + "/query";
+						if(url.indexOf(nim.controlador.GestorCapas.PROXY_CAPAS)==-1) {
+							url = nim.controlador.GestorCapas.PROXY_CAPAS+nim.utils.Gis.getEncodedURL(url);
+						}
+						peticion.url = url + "/query";
+						peticion.handleAs = "json";
+						peticion.ambito= this;
+						peticion.onSuccess = dojo.hitch(this,this.obtieneResultados,name,url); 
+						peticion.onFailure = dojo.hitch(this,this.obtieneResultados,name,url);
+							
+						var where = "";
+	
+						peticion.params = {
+									f:'json',
+									where:where,
+									geometryType: tipoGeometria,
+									geometry: dojo.toJson(geometry.toJson()),
+									returnGeometry: false,
+									outFields:['*'],
+									spatialRel: "esriSpatialRelIntersects"
+						};
+						peticion.type = "post";
+							
+						try{
+								var gPeticion = nim.controlador.Aplicacion.getInstancia().getGestorPeticiones();
+								gPeticion.lanzarPeticion(peticion,false);
+						}
+						catch (err) {
+								if (this.geometryTodasCapas != null){
+									this.busquedaGeometrica(this.geometryTodasCapas,true);
+								}
+								console.error("busquedaGeometrica", err);
+						}
+					}
+					
+				},
+				lanzarBusquedaWMS: function(layerPadre, layerDetail, point) {
+					var BBOX = point.xmin+","+point.ymin+","+point.xmax+","+point.ymax;
+					var map = this.aplicacion.getGestorCapas().map;
+					
+					BBOX = map.extent.xmin+","+map.extent.ymin+","+map.extent.xmax+","+map.extent.ymax;
+					
+					var urlPeticion = layerDetail.featureInfo.url;
+					
+					if(urlPeticion.indexOf("?")==-1) {
+						urlPeticion += "?";
+					}
+					
+					var width = map.width;
+					var height = map.height;
+					
+					urlPeticion+="request=GetFeatureInfo&service=WMS&BBOX="+BBOX+"&WIDTH="+width+"&HEIGHT="+height+"&SRS=EPSG:"+map.spatialReference.wkid;
+					urlPeticion+="&QUERY_LAYERS="+layerDetail.id+"&INFO_FORMAT=text/html&CRS=EPSG:"+map.spatialReference.wkid+"&LAYERS="+layerDetail.id;
+					urlPeticion+="&VERSION="+layerPadre.version+"&FEATURE_COUNT=10";
+
+					var screenPoint = map.toScreen(point.getCenter());
+					urlPeticion+="&X="+screenPoint.x+"&Y="+screenPoint.y;
+					urlPeticion+="&I="+screenPoint.x+"&J="+screenPoint.y;
+					urlPeticion = encodeURI(urlPeticion);
+					
+					var peticion =  new nim.datos.Peticion();
+					peticion.ambito = this;
+					peticion.url = urlPeticion;
+					peticion.onSuccess = dojo.hitch(this,this.onWMSResponse,layerPadre,point,urlPeticion,layerDetail);
+					peticion.onFailure = dojo.hitch(this,this.onWMSResponse,layerPadre,point,urlPeticion,layerDetail);
+					peticion.type= 'get';
+					peticion.handleAs = "text";
+					var gestorPeticiones = this.aplicacion.getGestorPeticiones();
+					gestorPeticiones.lanzarPeticion(peticion,true);		
+					//this.onWMSResponse(layerPadre,point,urlPeticion);
+				},
+				onWMSResponse: function(layerPadre, point,urlPeticion, layerDetail, response) {
+					var featureSets = null;
+					var nombreCapa = layerPadre.name;
+					var urlCapa = layerPadre.url;
+
+					if(response != null && response.toLowerCase().indexOf("serviceexception")== -1) {
+						var funcion = "accesoDetalles_"+new Date().getTime();
+						nim.controlador[funcion] = dojo.hitch(
+									this,
+									function(urlPeticion) {
+										if(this.dialogDetalles) {
+											this.dialogDetalles.destroy();
+										}
+										var time = new Date().getTime();
+										this.dialogDetalles = new dijit.Dialog({
+											title : nim.utils.Gis.cambiarlenguaje("detalles"),
+											id:'dialogDetalles'+time,
+											content : "",					
+											style : "width: 600px;height:400px"
+										});
+										this.dialogDetalles.startup();
+										//var urlLogin = this.aplicacion.getGisConfig().gestorLogin.urlLogin;
+										//this.dialogDetalles.domNode.innerHTML = response;
+										var iframe = document.createElement("iframe");							
+										iframe.src = "proxy?url=" + urlPeticion
+										if(!dojo.isIE) {
+											dojo.attr(iframe,"style","width:100%;height:100%");
+										}
+										else {
+											iframe.style.setAttribute("width","100%");
+											iframe.style.setAttribute("height","100%");
+											this.dialogDetalles.containerNode.setAttribute("width","100%");
+											this.dialogDetalles.containerNode.setAttribute("height","100%");
+										}
+										this.dialogDetalles.containerNode.appendChild(iframe);
+										this.dialogDetalles.show();
+
+										if(!dojo.isIE) {
+											dojo.attr(this.dialogDetalles.containerNode,"style","width:100%;height:100%");
+										}
+										else {
+											this.dialogDetalles.containerNode.setAttribute("width","100%");
+											this.dialogDetalles.containerNode.setAttribute("height","100%");
+										}
+
+									},urlPeticion);
+						
+						var detalles = "<a style='color:yellow;cursor:pointer;' onclick='nim.controlador."+funcion+"();'>"+
+									nim.utils.Gis.cambiarlenguaje("detalles")+"</a>";
+						
+						featureSets = {
+								
+								geometryType: "esriGeometryPoint",
+								displayFieldName:"title",
+								fieldAliases:{
+									"title":nim.utils.Gis.cambiarlenguaje("titulo"),
+									"Detalles":nim.utils.Gis.cambiarlenguaje("detalles")
+								},
+								features: [
+								           {
+								        	 geometry:point,
+								        	 attributes:
+								        	             {
+								        	            	 "title":layerDetail.name,							        	            	 
+								        	            	 "Detalles":detalles
+								        	             }
+								           }]
+						};
+					}
+					else {
+						featureSets = {
+						}; 
+					}
+					this.obtieneResultados(nombreCapa,urlCapa,featureSets);
+							
+				},
+				obtieneResultados: function(nombreCapa,urlCapa, featureSet){
+					
+					
+					if (featureSet && featureSet.features){
+						var keyField = "OBJECTID";
+						var features = featureSet.features;
+						var fieldTypes = {};
+						if (features.length > 0 && this.geometryTodasCapas != null){
+							//var nombreCapa = this.widget.widgets.cboTipo.item.name;
+							
+							var params = {
+									title: nombreCapa + ":"
+								};
+							this.widget.widgets.resultsConsGeom.add(params);
+							//Cambiamos el padding-left de los titulos
+							var indice = this.widget.widgets.resultsConsGeom.getChildren().length - 1;
+							var domNode = this.widget.widgets.resultsConsGeom.getChildren()[indice].domNode;
+							domNode.style.cssText += "padding-left:18px !important";
+							
+							if(featureSet.fields) {
+								for(var i=0;i<featureSet.fields.length;i++) {
+									var field = featureSet.fields[i];
+									fieldTypes[field.name] = field.type;	
+									if(field.type=="esriFieldTypeOID") {
+										keyField = field.name;
+									}
+								}
+							}
+						}
+						
+						for (var i=0; i < features.length;i++){
+							
+							var feature = features[i];
+							var geometria = 1;
+							
+							if (geometria){
+								//Si es un punto pasamos la geometria completa, pero si es una linea pasamos el extent
+								/*if (!geometria.isInstanceOf(esri.geometry.Point)){
+									geometria = geometria.getExtent();
+								}*/
+								
+								var nivelZoom = 10; 
+									//this.obtenerNivelZoom(urlCapa);
+								var unaFeature = featureSet.features[i];
+								var title =unaFeature.attributes[featureSet.displayFieldName];
+								
+								if(!title) {
+									title = "Sin Nombre";
+								}
+								
+								var content = "<table width='100%'><col width='20%'><col width='80%'>";
+								for (var fIdx in unaFeature.attributes) {
+									var value = unaFeature.attributes[fIdx];
+									var enlace =  nim.utils.Gis.cambiarlenguaje("enlace"); 
+									
+									if(value!=null) {
+										
+										if(fieldTypes[fIdx]!=null && fieldTypes[fIdx] == "esriFieldTypeDate") {
+											value = new Date(value);
+											value = dojo.date.locale.format(value,{selector: "date", formatLength: "short", locale: "es",datePattern:"dd/MM/yyyy"});
+										}
+										else if(value.toString().indexOf("http://")!=-1 || 
+											value.toString().indexOf("https://")!=-1 	) {
+											var antesUrl = value.substring(0,value.indexOf("http://"));
+											antesUrl = antesUrl.substring(0,value.indexOf("https://"));
+											var valueUrl = value.substring(value.indexOf("http://"));
+											valueUrl = valueUrl.substring(value.indexOf("https://"));
+											var partes = valueUrl.split(" ");
+											var url = partes[0];
+											var despuesUrl ="";
+											if(partes.length>1) {
+												for(var idx=1;idx<partes.length;idx++) {
+													despuesUrl =+partes[idx]+" ";
+												}
+											}
+											value = antesUrl+"<a target='_black' href='"+url+"'>"+ enlace +"</a>"+despuesUrl;
+										}
+										else if(value.toString().indexOf("ftp://") != -1) {
+											var antesUrl = value.substring(0, value.indexOf("ftp://"));
+											var valueUrl = value.substring(value.indexOf("ftp://"));
+											var partes = valueUrl.split(" ");
+											var url = partes[0];
+											var despuesUrl = "";
+											if (partes.length > 1) {
+												for (var idx = 1; idx < partes.length; idx++) {
+													despuesUrl = + partes [idx] + " ";
+												}
+											}
+											value = antesUrl + "<a href='" + url + "' target='_blank'>" + enlace + "</a>" + despuesUrl;
+										}
+										else if(value.toString().indexOf("\\\\") != -1) {
+											var antesUrl = value.substring(0, value.indexOf("\\\\"));
+											var valueUrl = value.substring(value.indexOf("\\\\"));
+											var partes = valueUrl.split(" ");
+											var url = partes[0];
+											var urlMod = "file:///" + url.replace(/\\/g, "/");
+											var despuesUrl = "";
+											if (partes.length > 1) {
+												for (var idx = 1; idx < partes.length; idx++) {
+													despuesUrl = + partes [idx] + " ";
+												}
+											}
+											value = antesUrl + "<a href='" + urlMod + "' target='_blank'>" + enlace + "</a>" + despuesUrl;
+										}
+									}
+									else {
+										value = "";
+									}
+
+									if(featureSet.fieldAliases && featureSet.fieldAliases[fIdx]) { 
+										content += "<tr><td style='white-space:nowrap;'><div width='auto;'>" + featureSet.fieldAliases[fIdx] + ":<div></td>"+
+														"<td><div class='resultadoConsulta'>" + value + "</div></td></tr>";
+									}
+									else {
+										content += "<tr><td>" + fIdx + ":</td>"+
+										"<td><div style='"+estilo+"'>" + value + "</div></td></tr>";
+									}
+								}
+								content += "</table>";
+								
+								var params = {
+										title: title,		
+										content: content,
+										capa: nombreCapa,
+										keyField:keyField,
+										url:urlCapa,
+										geometria:geometria,
+										//consGeomDatos: true,										
+										irAElemento: true,
+										feature: feature,
+										fields: featureSet.fieldAliases,
+										grupo:nombreCapa,
+										nivelZoom: nivelZoom
+									};
+								
+								this.widget.widgets.resultsConsGeom.add(params);
+							}
+						}
+						
+					}
+					if (this.capasBusqueda) {
+						//this.setMessage("");
+						this.lanzarNuevaBusqueda();
+					}else{
+						if (this.widget.widgets.resultsConsGeom.getChildren().length == 0){
+							this.setMessage(
+									nim.utils.Gis.cambiarlenguaje("noElementos")
+									);
+						}else{
+							this.setMessage("");
+						}
+					}
+					
+				},
+				lanzarNuevaBusqueda: function() {
+					this.busquedaGeometrica(this.geometryTodasCapas,true);
+				},
+				highlightSeleccion: function() {
+					if(this.handleMapa) {
+						this.handleMapa[0].remove();
+						this.handleMapa[1].remove();
+						this.handleMapa = null;
+						var escala = this.aplicacion.getGestorCapas().map.__LOD.scale;
+						dojo.publish("widgetHighlightEvent",[this.paramsSeleccion[0],this.paramsSeleccion[1],true,escala]);
+					}
+				},
+				getCentroid: function(rings) {
+					var sumX=0;
+					var sumY=0;
+					var coords = 0;
+					for(var i=0;i<rings.length;i++) {
+						for(var j=0;j<rings[i].length;j++) {
+							sumX+=rings[i][j][0];
+							sumY+=rings[i][j][1];
+							coords++;
+						}
+					}
+					var x = sumX/coords;
+					var y = sumY/coords;
+					
+					return new esri.geometry.Point(x,y);
+				},			
+				_onClickResults: function(resultItem,params,response) {
+					
+					this.handleMapa = [];
+					
+					var feature = response.features[0];
+					
+					var map = this.widget.map;
+				
+					var p = feature.geometry;
+					
+					this.handleMapa.push(
+							dojo.connect(map,"onZoomEnd",this,this.highlightSeleccion)
+							);
+					this.handleMapa.push(
+							dojo.connect(map,"onPanEnd",this,this.highlightSeleccion)
+							);
+					
+					feature.geometry.spatialReference = map.spatialReference;
+					var geometria;
+					
+					if(feature.geometry.paths) {
+						p = nim.utils.Gis.puntoMedio(feature.geometry);
+						var line = new esri.geometry.Polyline(feature.geometry);
+						feature.geometry = line;
+						geometria = line.getExtent();
+					}
+					else if(feature.geometry.rings){
+						var polygon = new esri.geometry.Polygon(feature.geometry);
+						p = this.getCentroid(feature.geometry.rings);
+							//feature.geometry.rings[0][0];
+						feature.geometry = polygon;
+						geometria = polygon.getExtent();
+					}
+					else if(feature.geometry.x) {
+						var point = new esri.geometry.Point(feature.geometry);
+						geometria =point;
+						feature.geometry = point;
+					}
+					
+					geometria.spatialReference = map.spatialReference;
+					
+					if(p.x == null) {
+						p = new esri.geometry.Point(p[0],p[1]);
+					}
+					
+					
+					this.paramsSeleccion = [params,p];
+					//Comprobamos si es un punto, o un exten
+					resultItem.cached = true;
+					resultItem.feature = feature;
+					
+					if (geometria.isInstanceOf(esri.geometry.Point)){
+						//Si es un punto hacemos un zoom, y despues un move
+						this.puntoZoom = geometria;
+						
+						var zoom = this.aplicacion.getGestorCapas().map.getLevel();
+						
+						if(this.elementoSeleccionado) {
+							map.graphics.remove(this.elementoSeleccionado);
+							this.elementoSeleccionado = null;
+						}
+						
+						if (map.getLevel() != zoom){
+
+							try{
+								this.handleZoom = dojo.connect(map, "onZoomEnd", this,dojo.hitch(this,this.moverAPunto));
+								map.setLevel(zoom);
+							}catch(e){
+								if (this.handleZoom){
+									dojo.disconnect(this.handleZoom);
+									this.handleZoom = null;
+								}
+							}
+						}else{
+							this.moverAPunto();
+						}
+						
+					}else if (geometria.isInstanceOf(esri.geometry.Extent)){
+						//Si es un extent se hace directamente
+						map.setExtent(geometria,true);
+						
+						if(this.elementoSeleccionado) {
+							map.graphics.remove(this.elementoSeleccionado);
+							this.elementoSeleccionado = null;
+						}
+						try {
+							var estilo = new esri.symbol.SimpleFillSymbol(
+									esri.symbol.SimpleFillSymbol.STYLE_SOLID, 
+									new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, 
+									new dojo.Color([255,0,0]), 2), new dojo.Color([201,216,252,0.2]));
+							var estiloLinea= new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID,
+									new dojo.Color("#FF0000"),
+									3
+							); 
+							
+							this.elementoSeleccionado = new esri.Graphic(feature,estilo);
+							this.elementoSeleccionado.capa = resultItem.capa; 
+							this.elementoSeleccionado.title = resultItem.title;
+							
+							if(this.elementoSeleccionado.geometry.type=="polygon") {
+								this.elementoSeleccionado.symbol = estilo;
+							}
+							else if(this.elementoSeleccionado.geometry.type=="polyline"){
+								this.elementoSeleccionado.symbol = estiloLinea;
+							}
+							
+							map.graphics.add(this.elementoSeleccionado);
+						}
+						catch(e) {
+							
+						}
+						
+					}
+				},
+				onClickResults: function(evt){
+					this.widget.map = this.aplicacion.getGestorCapas().map;
+					
+					if (evt && evt.target.className == "irAElementoIcon" && this.handleZoom == null) {
+							
+							//Obtenermos el resultItem
+							var resultItem = null;
+							//En IE el resultItem no viene en el evento, asi que hay que buscarlo
+							if (dojo.isIE){
+								for (var i=0; i < this.widget.widgets.resultsConsGeom.getChildren().length;i++){
+									if (this.widget.widgets.resultsConsGeom.getChildren()[i].id == evt.target.parentNode.id){
+										resultItem = this.widget.widgets.resultsConsGeom.getChildren()[i];
+										break;
+									}
+								}
+								
+							}else{
+								resultItem = evt.resultItem;
+							}	
+							
+							
+							var params = {
+									id: "1",
+									title: resultItem.capa,
+									content: resultItem.title
+									//link:"consultaAlfanumerica"
+							};
+							
+							if(!resultItem.cached && !resultItem.feature.cached) {
+								var peticion = new nim.datos.Peticion();
+								
+								peticion.url = resultItem.url+"/query";
+								
+								peticion.params = {
+										f:'json',
+										where:resultItem.keyField+" = "+resultItem.feature.attributes[resultItem.keyField],
+										returnGeometry: true,
+										outFields:['*']
+								};
+								peticion.type = "get";
+								var gPeticiones = this.aplicacion.getGestorPeticiones();
+								
+								peticion.onSuccess = dojo.hitch(this,this._onClickResults,resultItem,params);
+								peticion.onFailure = dojo.hitch(this,this._onClickResults,resultItem,params);
+								peticion.ambito = this;
+								
+								gPeticiones.lanzarPeticion(peticion,false);
+							}
+							else {
+								this._onClickResults(resultItem,params,{features:[resultItem.feature]});
+							}
+							
+
+					}
+				},
+				moverAPunto: function(){
+					var map = this.aplicacion.getGestorCapas().map;
+					
+					map.centerAt(this.puntoZoom);
+					
+					if(this.handleZoom) {
+						this.handleZoom.remove();
+						this.handleZoom = null;
+					}
+					
+				},
+				
+				calularCirculo: function(geometry){
+					
+					var metros = this.widget.widgets.txtRadio.value; 
+					if (metros != "" && !isNaN(metros)){
+						var urlGeometryService = this.aplicacion.getGisConfig().urlGeometryService; 
+						var geometryService = esri.tasks.GeometryService(urlGeometryService);
+						var params = new esri.tasks.BufferParameters();
+						var map =  this.aplicacion.getGestorCapas().map;
+						
+						params.geometries = [ geometry ];
+					    params.distances = [parseFloat(metros)];
+					    params.unit = esri.tasks.GeometryService.UNIT_METER;
+					    params.bufferSpatialReference = map.spatialReference;
+					    params.outSpatialReference = map.spatialReference;
+	
+					    geometryService.buffer(params, dojo.hitch(this,"recibeCirculo"),dojo.hitch(this,"recibeCirculo"));
+					}else{
+						alert("Debe introducir un valor correcto en el campo metros.");
+					}
+					
+				},
+				
+				recibeCirculo: function(features){
+					if (features && features[0] && features[0].isInstanceOf(esri.geometry.Polygon)){
+						this.busquedaGeometrica(features[0]);
+					}
+				},
+				
+				limpiarWidget: function(){
+					this.cleanAllGraphics();
+					
+					if(this.widget.widgets.cboTipo) {
+						this.widget.widgets.cboTipo.reset();
+					}
+					
+					this.widget.widgets.resultsConsGeom.clear();
+					this.setMessage("");
+					//this.widget.widgets.txtRadio.set("value","");
+					dojo.publish("widgetDrawRequestEvent", null);
+					
+					var gCapas = nim.controlador.Aplicacion.getInstancia().getGestorCapas();
+					gCapas.conectarIdentify();
+					gCapas.map.setMapCursor("auto");
+				},
+				
+				setMessage: function(message, showLoading) {
+					if(this.widget) {
+						this.widget.messageNode.innerHTML = message;
+					}
+				},
+				onModoSeleccionEdicion: function(habilitado) {
+					dojo.publish("widgetDrawRequestEvent", null);
+				},
+				
+				obtenerNivelZoom: function (urlCapa){
+					
+					var idCapa = urlCapa.substring(urlCapa.lastIndexOf("/") + 1);
+					var gestorCapas = nim.controlador.Aplicacion.getInstancia().getGestorCapas();
+					
+					var layerDetail = gestorCapas.getLayerDetail(idCapa);
+					var nivelZoom = 0;
+					for (var i=0; i<gestorCapas.ESCALAS.length;i++){
+						var escala = gestorCapas.ESCALAS[i];
+						if (escala.scale <=layerDetail.minScale){
+							nivelZoom = escala.level;
+							break;
+						}
+					}
+					return nivelZoom;
+					
+				},
+				getExtent: function(punto) {
+					var map = this.aplicacion.getGestorCapas().map;
+					var escala = esri.geometry.getScale(map.extent,map.width,map.spatialReference.wkid);
+					
+					var incremento = escala * 0.001;
+					
+					var path = [];
+					path[0] = [];
+					
+					path[0].push([punto.x-incremento,punto.y-incremento]); // (xmin,ymin)
+					path[0].push([punto.x+incremento,punto.y-incremento]); // (xmax,ymin)
+					path[0].push([punto.x+incremento,punto.y+incremento]); // (xmax,ymax)
+					path[0].push([punto.x-incremento,punto.y+incremento]); // (xmin,ymax)
+					path[0].push([punto.x-incremento,punto.y-incremento]); // (xmin,ymin)
+					var polygonJson = {
+							  "rings":path,
+							  "spatialReference":{"wkid":map.spatialReference.wkid}
+							};
+					
+					var polygon = new esri.geometry.Polygon(
+													polygonJson
+													); 
+					return polygon.getExtent();
+				},				
+				onClick: function(mapEvent) {
+					var punto = mapEvent.mapPoint;
+					
+					dojo.publish("menuItemClickedEvent",[{
+						menuCode:"widgets.widget",
+						value:'ConsultaGeometrica'
+					}]);
+
+					this.currentExtent = this.getExtent(punto);
+					if(this.widget) {
+						this.capasBusqueda = this.getCapasBusqueda();
+						this.busquedaGeometrica(this.currentExtent);
+					}
+					else {
+						setTimeout(1000,
+								dojo.hitch(this,this.busquedaGeometrica,this.currentExtent));
+					}
+				},
+				setModoIdentify: function(habilitado) {
+					if(habilitado) {
+						
+						if(this.modoIdentify) {
+							this.modoIdentify.remove();
+							this.modoIdentify=null;
+						}
+						
+						this.modoIdentify = this.aplicacion.getGestorCapas().map.on("click",dojo.hitch(this,this.onClick));
+						this.puntoActivo = true;
+						dojo.publish("ModoSeleccionConsultaGeometrica",[true]);
+					}
+					else {
+						if(this.modoIdentify) {
+							this.modoIdentify.remove();
+						}
+						this.modoIdentify = null;
+						this.puntoActivo = false;
+					}
+				},
+				onZoomEndComboBox: function() {
+					this.cargaComboCapas();
+				},
+				onVisibilityChanged: function(layerName) {
+					var gCapas = nim.controlador.Aplicacion.getInstancia().getGestorCapas();
+					if(layerName==null || (gCapas.isDynamicLayer(layerName) ||
+						gCapas.isLayerPrincipal(layerName))) {
+						this.cargaComboCapas();
+					}
+				},				
+				connectZoomComboBox:function() {
+					if(this.handleZoomComboBox) {
+						this.handleZoomComboBox.remove();
+					}
+					
+					if(this.visibilityChanged) {
+						dojo.unsubscribe(this.visibilityChanged);
+					}
+					
+					var map = nim.controlador.Aplicacion.getInstancia().getGestorCapas().map;
+					
+					this.handleZoomComboBox = map.on("zoom-end",dojo.hitch(this,this.onZoomEndComboBox));
+					this.visibilityChanged = dojo.subscribe("VisibilityChanged",this,this.onVisibilityChanged);
+				},
+				disconnectZoomComboBox: function() {
+					if(this.handleZoomComboBox) {
+						this.handleZoomComboBox.remove();
+						this.handleZoomComboBox = null;
+					}
+					
+					if(this.visibilityChanged) {
+						dojo.unsubscribe(this.visibilityChanged);
+						this.visibilityChanged = null;
+					}
+				},
+				drawCircle:function (e) {
+					var map;
+					var pt, radius,  ring, pts, angle;
+					var symbol = new esri.symbol.SimpleFillSymbol(
+							esri.symbol.SimpleFillSymbol.STYLE_SOLID, 
+							new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, 
+							new dojo.Color([0,0,255]), 2), new dojo.Color([201,216,252,0.5]));
+					pt = this.centroCirculo;
+					radius = this.radio;
+					map = this.aplicacion.getGestorCapas().map;
+					
+					if(this.circle) {
+						map.graphics.remove(this.circle);
+					}
+					
+					this.circle = new esri.geometry.Polygon(map.spatialReference);
+					
+					ring = []; // point that make up the circle
+					pts = 40; // number of points on the circle
+					angle = 360 / pts; // used to compute points on the circle
+					for ( var i = 1; i <= pts; i++) {
+						// convert angle to raidans
+						var radians = i * angle * Math.PI / 180;
+						// add point to the circle
+						ring.push([ pt.x + radius * Math.cos(radians),
+								pt.y + radius * Math.sin(radians) ]);
+					}
+					ring.push(ring[0]); // start point needs to == end point
+					this.circle.addRing(ring);
+					this.circle = new esri.Graphic(this.circle, symbol);
+					map.graphics.add(this.circle);
+				},				
+				cleanAllGraphics:function(){		
+					var map = nim.controlador.Aplicacion.getInstancia().getGestorCapas().map;
+					var graficos = map.graphics.graphics;
+					for(var j=0;j<graficos.length;j++)
+					{
+						if(graficos[j].esConsultaTemporal)
+						{
+							map.graphics.remove(graficos[j]);	
+							j=j-1;
+						}
+					}
+				},				
+				desconectarActivo: function() {
+
+					if(this.puntoActivo) {
+						dojo.publish("widgetDrawRequestEvent", []);
+						this.setModoIdentify(false);
+					}
+					else if(this.poligonoActivo || this.rectanguloActivo){
+						dojo.publish("widgetDrawRequestEvent", []);
+					}
+					else if(this.circuloActivo) {
+						if(this.modoMouseDown) {
+							this.modoMouseDown.remove();
+						}
+						
+						if(this.modoMouseMove) {
+							this.modoMouseMove.remove();
+						}
+						this.modoMouseMove = null;
+						this.modoMouseDown = null;
+						dojo.publish("widgetDrawRequestEvent", []);
+					}
+					//var map = nim.controlador.Aplicacion.getInstancia().getGestorCapas().map;
+					//map.setMapCursor("default");
+				},
+				conectarActivo: function() {
+					
+					if(this.puntoActivo) {
+						dojo.publish("widgetDrawRequestEvent", []);
+						this.onChangePunto(true);
+					}
+					else if(this.rectanguloActivo) {
+						this.onChangeRectangulo(true);
+					}
+					else if(this.circuloActivo) {
+						this.onChangeCirculo(true);
+					}
+					else if(this.poligonoActivo) {
+						this.onChangePoligono(true);
+					}
+					
+					//var map = nim.controlador.Aplicacion.getInstancia().getGestorCapas().map;
+					//map.setMapCursor(nim.utils.Gis.getCursor("identify"));
+				},
+				onChangePunto: function(valor) {
+					var gCapas = nim.controlador.Aplicacion.getInstancia().getGestorCapas();
+					this.desconectarActivo();
+					if(valor) {
+						gCapas.deshabilitarInfoTemplate();
+						
+						dojo.publish("widgetDrawRequestEvent", []);
+						if(this.widget) {
+							this.widget.checkPunto();
+						}
+						this.setModoIdentify(true);
+					}
+					else if(this.puntoActivo){
+						this.desconectarActivo();
+					}
+					
+					if(!valor) {
+						gCapas.conectarIdentify();
+					}
+					
+					this.puntoActivo = valor;
+				},
+				onChangeRectangulo: function(valor) {
+					if(valor) {
+						var params = {
+									onDrawEnd: dojo.hitch(this, function(geometry) {
+										this.desconectarActivo();
+										this.capasBusqueda = this.getCapasBusqueda();
+										this.busquedaGeometrica(geometry); 
+									}),
+									label: "Búsqueda por rectángulo"
+						};				
+						params.geometryType = esri.toolbars.Draw.EXTENT;
+						try {
+							dojo.publish("ModoSeleccionConsultaGeometrica",[true]);
+						}
+						catch(e) {
+							alert(e);
+						}
+						dojo.publish("widgetDrawRequestEvent", [params]);
+						var gCapas = this.aplicacion.getGestorCapas();
+						gCapas.desconectarIdentify();
+					}
+					else if (this.rectanguloActivo){
+						var gCapas = this.aplicacion.getGestorCapas();
+						gCapas.conectarIdentify();
+						this.desconectarActivo();
+					}
+					this.rectanguloActivo = valor;
+				},
+				onChangePoligono: function(valor) {
+					if(valor) {
+						var params = {
+								onDrawEnd: dojo.hitch(this, function(geometry) {
+									this.desconectarActivo();
+									this.capasBusqueda = this.getCapasBusqueda();
+									this.busquedaGeometrica(geometry); 
+								}),
+								label: "Búsqueda por polígono"
+						};
+						params.geometryType = esri.toolbars.Draw.POLYGON;
+						dojo.publish("ModoSeleccionConsultaGeometrica",[true]);
+						dojo.publish("widgetDrawRequestEvent", [params]);
+						var gCapas = this.aplicacion.getGestorCapas();
+						gCapas.desconectarIdentify();
+					}
+					else if(this.poligonoActivo && !this.rectanguloActivo){
+						var gCapas = this.aplicacion.getGestorCapas();
+						gCapas.conectarIdentify();
+						this.desconectarActivo();
+					}
+					this.poligonoActivo = valor;
+				},				
+				onChangeCirculo: function(valor) {
+					if(valor) {
+						if(this.modoMouseDown) {
+							this.modoMouseDown.remove();
+						}
+						if(this.modoMouseMove) {
+							this.modoMouseMove.remove();	
+						}
+						
+						this.modoMouseDown = this.aplicacion.getGestorCapas().map.on("click",dojo.hitch(this,this.onMouseClick));
+						this.modoMouseMove = this.aplicacion.getGestorCapas().map.on("mouse-move",dojo.hitch(this,this.onMouseMove));
+					
+						var params =  {
+								onDrawEnd: dojo.hitch(this, function(geometry) {}),
+								geometryType: esri.toolbars.Draw.POLYGON,
+								label: "Búsqueda por círculo"
+						};
+						
+						dojo.publish("ModoSeleccionConsultaGeometrica",[true]);
+						dojo.publish("widgetDrawRequestEvent", [params]);
+					}
+					else if(this.circuloActivo){
+						var gCapas = this.aplicacion.getGestorCapas();
+						gCapas.conectarIdentify();
+						this.desconectarActivo();
+					}
+					this.circuloActivo = valor;
+
+				}
+		}
+);

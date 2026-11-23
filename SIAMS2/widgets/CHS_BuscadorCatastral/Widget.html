@@ -1,0 +1,67 @@
+﻿<div data-dojo-attach-point="envelopeNode">
+
+		<div style='border:solid;border-width:0px; border-color:#485566;'>
+			<span title ="Localizacion" class="etiquetasWidgets" name='groupLocalizacion' style="font-size:14px;position:relative;top:-8px;left:5px;background-color:#fff;color:#485566;font-weight: bold;">Por localización</span>
+			<table class="widgetTable" style="height:150px;">
+				<tr>
+					<th class="etiquetasWidgets" name="lbProvincia">Provincia</th>
+					<td>
+						<select id="cboProvincias" title="" name="cboProvincias" dojoType="dijit.form.FilteringSelect" style="width:220px; height:30px;" maxHeight="400"/>
+					</td>
+				</tr>
+				<tr>
+					<th class="etiquetasWidgets" name="lbMunicipio">Municipio</th>
+					<td>
+						<select id="cboMunicipios" name="cboMunicipios" dojoType="dijit.form.FilteringSelect" style="width:220px; height:30px;" maxHeight="400"/>
+					</td>
+				</tr>
+
+				<tr>
+					<th class="etiquetasWidgets" name="lbPoligono">Polígono</th>
+					<td>
+						<input type="text" id="txtPoligono" name="txtPoligono" style="width: 220px; height:30px;" dojoType="dijit.form.TextBox" title="">
+					</td>
+				</tr>
+				<tr>
+					<th class="etiquetasWidgets" name="lbParcela">Parcela</th>
+					<td>
+						<input type="text" id="txtParcela" name="txtParcela" style="width: 220px; height:30px;" dojoType="dijit.form.TextBox" title="">
+					</td>
+				</tr>
+			</table>
+		</div>
+		
+		<br>
+		
+		<div style='border:solid;border-width:0px; border-color:#485566;'>
+			<span title="Referencia" class="etiquetasWidgets" name='groupReferencia' style="font-size:14px;position:relative;top:-8px;left:5px;background-color:#fff;color:#485566;font-weight: bold;">Por referencia catastral</span>
+			
+			<table class="widgetTable" style="height:60px;">			
+				<tr>
+					<th class="etiquetasWidgets" name="lbReferenciaCatastral">Referencia catastral</th>
+					<td>
+						<input type="text" id="txtReferenciaCatastral" name="txtReferenciaCatastral" style="width: 220px;  height:30px;" dojoType="dijit.form.TextBox" title="">
+					</td>
+				</tr>
+			</table>
+		</div>
+		
+		<table class="widgetTable" style="">
+			<tr>
+				<td colspan="1" align="left" class="botonesRojos">
+					<button id="btnBuscar" name="btnBuscar" class="jimu-btn">Buscar</button>
+				</td>
+				<td colspan="1" align="left" class="botonesRojos">
+					<button id="btnLimpiar" name="btnLimpiar" class="jimu-btn">Limpiar</button>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" class="resultsMsg"></td>
+			</tr>
+			<!--<tr>
+				<td colspan="2"><div name="results" id="results" dojoType="ResultList"></div></td>
+			</tr>-->			
+		</table>
+		<div name="results" id="results" dojoType="ResultList"></div>
+		
+</div>

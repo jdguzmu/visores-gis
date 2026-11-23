@@ -1,0 +1,63 @@
+﻿<div data-dojo-attach-point="envelopeNode">
+
+	<table class="widgetTable">
+		<tr>
+			<td colspan="3" style="text-align: center;">
+				<div id="toolbarCoordenada" name="toolbarCoordenada" data-dojo-type="dijit.Toolbar">
+					<div data-dojo-type="dijit.form.Button" id="toolbarCoordenada.pan" data-dojo-props="iconClass:'panCoordenada', showLabel:false" style="margin:0px;">
+						Mover a punto
+					</div>
+
+					<div data-dojo-type="dijit.form.Button" id="toolbarCoordenada.zoom" data-dojo-props="iconClass:'zoomCoordenada', showLabel:false" style="margin:0px;">
+					    Zoom a punto
+					</div>
+
+					<div data-dojo-type="dijit.form.Button" id="toolbarCoordenada.puntero" data-dojo-props="iconClass:'punteroToolbar', showLabel:false" style="margin:0px;">
+					    Marcar punto temporalmente
+					</div>
+
+					<div data-dojo-type="dijit.form.Button" id="toolbarCoordenada.punto" data-dojo-props="iconClass:'puntoCoordenada', showLabel:false" style="margin:0px;">
+					    Marcar punto
+					</div>
+
+					<div data-dojo-type="dijit.form.Button" id="toolbarCoordenada.puntoXY" data-dojo-props="iconClass:'puntoXYCoordenada', showLabel:false" style="margin:0px;">
+					    Marcar punto con coordenadas
+					</div>
+
+					<div data-dojo-type="dijit.form.Button" id="toolbarCoordenada.globo" data-dojo-props="iconClass:'globoCoordenada', showLabel:false" style="margin:0px;">
+					    Marcar punto con globo
+					</div>
+
+					<div data-dojo-type="dijit.form.Button" id="toolbarCoordenada.limpiar" data-dojo-props="iconClass:'borradoEdicion', showLabel:false" style="margin:0px;">
+					  	Limpiar símbolos
+					</div>
+
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3" style="text-align:center;padding:5px;">
+			<select id="cboSistemas" name="cboSistemas" dojoType="dijit.form.FilteringSelect" style="width:200px;padding:0px 0px 0px 10px;"/>
+			</td>
+		</tr>
+		<tr>
+			<!--<th class="etiquetasWidgets" style="">x</th>
+			<td style=""><input type="text" id="txtX" name="txtX" style="width:120px;" dojoType="dijit.form.TextBox"></td>
+			<th class="etiquetasWidgets">y</th>
+			<td style=""><input type="text" id="txtY" name="txtY" style="width:120px;" dojoType="dijit.form.TextBox"></td>-->
+			<td colspan="3" style="text-align:center;padding:5px 0px 10px 0px;">
+				<label for="txtX" id="labelX"> X </label><input type="text" id="txtX" name="txtX" style="width:140px;" dojoType="dijit.form.TextBox">
+				<div class="visible-xs"></div>
+				<label for="txtY" id="labelY"> Y </label><input type="text" id="txtY" name="txtY" style="width:140px;" dojoType="dijit.form.TextBox">
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3"><span dojoattachpoint="msgAviso"></span></td>
+		</tr>
+		<tr>
+			<td colspan="3" style="padding:15px 0px 0px 0px;"><span id="errorCoord"></span></td>
+		</tr>
+
+	</table>
+
+</div>

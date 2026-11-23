@@ -1,0 +1,7 @@
+{
+	"proxyCors": "https://www.chsegura.es/LoginChsPortal/proxy.jsp",
+	"urlCapa": "https://www.chsegura.es/arcgis/rest/services/VISOR_CHSIC3/VISOR_PUBLICO_ETRS89_v5_Web_Capas/MapServer/",
+	"urlCuencasVertices": "https://mercator.chsegura.es:6443/arcgis/rest/services/CuencasVertientes3/GPServer/CuencasVertientes2/execute",
+	"urlGeometryService": "https://www.chsegura.es/rest/services/Utilities/Geometry/GeometryServer",
+	"folderUrl":"./Widgets/CHS_CuencasVertientes/images/"
+}

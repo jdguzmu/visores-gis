@@ -1,0 +1,2 @@
+* Incluir libreria alasql en el init.js de la aplicación, en el array
+de "resources". 

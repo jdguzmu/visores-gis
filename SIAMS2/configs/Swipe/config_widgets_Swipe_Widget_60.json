@@ -1,0 +1,183 @@
+{
+  "style": "vertical",
+  "layerState": {
+    "Aprovechamientos_Hidroelectricos_6993": {
+      "selected": false
+    },
+    "ARPSIS_PRIMER_CICLO_1980": {
+      "selected": false
+    },
+    "ARPSIS_SEGUNDO_CICLO_7275": {
+      "selected": false
+    },
+    "Azudes_4492": {
+      "selected": false
+    },
+    "Base_Cartografía_4539": {
+      "selected": false
+    },
+    "Base_division_administrativa_4538": {
+      "selected": false
+    },
+    "Base_Planimetria_3004": {
+      "selected": false
+    },
+    "Base_Vias_de_comunicacion_2276": {
+      "selected": false
+    },
+    "Calculo_de_cuencas_9586": {
+      "selected": false
+    },
+    "00_DMA_Masas_Subt_9715": {
+      "selected": false
+    },
+    "00_DMA_Masas_Sup_930": {
+      "selected": false
+    },
+    "DPH_deslindado_6860": {
+      "selected": false
+    },
+    "DPH_Cartografico_4637": {
+      "selected": false
+    },
+    "DPH_Linde_Fase_II_6338": {
+      "selected": false
+    },
+    "Dominio_Publico_Maritimo_Terrestre_9448": {
+      "selected": false
+    },
+    "00_ESTADO_OMA_SUP_4644": {
+      "selected": false
+    },
+    "00_ESTADO_OMA_SUB_4251": {
+      "selected": false
+    },
+    "EVOLUCION_ESTADO_MASp_2016_2021_8944": {
+      "selected": false
+    },
+    "EVOLUCION_ESTADO_MASbt_2016_2021_9568": {
+      "selected": false
+    },
+    "EXPEDIENTES_131": {
+      "selected": false
+    },
+    "Inventario_de_tramos_con_estudio_7378": {
+      "selected": false
+    },
+    "Mapa_Caudales_Maximos_9830": {
+      "selected": false
+    },
+    "Mapa_de_Peligrosidad_Calados_6102": {
+      "selected": true
+    },
+    "Mapa_de_Peligrosidad_Calados_Intervalos_4811": {
+      "selected": true
+    },
+    "Zona_de_Flujo_Preferente_4494": {
+      "selected": false
+    },
+    "Mapas_Peligrosidad_Zonas_Inundables_8182": {
+      "selected": false
+    },
+    "Mapa_Riesgo_Zonas_Inundables_8716": {
+      "selected": false
+    },
+    "NUEVAS_MASAS_CICLO_2021_2027v4_8328": {
+      "selected": false
+    },
+    "Obras_Direccion_Tecnica_Saneamiento_Louro_7567": {
+      "selected": false
+    },
+    "00_Otras_Infraestructuras_8917": {
+      "selected": false
+    },
+    "00_PRESIONES_6915": {
+      "selected": false
+    },
+    "Red_de_control_de_nitratos_2016_2019_7810": {
+      "selected": false
+    },
+    "RED_HIDR__BASICA_2015_2021_3472": {
+      "selected": false
+    },
+    "00_REDES_CONTROL_AUTOMATICA_7801": {
+      "selected": false
+    },
+    "00_REDES_DE_CONTROL_MASUBT_3325": {
+      "selected": false
+    },
+    "00_REDES_DE_CONTROL_MASUP_441": {
+      "selected": false
+    },
+    "00_UNIDADES_GESTION_3864": {
+      "selected": false
+    },
+    "Hidrografia_6696": {
+      "selected": false
+    },
+    "ZONAS_CAPTACION_ZONA_SENSIBLE_9538": {
+      "selected": false
+    },
+    "Zonas_Hidrologicamente_Favorables_917": {
+      "selected": false
+    },
+    "00_Zonas_Protegidas_9596": {
+      "selected": false
+    },
+    "wms_9756": {
+      "selected": true
+    },
+    "Parroquias_6356": {
+      "selected": true
+    },
+    "wms_6836": {
+      "selected": true
+    },
+    "MDT_02_CHMS_NoCh_6972": {
+      "selected": true
+    },
+    "wms_2669": {
+      "selected": true
+    },
+    "wms_6214": {
+      "selected": true
+    },
+    "wms_5260": {
+      "selected": true
+    },
+    "wms_3566": {
+      "selected": true
+    },
+    "wms_1558": {
+      "selected": true
+    },
+    "wms_5896": {
+      "selected": true
+    },
+    "wms_4541": {
+      "selected": true
+    },
+    "wms_7742": {
+      "selected": true
+    },
+    "wms_7686": {
+      "selected": true
+    },
+    "Incidencias_en_la_Calidad_de_las_Aguas_Subterraneas_8419": {
+      "selected": false
+    },
+    "18a749cdc39-layer-57": {
+      "selected": false
+    },
+    "InventarioPatrimonial_215": {
+      "selected": false
+    }
+  },
+  "layer": "Mapa_de_Peligrosidad_Calados_6102",
+  "isZoom": false,
+  "handleColor": "#dadada",
+  "layerMode": "mult",
+  "defaultLayers": [],
+  "invertPlacement": false,
+  "isHidePanel": false
+}

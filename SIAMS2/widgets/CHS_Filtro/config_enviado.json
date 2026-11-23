@@ -1,0 +1,7 @@
+{
+  "proxyCors": "http://localhost:8080/LoginChsPortal/proxy.jsp?",
+  "limiteNodos": 100,
+  "zoomto": false,
+  "allowCustom": true,
+  "filters": []
+}

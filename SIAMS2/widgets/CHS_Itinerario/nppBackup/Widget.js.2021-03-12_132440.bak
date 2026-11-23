@@ -1,0 +1,445 @@
+define([
+  'dojo/_base/declare',
+  'dojo/_base/lang',
+  'dojo/dom-class',
+  'dojo/topic',
+  'dojo/dom',
+  'dojo/ready',
+  'dojo/on',
+  './GestorPeticiones',
+  './Peticion',
+  'dijit/_WidgetsInTemplateMixin',
+  'dijit/form/CheckBox',
+  'jimu/dijit/Message',
+  'esri/geometry/webMercatorUtils',
+  'esri/SpatialReference',
+  'esri/toolbars/navigation',
+  'jimu/BaseWidget'
+], function(
+  declare,
+  lang,
+  domClass,
+  topic,
+  dom,
+  ready,
+  on,
+  GestorPeticiones,
+  Peticion,
+  _WidgetsInTemplateMixin,
+  CheckBox,
+  Message,
+  webMercatorUtils,
+  SpatialReference,
+  Navigation,
+  BaseWidget
+) {
+  return declare([BaseWidget, _WidgetsInTemplateMixin], {
+    baseClass: 'jimu-widget-itinerario',
+    active: false,
+    startup: function() {
+      this.inherited(arguments);
+      this.active = true;
+      this.btnUpload = document.getElementById("inputFileItinerario");
+      this.btnUpload.onchange = dojo.hitch(this,
+        function() {
+          if (this.btnUpload.value.length > 0) {
+            this.uploadFile();
+          }
+        });
+      this.own(on(this.checkMarcadores, "change", dojo.hitch(this, this.toggleMarcadores)));
+      this.own(on(this.btnItinerarioLimpiar, "click", dojo.hitch(this, this.limpiar)));
+
+      this.checkMarcadores.attr("value", false);
+      this.WAYPOINT_TYPE = "wpt";
+      this.TRACK_TYPE = "trk";
+      this.TRACKPOINT_TYPE = "trkpt";
+
+      this.ESTILO_TRACK = new esri.symbol.SimpleLineSymbol({
+        "type": "esriSLS",
+        "style": "esriSLSSolid",
+        "color": [0, 0, 255, 100],
+        "width": 4
+      });
+      this.ESTILO_WAYPOINT = new esri.symbol.SimpleMarkerSymbol({
+        "type": "esriSMS",
+        "style": "esriSMSSquare",
+        "color": [0, 0, 255, 255],
+        "size": 8,
+        "angle": 45,
+        "xoffset": 0,
+        "yoffset": 0,
+        "outline": {
+          "color": [152, 230, 0, 255],
+          "width": 1
+        }
+      });
+      this.ESTILO_TRACKPOINT = new esri.symbol.SimpleMarkerSymbol({
+        "type": "esriSMS",
+        "style": "esriSMSSquare",
+        "color": [255, 0, 0, 255],
+        "size": 8,
+        "angle": 45,
+        "xoffset": 0,
+        "yoffset": 0,
+        "outline": {
+          "color": [255, 0, 0, 0],
+          "width": 1
+        }
+      });
+
+
+
+    },
+
+    onOpen: function() {
+      ready(lang.hitch(this, this.resizeWindow));
+    },
+
+    resizeWindow:function(){
+      var panel = this.getPanel();
+      var id = this.id;
+      if (window.appInfo.isRunInMobile) {
+        setTimeout(function() {
+
+          var box = panel._getLayoutBox();
+          var height = panel.containerNode.childNodes[0].children[0].clientHeight + 50;
+          var top = (box.h / 2) + ((box.h / 2) - height);
+          if (height <= (box.h / 2)) {
+            document.querySelectorAll("div[id*="+id+"].jimu-panel.jimu-launchpad-panel")[0].style.height = height + "px";
+            document.querySelectorAll("div[id*="+id+"].jimu-panel.jimu-launchpad-panel")[0].style.top = top + "px";
+          }
+        }, 500);
+      } else {
+        //Establecemos el tamaño y posicion del panel del widget
+        var h_mapa = this.map.height
+        var w_mapa = this.map.width
+
+        panel.position.left = 10;
+        panel.position.top = 225;
+        panel.position.width = 390;
+        panel.position.height = panel.containerNode.childNodes[0].children[0].clientHeight + (panel.containerNode.childNodes[0].children[0].clientHeight / 2);
+        panel._originalBox = {
+          w: panel.position.width,
+          h: panel.position.height,
+          l: panel.position.left || 0,
+          t: panel.position.top || 0
+        };
+        panel.setPosition(panel.position);
+        panel.panelManager.normalizePanel(panel);
+      }
+    },
+
+    busy: function(value) {
+      if (value) {
+        dojo.byId("processItinerario").innerHTML = "Espere";
+      } else {
+        dojo.byId("processItinerario").innerHTML = "";
+      }
+
+      this.disableBtnLimpiar(value);
+      this.disableUploadButton(value);
+    },
+    disableBtnLimpiar: function(value) {
+      this.btnItinerarioLimpiar.attr("disabled", value);
+    },
+    disableUploadButton: function(value) {
+      //this.btnUpload.disabled = value;
+    },
+    getCheckMarcadores: function() {
+      return this.checkMarcadores.attr("value");
+    },
+    limpiar: function() {
+      try {
+        this.btnUpload.value = "";
+        dojo.byId("processItinerario").innerHTML = "";
+        this.limpiarItinerario();
+      } catch (e) {
+
+      }
+    },
+    shutdown: function() {
+      this.limpiar();
+    },
+    onData: function(data) {
+      data = JSON.parse(data.target.responseText);
+
+      if (data.error) {
+        setTimeout(dojo.hitch(this, function() {
+          this.busy(false);
+          dojo.byId("processItinerario").innerHTML = "<b style='color:orange'>" + data.error + "</b>";
+        }), 2000);
+      } else {
+        this.limpiarItinerario();
+        this.dibujarItinerario(data);
+      }
+      setTimeout(dojo.hitch(this, function() {
+        this.busy(false);
+      }), 2000);
+    },
+    _addMarkers: function(geometry, response) {
+      for (var i = 0; i < geometry.paths.length; i++) {
+        var unPath = geometry.paths[i];
+        for (var j = 0; j < unPath.length; j++) {
+          let point = unPath[j];
+          let geometry = new esri.geometry.Point({
+            x: point[0],
+            y: point[1]
+          });
+          geometry.setSpatialReference(this.map.spatialReference);
+
+          var gr = new esri.Graphic(geometry, this.ESTILO_TRACKPOINT);
+          gr.owner = "Itinerario";
+          this.itinerarioActual.marcadores.push(gr);
+
+          if (this.getCheckMarcadores()) {
+            this.map.graphics.add(gr);
+          }
+        }
+      }
+    },
+    toggleMarcadores: function(check) {
+      if (check) {
+        this.showMarcadores();
+      } else {
+        this.limpiarMarcadores();
+      }
+    },
+    limpiarMarcadores: function() {
+      var map = this.map;
+      if (this.itinerarioActual != null) {
+        for (var i = 0; i < this.itinerarioActual.marcadores.length; i++) {
+          map.graphics.remove(this.itinerarioActual.marcadores[i]);
+        }
+      }
+
+    },
+    showMarcadores: function() {
+      var map = this.map;
+      if (this.itinerarioActual != null) {
+        for (var i = 0; i < this.itinerarioActual.marcadores.length; i++) {
+          map.graphics.add(this.itinerarioActual.marcadores[i]);
+        }
+      }
+
+    },
+    addMarkers: function(geometry) {
+
+      for (var i = 0; i < geometry.paths.length; i++) {
+        var unPath = geometry.paths[i];
+        for (var j = 0; j < unPath.length; j++) {
+          let point = unPath[j];
+          let geometry = new esri.geometry.Point({
+            x: point[0],
+            y: point[1]
+          });
+          geometry.setSpatialReference(this.map.spatialReference);
+
+          var gr = new esri.Graphic(geometry, this.ESTILO_TRACKPOINT);
+          gr.owner = "Itinerario";
+          this.itinerarioActual.marcadores.push(gr);
+
+          if (this.getCheckMarcadores()) {
+            this.map.graphics.add(gr);
+          }
+        }
+      }
+    },
+    limpiarItinerario: function() {
+
+      if (this.itinerarioActual != null) {
+        var map = this.map;
+
+        for (var i = 0; i < this.itinerarioActual.tracks.length; i++) {
+          map.graphics.remove(this.itinerarioActual.tracks[i]);
+        }
+
+        for (var i = 0; i < this.itinerarioActual.waypoints.length; i++) {
+          map.graphics.remove(this.itinerarioActual.waypoints[i]);
+        }
+
+        for (var i = 0; i < this.itinerarioActual.marcadores.length; i++) {
+          map.graphics.remove(this.itinerarioActual.marcadores[i]);
+        }
+
+        if (this.handleClick) {
+          this.handleClick.remove();
+          this.handleClick = null;
+          map.infoWindow.hide();
+        }
+
+      }
+
+      this.itinerarioActual = {
+        tracks: [],
+        waypoints: [],
+        marcadores: []
+      };
+
+    },
+    addTrack: function(feature) {
+      var infoTemplate = new esri.InfoTemplate("Ruta ", "Nombre: <b>${name}</b>");
+      var geometry = new esri.geometry.Polyline(feature.geometry);
+      geometry.setSpatialReference(this.map.spatialReference);
+
+      var gr = new esri.Graphic(geometry, this.ESTILO_TRACK, feature.attributes, infoTemplate);
+      gr.owner = "Itinerario";
+      gr.id = new Date().getTime();
+      this.map.graphics.add(gr);
+
+      this.itinerarioActual.tracks.push(gr);
+      return gr;
+    },
+    addTrackPoint: function(feature) {
+      var title = "Punto en ruta";
+      var estilo = null;
+      if (feature.attributes.clase == this.WAYPOINT_TYPE) {
+
+        estilo = this.ESTILO_WAYPOINT;
+
+        title = "Way point";
+      } else {
+        estilo = this.ESTILO_TRACKPOINT;
+      }
+      var name = "";
+      if (feature.attributes.name) {
+        name = "<br/>Nombre: <b>${name}</b><br/>";
+      } else if (feature.attributes.ele) {
+        name = "<br/>Nombre: <b>${ele}</b><br/>";
+      }
+
+      var infoTemplate = new esri.InfoTemplate(title, name + "X: <b>${xCoord}</b> <br/>Y: <b>${yCoord}</b>");
+      feature.attributes.xCoord = feature.geometry.x;
+      feature.attributes.yCoord = feature.geometry.y;
+
+      var geometry = new esri.geometry.Point(feature.geometry);
+      geometry.setSpatialReference(this.map.spatialReference);
+
+      var gr = new esri.Graphic(geometry, estilo, feature.attributes, infoTemplate);
+      gr.owner = "Itinerario";
+      if (feature.attributes.clase == this.WAYPOINT_TYPE ||
+        this.getCheckMarcadores()) {
+        this.map.graphics.add(gr);
+      }
+
+      if (feature.attributes.clase == this.WAYPOINT_TYPE) {
+        this.itinerarioActual.waypoints.push(gr);
+      } else {
+        this.itinerarioActual.marcadores.push(gr);
+      }
+      return gr;
+    },
+    dibujarItinerario: function(data) {
+
+      var extent = null;
+      var graphics = [];
+
+      if (JSON.stringify(data) != "{}") {
+        if (data.geometries) {
+          for (var i = 0; i < data.geometries.length; i++) {
+            let geometry = new esri.geometry.Polyline(data.geometries[i]);
+            geometry.setSpatialReference(this.map.spatialReference);
+
+            let gr = new esri.Graphic(geometry, this.ESTILO_TRACK);
+            gr.owner = "Itinerario";
+            graphics.push(gr);
+            this.map.graphics.add(gr);
+            this.itinerarioActual.tracks.push(gr);
+            this.addMarkers(gr.geometry);
+          }
+        } else {
+          for (var i = 0; i < data.features.length; i++) {
+            let unaFeature = data.features[i];
+            let gr = null;
+            if (unaFeature.attributes.clase == this.WAYPOINT_TYPE) {
+              gr = this.addTrackPoint(unaFeature);
+            } else if (unaFeature.attributes.clase == this.TRACKPOINT_TYPE) {
+              gr = this.addTrackPoint(unaFeature);
+            } else {
+              gr = this.addTrack(unaFeature);
+            }
+            gr.owner = "Itinerario";
+            graphics.push(gr);
+          }
+        }
+
+        extent = esri.graphicsExtent(graphics);
+
+        if (extent != null) {
+          extent.spatialReference = this.map.spatialReference;
+          this.map.setExtent(extent, true);
+          this.handleClick = this.map.graphics.on("click", dojo.hitch(this, this.onClick));
+        }
+
+      } else {
+        new Message({
+          titleLabel: "Aviso",
+          message: "No se ha encontrado itinerario."
+        });
+      }
+
+
+    },
+    onClick: function(evt) {
+      var g = evt.graphic;
+
+      if (g.infoTemplate != null) {
+        var map = this.map;
+        map.infoWindow.setContent(g.getContent());
+        map.infoWindow.setTitle(g.getTitle());
+        map.infoWindow.show(evt.screenPoint, map.getInfoWindowAnchor(evt.screenPoint));
+      }
+    },
+    uploadFile: function() {
+      var geometryService = this.config.urlGeometryService;
+      var proxyItinerario = this.config.proxyCors;
+
+      var map = this.map;
+
+      var url = proxyItinerario + "?method=uploadItinerario&geometryService=" + geometryService + "&wkid=" + map.spatialReference.wkid;
+      var file = document.getElementById('inputFileItinerario').files[0];
+      var fd = new FormData();
+
+      fd.append("file", file);
+
+      var xhr = this.getXMLHTTPObject();
+
+      xhr.upload.addEventListener("progress", dojo.hitch(this, this.uploadProgress), false);
+      xhr.addEventListener("load", dojo.hitch(this, this.onData), false);
+      xhr.addEventListener("error", dojo.hitch(this, this.uploadFailed), false);
+      xhr.addEventListener("abort", dojo.hitch(this, this.uploadCanceled), false);
+
+      xhr.open('POST', url, true);
+      xhr.send(fd);
+
+    },
+    getXMLHTTPObject: function() {
+      var xmlHttp = null;
+      try {
+        // Firefox, Opera 8.0+, Safari
+        xmlHttp = new XMLHttpRequest();
+      } catch (e) {
+        // Internet Explorer
+        try {
+          xmlHttp = new ActiveXObject("Msxml2.XMLHTTP");
+        } catch (e) {
+          xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+      }
+      return xmlHttp;
+    },
+    uploadProgress: function(evt) {
+      if (evt.lengthComputable) {
+        var percentComplete = Math.round(evt.loaded * 100 / evt.total);
+        document.getElementById('processItinerario').innerHTML = percentComplete.toString() + '%';
+      } else {
+        document.getElementById('processItinerario').innerHTML = 'unable to compute';
+      }
+    },
+    uploadFailed: function(evt) {
+      alert("Hubo un error al subir el fichero." + evt);
+    },
+    uploadCanceled: function(evt) {
+      alert("La subida ha sido cancelada o se cortó la conexiónn.");
+    }
+  });
+});

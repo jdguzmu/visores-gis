@@ -1,0 +1,1335 @@
+{
+  "showTitle": true,
+  "showBasemap": false,
+  "showLegend": true,
+  "expandAllLayersByDefault": false,
+  "contextMenu": {
+    "ZoomTo": true,
+    "Transparency": true,
+    "SetVisibilityRange": true,
+    "EnableOrDisablePopup": true,
+    "ControlLabels": true,
+    "MoveupOrMovedown": true,
+    "OpenAttributeTable": true,
+    "DescriptionOrShowItemDetailsOrDownload": true
+  },
+  "layerOptions": {
+    "Aprovechamientos_Hidroelectricos_6421": {
+      "display": false
+    },
+    "Aprovechamientos_Hidroelectricos_6421_0": {
+      "display": true
+    },
+    "Aprovechamientos_Hidroelectricos_6421_1": {
+      "display": true
+    },
+    "Aprovechamientos_Hidroelectricos_6421_2": {
+      "display": true
+    },
+    "Aprovechamientos_Hidroelectricos_6421_3": {
+      "display": true
+    },
+    "Aprovechamientos_Hidroelectricos_6421_4": {
+      "display": true
+    },
+    "ARPSIS_PRIMER_CICLO_4120": {
+      "display": false
+    },
+    "ARPSIS_PRIMER_CICLO_4120_0": {
+      "display": true
+    },
+    "ARPSIS_SEGUNDO_CICLO_4084": {
+      "display": false
+    },
+    "ARPSIS_SEGUNDO_CICLO_4084_0": {
+      "display": true
+    },
+    "ARPSIS_TERCER_CICLO_4217": {
+      "display": false
+    },
+    "ARPSIS_TERCER_CICLO_4217_0": {
+      "display": true
+    },
+    "Azudes_3108": {
+      "display": false
+    },
+    "Azudes_3108_0": {
+      "display": true
+    },
+    "CatastroCHMS_5253": {
+      "display": false
+    },
+    "CatastroCHMS_5253_0": {
+      "display": true
+    },
+    "Base_Cartografía_7676": {
+      "display": false
+    },
+    "Base_Cartografía_7676_0": {
+      "display": true
+    },
+    "Base_Cartografía_7676_1": {
+      "display": true
+    },
+    "Base_Cartografía_7676_2": {
+      "display": true
+    },
+    "Base_Cartografía_7676_3": {
+      "display": true
+    },
+    "Base_Cartografía_7676_4": {
+      "display": true
+    },
+    "Base_Cartografía_7676_5": {
+      "display": true
+    },
+    "Base_division_administrativa_7676": {
+      "display": false
+    },
+    "Base_division_administrativa_7676_0": {
+      "display": true
+    },
+    "Base_division_administrativa_7676_1": {
+      "display": true
+    },
+    "Base_division_administrativa_7676_2": {
+      "display": true
+    },
+    "Base_division_administrativa_7676_3": {
+      "display": true
+    },
+    "Base_division_administrativa_7676_4": {
+      "display": true
+    },
+    "Base_division_administrativa_7676_5": {
+      "display": true
+    },
+    "Base_division_administrativa_7676_6": {
+      "display": true
+    },
+    "Base_Planimetria_2697": {
+      "display": false
+    },
+    "Base_Planimetria_2697_0": {
+      "display": true
+    },
+    "Base_Planimetria_2697_1": {
+      "display": true
+    },
+    "Base_Planimetria_2697_2": {
+      "display": true
+    },
+    "Base_Planimetria_2697_3": {
+      "display": true
+    },
+    "Base_Vias_de_comunicacion_4097": {
+      "display": false
+    },
+    "Base_Vias_de_comunicacion_4097_0": {
+      "display": true
+    },
+    "Base_Vias_de_comunicacion_4097_1": {
+      "display": true
+    },
+    "Base_Vias_de_comunicacion_4097_2": {
+      "display": true
+    },
+    "Base_Vias_de_comunicacion_4097_3": {
+      "display": true
+    },
+    "Base_Vias_de_comunicacion_4097_4": {
+      "display": true
+    },
+    "Base_Vias_de_comunicacion_4097_5": {
+      "display": true
+    },
+    "Base_Vias_de_comunicacion_4097_6": {
+      "display": true
+    },
+    "Base_Vias_de_comunicacion_4097_7": {
+      "display": true
+    },
+    "Base_Vias_de_comunicacion_4097_8": {
+      "display": true
+    },
+    "Base_Vias_de_comunicacion_4097_9": {
+      "display": true
+    },
+    "Base_Vias_de_comunicacion_4097_10": {
+      "display": true
+    },
+    "Base_Vias_de_comunicacion_4097_11": {
+      "display": true
+    },
+    "Base_Vias_de_comunicacion_4097_12": {
+      "display": true
+    },
+    "Base_Vias_de_comunicacion_4097_13": {
+      "display": true
+    },
+    "Base_Vias_de_comunicacion_4097_14": {
+      "display": true
+    },
+    "Base_Vias_de_comunicacion_4097_15": {
+      "display": true
+    },
+    "Calculo_de_cuencas_vertientes_4112": {
+      "display": false
+    },
+    "Calculo_de_cuencas_vertientes_4112_0": {
+      "display": true
+    },
+    "00_DMA_Masas_Subt_5275": {
+      "display": false
+    },
+    "00_DMA_Masas_Subt_5275_0": {
+      "display": true
+    },
+    "00_DMA_Masas_Sup_8805": {
+      "display": false
+    },
+    "00_DMA_Masas_Sup_8805_0": {
+      "display": true
+    },
+    "00_DMA_Masas_Sup_8805_1": {
+      "display": true
+    },
+    "00_DMA_Masas_Sup_8805_2": {
+      "display": true
+    },
+    "00_DMA_Masas_Sup_8805_3": {
+      "display": true
+    },
+    "00_DMA_Masas_Sup_8805_4": {
+      "display": true
+    },
+    "00_DMA_Masas_Sup_8805_5": {
+      "display": true
+    },
+    "DPH_deslindado_4295": {
+      "display": false
+    },
+    "DPH_deslindado_4295_0": {
+      "display": true
+    },
+    "DPH_Cartográfico_2025_9345": {
+      "display": false
+    },
+    "DPH_Cartográfico_2025_9345_0": {
+      "display": true
+    },
+    "DPH_Cartográfico_2025_9345_1": {
+      "display": true
+    },
+    "DPH_Linde_Fase_II_5205": {
+      "display": false
+    },
+    "DPH_Linde_Fase_II_5205_0": {
+      "display": true
+    },
+    "DPH_Linde_Fase_II_5205_1": {
+      "display": true
+    },
+    "DPH_Linde_Fase_II_5205_2": {
+      "display": true
+    },
+    "Dominio_Publico_Maritimo_Terrestre_4997": {
+      "display": false
+    },
+    "Dominio_Publico_Maritimo_Terrestre_4997_0": {
+      "display": true
+    },
+    "00_ESTADO_OMA_SUP_7108": {
+      "display": false
+    },
+    "00_ESTADO_OMA_SUP_7108_0": {
+      "display": true
+    },
+    "00_ESTADO_OMA_SUP_7108_1": {
+      "display": true
+    },
+    "00_ESTADO_OMA_SUP_7108_2": {
+      "display": true
+    },
+    "00_ESTADO_OMA_SUP_7108_3": {
+      "display": true
+    },
+    "00_ESTADO_OMA_SUP_7108_4": {
+      "display": true
+    },
+    "00_ESTADO_OMA_SUB_6495": {
+      "display": false
+    },
+    "00_ESTADO_OMA_SUB_6495_0": {
+      "display": true
+    },
+    "EVOLUCION_ESTADO_MASp_2016_2021_5017": {
+      "display": false
+    },
+    "EVOLUCION_ESTADO_MASp_2016_2021_5017_0": {
+      "display": true
+    },
+    "EVOLUCION_ESTADO_MASp_2016_2021_5017_1": {
+      "display": true
+    },
+    "EVOLUCION_ESTADO_MASp_2016_2021_5017_2": {
+      "display": true
+    },
+    "EVOLUCION_ESTADO_MASp_2016_2021_5017_3": {
+      "display": true
+    },
+    "EVOLUCION_ESTADO_MASp_2016_2021_5017_4": {
+      "display": true
+    },
+    "EVOLUCION_ESTADO_MASp_2016_2021_5017_5": {
+      "display": true
+    },
+    "EVOLUCION_ESTADO_MASp_2016_2021_5017_6": {
+      "display": true
+    },
+    "EVOLUCION_ESTADO_MASbt_2016_2021_9118": {
+      "display": false
+    },
+    "EVOLUCION_ESTADO_MASbt_2016_2021_9118_0": {
+      "display": true
+    },
+    "EXPEDIENTES_131": {
+      "display": false
+    },
+    "EXPEDIENTES_131_0": {
+      "display": true
+    },
+    "EXPEDIENTES_131_1": {
+      "display": true
+    },
+    "EXPEDIENTES_131_2": {
+      "display": true
+    },
+    "EXPEDIENTES_131_3": {
+      "display": true
+    },
+    "EXPEDIENTES_131_4": {
+      "display": true
+    },
+    "EXPEDIENTES_131_5": {
+      "display": true
+    },
+    "EXPEDIENTES_131_6": {
+      "display": true
+    },
+    "Franjas_de_protección_contra_incendios_forestales_3528": {
+      "display": false
+    },
+    "Franjas_de_protección_contra_incendios_forestales_3528_0": {
+      "display": true
+    },
+    "Incidencias_en_la_Calidad_de_las_Aguas_Subterraneas_5326": {
+      "display": false
+    },
+    "Incidencias_en_la_Calidad_de_las_Aguas_Subterraneas_5326_0": {
+      "display": true
+    },
+    "Incidencias_en_la_Calidad_de_las_Aguas_Subterraneas_5326_1": {
+      "display": true
+    },
+    "Incidencias_en_la_Calidad_de_las_Aguas_Subterraneas_5326_2": {
+      "display": true
+    },
+    "Incidencias_en_la_Calidad_de_las_Aguas_Subterraneas_5326_3": {
+      "display": true
+    },
+    "Incidencias_en_la_Calidad_de_las_Aguas_Subterraneas_5326_4": {
+      "display": true
+    },
+    "Incidencias_en_la_Calidad_de_las_Aguas_Subterraneas_5326_5": {
+      "display": true
+    },
+    "Incidencias_en_la_Calidad_de_las_Aguas_Subterraneas_5326_6": {
+      "display": true
+    },
+    "Incidencias_en_la_Calidad_de_las_Aguas_Subterraneas_5326_7": {
+      "display": true
+    },
+    "Incidencias_en_la_Calidad_de_las_Aguas_Superficiales_8803": {
+      "display": false
+    },
+    "Incidencias_en_la_Calidad_de_las_Aguas_Superficiales_8803_2": {
+      "display": true
+    },
+    "Incidencias_en_la_Calidad_de_las_Aguas_Superficiales_8803_3": {
+      "display": true
+    },
+    "Incidencias_en_la_Calidad_de_las_Aguas_Superficiales_8803_4": {
+      "display": true
+    },
+    "Incidencias_en_la_Calidad_de_las_Aguas_Superficiales_8803_5": {
+      "display": true
+    },
+    "Inventario_de_tramos_con_estudio_2643": {
+      "display": false
+    },
+    "Inventario_de_tramos_con_estudio_2643_0": {
+      "display": true
+    },
+    "InventarioPatrimonial_2204": {
+      "display": false
+    },
+    "InventarioPatrimonial_2204_0": {
+      "display": true
+    },
+    "Mapa_Caudales_Maximos_9025": {
+      "display": false
+    },
+    "Mapa_Caudales_Maximos_9025_0": {
+      "display": true
+    },
+    "Mapa_de_Peligrosidad_Calados_2025_8480": {
+      "display": false
+    },
+    "Mapa_de_Peligrosidad_Calados_2025_8480_0": {
+      "display": true
+    },
+    "Mapa_de_Peligrosidad_Calados_2025_8480_1": {
+      "display": true
+    },
+    "Mapa_de_Peligrosidad_Calados_2025_8480_2": {
+      "display": true
+    },
+    "Mapa_de_Peligrosidad_Calados_Intervalos_2025_6079": {
+      "display": false
+    },
+    "Mapa_de_Peligrosidad_Calados_Intervalos_2025_6079_0": {
+      "display": true
+    },
+    "Mapa_de_Peligrosidad_Calados_Intervalos_2025_6079_1": {
+      "display": true
+    },
+    "Mapa_de_Peligrosidad_Calados_Intervalos_2025_6079_2": {
+      "display": true
+    },
+    "Zona_de_Flujo_Preferente_2025_4113": {
+      "display": false
+    },
+    "Zona_de_Flujo_Preferente_2025_4113_0": {
+      "display": true
+    },
+    "Mapas_Peligrosidad_Zonas_Inundables_2025_9813": {
+      "display": false
+    },
+    "Mapas_Peligrosidad_Zonas_Inundables_2025_9813_0": {
+      "display": true
+    },
+    "Mapas_Peligrosidad_Zonas_Inundables_2025_9813_1": {
+      "display": true
+    },
+    "Mapas_Peligrosidad_Zonas_Inundables_2025_9813_2": {
+      "display": true
+    },
+    "Mapas_de_Riesgo_por_Inundación_2025_5016": {
+      "display": false
+    },
+    "Mapas_de_Riesgo_por_Inundación_2025_5016_0": {
+      "display": true
+    },
+    "Mapas_de_Riesgo_por_Inundación_2025_5016_1": {
+      "display": true
+    },
+    "Mapas_de_Riesgo_por_Inundación_2025_5016_2": {
+      "display": true
+    },
+    "Mapas_de_Riesgo_por_Inundación_2025_5016_3": {
+      "display": true
+    },
+    "Mapas_de_Riesgo_por_Inundación_2025_5016_4": {
+      "display": true
+    },
+    "Mapas_de_Riesgo_por_Inundación_2025_5016_5": {
+      "display": true
+    },
+    "Mapas_de_Riesgo_por_Inundación_2025_5016_6": {
+      "display": true
+    },
+    "Mapas_de_Riesgo_por_Inundación_2025_5016_7": {
+      "display": true
+    },
+    "Mapas_de_Riesgo_por_Inundación_2025_5016_8": {
+      "display": true
+    },
+    "Mapas_de_Riesgo_por_Inundación_2025_5016_9": {
+      "display": true
+    },
+    "Mapas_de_Riesgo_por_Inundación_2025_5016_10": {
+      "display": true
+    },
+    "Mapas_de_Riesgo_por_Inundación_2025_5016_11": {
+      "display": true
+    },
+    "Mapas_de_Riesgo_por_Inundación_2025_5016_12": {
+      "display": true
+    },
+    "Mapas_de_Riesgo_por_Inundación_2025_5016_13": {
+      "display": true
+    },
+    "Mapas_de_Riesgo_por_Inundación_2025_5016_14": {
+      "display": true
+    },
+    "Mapas_de_Riesgo_por_Inundación_2025_5016_15": {
+      "display": true
+    },
+    "NUEVAS_MASAS_CICLO_2021_2027v4_516": {
+      "display": false
+    },
+    "NUEVAS_MASAS_CICLO_2021_2027v4_516_0": {
+      "display": true
+    },
+    "NUEVAS_MASAS_CICLO_2021_2027v4_516_1": {
+      "display": true
+    },
+    "NUEVAS_MASAS_CICLO_2021_2027v4_516_2": {
+      "display": true
+    },
+    "NUEVAS_MASAS_CICLO_2021_2027v4_516_3": {
+      "display": true
+    },
+    "NUEVAS_MASAS_CICLO_2021_2027v4_516_4": {
+      "display": true
+    },
+    "NUEVAS_MASAS_CICLO_2021_2027v4_516_5": {
+      "display": true
+    },
+    "NUEVAS_MASAS_CICLO_2021_2027v4_516_6": {
+      "display": true
+    },
+    "NUEVAS_MASAS_CICLO_2021_2027v4_516_7": {
+      "display": true
+    },
+    "NUEVAS_MASAS_CICLO_2021_2027v4_516_8": {
+      "display": true
+    },
+    "Obras_Direccion_Tecnica_Saneamiento_Louro_4437": {
+      "display": false
+    },
+    "Obras_Direccion_Tecnica_Saneamiento_Louro_4437_0": {
+      "display": true
+    },
+    "Obras_Direccion_Tecnica_Saneamiento_Louro_4437_1": {
+      "display": true
+    },
+    "Obras_Direccion_Tecnica_Saneamiento_Louro_4437_2": {
+      "display": true
+    },
+    "Obras_Direccion_Tecnica_Saneamiento_Louro_4437_3": {
+      "display": true
+    },
+    "Obras_Direccion_Tecnica_Saneamiento_Louro_4437_4": {
+      "display": true
+    },
+    "Obras_Direccion_Tecnica_Saneamiento_Louro_4437_5": {
+      "display": true
+    },
+    "Obras_Direccion_Tecnica_Saneamiento_Louro_4437_6": {
+      "display": true
+    },
+    "Obras_Direccion_Tecnica_Saneamiento_Louro_4437_7": {
+      "display": true
+    },
+    "Obras_Direccion_Tecnica_Saneamiento_Louro_4437_8": {
+      "display": true
+    },
+    "00_Otras_Infraestructuras_1315": {
+      "display": false
+    },
+    "00_Otras_Infraestructuras_1315_0": {
+      "display": true
+    },
+    "00_Otras_Infraestructuras_1315_1": {
+      "display": true
+    },
+    "00_Otras_Infraestructuras_1315_2": {
+      "display": true
+    },
+    "00_Otras_Infraestructuras_1315_3": {
+      "display": true
+    },
+    "00_Otras_Infraestructuras_1315_4": {
+      "display": true
+    },
+    "00_Otras_Infraestructuras_1315_5": {
+      "display": true
+    },
+    "00_Otras_Infraestructuras_1315_6": {
+      "display": true
+    },
+    "00_Otras_Infraestructuras_1315_7": {
+      "display": true
+    },
+    "00_Otras_Infraestructuras_1315_8": {
+      "display": true
+    },
+    "00_Otras_Infraestructuras_1315_9": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297": {
+      "display": false
+    },
+    "PRESIONES_22_27_1297_0": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_1": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_2": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_3": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_4": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_5": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_6": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_7": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_8": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_9": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_10": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_11": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_12": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_13": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_14": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_15": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_16": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_17": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_18": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_19": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_20": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_21": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_22": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_23": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_24": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_25": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_26": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_27": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_28": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_29": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_30": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_31": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_32": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_33": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_34": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_35": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_36": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_37": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_38": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_39": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_40": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_41": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_42": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_43": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_44": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_45": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_46": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_47": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_48": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_49": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_50": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_51": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_52": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_53": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_54": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_55": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_56": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_57": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_58": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_59": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_60": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_61": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_62": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_63": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_64": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_65": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_66": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_67": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_68": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_69": {
+      "display": true
+    },
+    "PRESIONES_22_27_1297_70": {
+      "display": true
+    },
+    "Red_de_control_de_nitratos_2016_2019_5247": {
+      "display": false
+    },
+    "Red_de_control_de_nitratos_2016_2019_5247_0": {
+      "display": true
+    },
+    "Red_de_control_de_nitratos_2016_2019_5247_1": {
+      "display": true
+    },
+    "RED_HIDR_BASICA_2022_2027_7287": {
+      "display": false
+    },
+    "RED_HIDR_BASICA_2022_2027_7287_0": {
+      "display": true
+    },
+    "RED_HIDR_BASICA_2022_2027_7287_1": {
+      "display": true
+    },
+    "00_REDES_CONTROL_AUTOMATICA_259": {
+      "display": false
+    },
+    "00_REDES_CONTROL_AUTOMATICA_259_0": {
+      "display": true
+    },
+    "00_REDES_CONTROL_AUTOMATICA_259_1": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUBT_3789": {
+      "display": false
+    },
+    "00_REDES_DE_CONTROL_MASUBT_3789_0": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUBT_3789_1": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUBT_3789_2": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUBT_3789_3": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUBT_3789_4": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUBT_3789_5": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUBT_3789_6": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUBT_3789_7": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271": {
+      "display": false
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_0": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_1": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_2": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_3": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_4": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_5": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_6": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_7": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_8": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_9": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_10": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_11": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_12": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_13": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_14": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_15": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_16": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_17": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_18": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_19": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_20": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_21": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_22": {
+      "display": true
+    },
+    "00_REDES_DE_CONTROL_MASUP_5271_23": {
+      "display": true
+    },
+    "00_UNIDADES_GESTION_9557": {
+      "display": false
+    },
+    "00_UNIDADES_GESTION_9557_0": {
+      "display": true
+    },
+    "00_UNIDADES_GESTION_9557_1": {
+      "display": true
+    },
+    "00_UNIDADES_GESTION_9557_2": {
+      "display": true
+    },
+    "Hidrografia_4354": {
+      "display": false
+    },
+    "Hidrografia_4354_0": {
+      "display": true
+    },
+    "Hidrografia_4354_1": {
+      "display": true
+    },
+    "Hidrografia_4354_2": {
+      "display": true
+    },
+    "Hidrografia_4354_3": {
+      "display": true
+    },
+    "Hidrografia_4354_4": {
+      "display": true
+    },
+    "Hidrografia_4354_5": {
+      "display": true
+    },
+    "Hidrografia_4354_6": {
+      "display": true
+    },
+    "Hidrografia_4354_7": {
+      "display": true
+    },
+    "Hidrografia_4354_8": {
+      "display": true
+    },
+    "Hidrografia_4354_9": {
+      "display": true
+    },
+    "Hidrografia_4354_10": {
+      "display": true
+    },
+    "Hidrografia_4354_11": {
+      "display": true
+    },
+    "ZONAS_CAPTACION_ZONA_SENSIBLE_2484": {
+      "display": false
+    },
+    "ZONAS_CAPTACION_ZONA_SENSIBLE_2484_0": {
+      "display": true
+    },
+    "Zonas_Hidrologicamente_Favorables_9014": {
+      "display": false
+    },
+    "Zonas_Hidrologicamente_Favorables_9014_0": {
+      "display": true
+    },
+    "Zonas_Hidrologicamente_Favorables_9014_1": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249": {
+      "display": false
+    },
+    "01_Zonas_Protegidas_9249_0": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_1": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_2": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_3": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_4": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_5": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_6": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_7": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_8": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_9": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_10": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_11": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_12": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_13": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_14": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_15": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_16": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_17": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_18": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_19": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_20": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_21": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_22": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_23": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_24": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_25": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_26": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_27": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_28": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_29": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_30": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_31": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_32": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_33": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_34": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_35": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_36": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_37": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_38": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_39": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_40": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_41": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_42": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_43": {
+      "display": true
+    },
+    "01_Zonas_Protegidas_9249_44": {
+      "display": true
+    },
+    "wms_9756": {
+      "display": true
+    },
+    "wms_9756_LIMITES": {
+      "display": true
+    },
+    "wms_9756_EJES": {
+      "display": true
+    },
+    "wms_9756_TXTMASA": {
+      "display": true
+    },
+    "wms_9756_MASA": {
+      "display": true
+    },
+    "wms_9756_TXTPARCELA": {
+      "display": true
+    },
+    "wms_9756_PARCELA": {
+      "display": true
+    },
+    "wms_9756_TXTSUBPARCE": {
+      "display": true
+    },
+    "wms_9756_SUBPARCE": {
+      "display": true
+    },
+    "wms_9756_TXTCONSTRU": {
+      "display": true
+    },
+    "wms_9756_CONSTRU": {
+      "display": true
+    },
+    "wms_9756_Catastro": {
+      "display": true
+    },
+    "Parroquias_6356": {
+      "display": true
+    },
+    "Parroquias_6356_0": {
+      "display": true
+    },
+    "wms_6836": {
+      "display": true
+    },
+    "wms_6836_fondo": {
+      "display": true
+    },
+    "wms_6836_mtn_rasterizado": {
+      "display": true
+    },
+    "MDT_02_CHMS_NoCh_6972": {
+      "display": false
+    },
+    "MDT_02_CHMS_NoCh_6972_0": {
+      "display": true
+    },
+    "wms_2669": {
+      "display": true
+    },
+    "wms_2669_OI.OrthoimageCoverage": {
+      "display": true
+    },
+    "wms_6214": {
+      "display": true
+    },
+    "wms_6214_AMS_1956-1957": {
+      "display": true
+    },
+    "VooInterministerial_1980_1986_3614": {
+      "display": true
+    },
+    "wms_964": {
+      "display": true
+    },
+    "wms_964_Interministerial_1973-1986": {
+      "display": true
+    },
+    "wms_5260": {
+      "display": true
+    },
+    "wms_5260_SIGPAC": {
+      "display": true
+    },
+    "wms_3566": {
+      "display": true
+    },
+    "wms_3566_PNOA2004": {
+      "display": true
+    },
+    "wms_3566_PNOA2005": {
+      "display": true
+    },
+    "wms_3566_PNOA2006": {
+      "display": true
+    },
+    "wms_3566_PNOA2007": {
+      "display": true
+    },
+    "wms_3566_PNOA2008": {
+      "display": true
+    },
+    "wms_1558": {
+      "display": true
+    },
+    "wms_1558_PNOA2008": {
+      "display": true
+    },
+    "wms_1558_PNOA2009": {
+      "display": true
+    },
+    "wms_5896": {
+      "display": true
+    },
+    "wms_5896_PNOA2010": {
+      "display": true
+    },
+    "wms_5896_PNOA2011": {
+      "display": true
+    },
+    "wms_4541": {
+      "display": true
+    },
+    "wms_4541_PNOA2014": {
+      "display": true
+    },
+    "wms_7742": {
+      "display": true
+    },
+    "wms_7742_PNOA2017": {
+      "display": true
+    },
+    "wms_6672": {
+      "display": true
+    },
+    "wms_6672_PNOA2020": {
+      "display": true
+    },
+    "wms_7686": {
+      "display": true
+    },
+    "wms_7686_catastrones": {
+      "display": true
+    },
+    "wms_7686_MTN50": {
+      "display": true
+    },
+    "wms_7686_MTN25": {
+      "display": true
+    },
+    "wms_7686_Enlace": {
+      "display": true
+    },
+    "wms_7686_EnlaceMTN25": {
+      "display": true
+    },
+    "wms_1265": {
+      "display": true
+    },
+    "wms_1265_Minutas": {
+      "display": true
+    },
+    "Pendentes_Mdt1_PNOA15_16_481": {
+      "display": true
+    },
+    "Pendentes_Mdt1_PNOA15_16_481_3": {
+      "display": true
+    },
+    "Pendentes_Mdt1_PNOA15_16_481_4": {
+      "display": true
+    },
+    "Pendentes_Mdt1_PNOA15_16_481_7": {
+      "display": true
+    },
+    "Pendentes_Mdt1_PNOA15_16_481_8": {
+      "display": true
+    },
+    "Pendentes_Mdt1_PNOA15_16_481_11": {
+      "display": true
+    },
+    "Pendentes_Mdt1_PNOA09_10_1997": {
+      "display": true
+    },
+    "Pendentes_Mdt1_PNOA09_10_1997_3": {
+      "display": true
+    },
+    "Pendentes_Mdt1_PNOA09_10_1997_4": {
+      "display": true
+    },
+    "Pendentes_Mdt1_PNOA09_10_1997_7": {
+      "display": true
+    },
+    "Pendentes_Mdt1_PNOA09_10_1997_8": {
+      "display": true
+    },
+    "Pendentes_Mdt1_PNOA09_10_1997_11": {
+      "display": true
+    },
+    "wms_8585": {
+      "display": true
+    },
+    "wms_8585_mdt_cyl_2008_2011_som": {
+      "display": true
+    },
+    "wms_8585_mdt_cyl_2008_2011_pen": {
+      "display": true
+    },
+    "wms_8585_mdt_cyl_2008_2011_ori": {
+      "display": true
+    },
+    "wms_8585_mdt_cyl_2008_2011": {
+      "display": true
+    }
+  }
+}

@@ -1,0 +1,196 @@
+///////////////////////////////////////////////////////////////////////////
+// Copyright © 2019 - 2021 Confederación Hidrográfica del Segura, O.A.. All Rights Reserved.
+//
+// Licensed under the Apache License Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+///////////////////////////////////////////////////////////////////////////
+define([
+  'dojo/_base/declare',
+  'dojo/_base/lang',
+  'dojo/dom-class',
+  'dojo/on',
+  'dojo/topic',
+  './GestorPeticiones',
+  './Peticion',
+  'dijit/_WidgetsInTemplateMixin',
+  'esri/toolbars/navigation',
+  'jimu/BaseWidget',
+  'jimu/WidgetManager',
+  'jimu/PanelManager'
+], function(
+  declare,
+  lang,
+  domClass,
+  on,
+  topic,
+  GestorPeticiones,
+  Peticion,
+  _WidgetsInTemplateMixin,
+  Navigation,
+  BaseWidget,
+  WidgetManager,
+  PanelManager
+) {
+  var clazz = declare([BaseWidget, _WidgetsInTemplateMixin], {
+    baseClass: 'jimu-widget-info-castastro',
+    activo: false,
+
+    postCreate: function() {
+      var id = this.id;
+      dojo.create(
+        "style", {
+          innerHTML: "div.jimu-panel[id*='" + id + "'] {opacity: 0 !important; left: -9999px !important;}"
+        },
+        dojo.body()
+      );
+    },
+
+    onOpen: function() {
+      this.inherited(arguments);
+      var panel = this.getPanel();
+      panel.position.left = -9999;
+      panel.position.top = -9999;
+      panel._originalBox = {
+        l: panel.position.left || -9999,
+        t: panel.position.top || -9999
+      };
+      panel.setPosition(panel.position);
+      panel.panelManager.normalizePanel(panel);
+
+      if (!this.activo) {
+        this.activo = this.map.on("click", dojo.hitch(this, this.onClick));
+        var cursor = this.getCursor();
+        this.map.setMapCursor(cursor);
+        this.widgetManager.activateWidget(this);
+      }
+    },
+
+    onDeActive: function() {
+      this.onClose();
+    },
+
+    onClose: function() {
+      if (this.activo != null) {
+        this.activo.remove();
+        this.activo = null;
+        this.map.setMapCursor("default");
+        this.map.infoWindow.hide();
+        PanelManager.getInstance().closePanel(this.id + "_panel");
+      }
+    },
+    getCursor: function() {
+      var cursor = "";
+      var cursorUrl = this.config.folderUrl + "cursor_catastro.png";
+      cursor = "url('" + cursorUrl + "'),auto";
+      return cursor;
+    },
+    onClick: function(evt) {
+      if (this.activo) {
+        this.currentScreenPoint = evt.screenPoint;
+        this.currentPoint = evt.mapPoint;
+        this.getReferenciaCatastral(evt.mapPoint);
+        this.onActive();
+      }
+
+    },
+    getReferenciaCatastral: function(point) {
+      var BBOX = point.x + "," + point.y + "," + (point.x + 1) + "," + (point.y + 1);
+      var map = this.map;
+
+      this.urlServicio = 'http://ovc.catastro.meh.es/Cartografia/WMS/ServidorWMS.aspx';
+
+      if (window.appInfo.isRunInMobile) {
+        map.infoWindow.setTitle("Cargando...");
+      } else {
+        map.infoWindow.setContent("Cargando...");
+        var titulo = "Referencia catastral de la parcela:";
+        map.infoWindow.setTitle(titulo);
+      }
+      map.infoWindow.show(this.currentPoint, map.getInfoWindowAnchor(this.currentScreenPoint));
+
+      var urlPeticion = this.urlServicio + "?request=GetFeatureInfo&service=WMS&BBOX=" + BBOX + "&WIDTH=100&HEIGHT=100&SRS=EPSG:25829";
+      var gPeticion = GestorPeticiones();
+      var peticion = Peticion();
+      peticion.ambito = this;
+      peticion.params = {};
+      peticion.url = this.config.proxyCors + urlPeticion;
+      peticion.onSuccess = this.onReferenciaCatastralResponse;
+      peticion.onFailure = this.onReferenciaCatastralResponse;
+
+      peticion.type = 'get';
+      peticion.handleAs = "text";
+      gPeticion.lanzarPeticion(peticion, false);
+
+    },
+    onReferenciaCatastralResponse: function(response) {
+      var parser = null;
+      var map = this.map;
+      var xmlDoc = null;
+      if ("ActiveXObject" in window) // Internet Explorer
+      {
+        xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
+        xmlDoc.async = false;
+        xmlDoc.loadXML(response);
+      } else {
+        parser = new DOMParser();
+        xmlDoc = parser.parseFromString(response, "text/xml");
+
+      }
+      var inicioBody = response.indexOf("<body>");
+      var finBody = response.indexOf("</body>") + "</body>".length;
+      var body = response.substring(inicioBody, finBody);
+      body = body.replace("<a ", "<a target='_blank' style='color:blue' ");
+
+      //var infoWindow = esri.dijit.InfoWindow();
+      map.infoWindow.setContent(body);
+
+      var titulo = "Referencia catastral de la parcela:";
+      if (window.appInfo.isRunInMobile) {
+        inicioBody = response.indexOf("<a");
+        finBody = response.indexOf("</a>") + "</a>".length;
+        body = response.substring(inicioBody, finBody);
+        body = body.replace("color:blue", "color:white");
+        map.infoWindow.setTitle(body);
+      } else {
+        map.infoWindow.setTitle(titulo);
+      }
+
+      //infoWindow.move(this.currentPoint);
+      map.infoWindow.show(this.currentPoint, map.getInfoWindowAnchor(this.currentScreenPoint));
+    },
+
+      onReceiveData: function(name, widgetId, data) {
+
+		if (name=="CHS_PantallaInicio" && data.target=="CHS_InfoCatastro"){
+				//
+				var pointMC = data.elementosImportar.currentLocation;
+				this.currentScreenPoint={
+					x:data.elementosImportar.displayX,
+					y:data.elementosImportar.displayY
+				}
+				this.currentPoint=this.currentScreenPoint;
+			
+				this.getReferenciaCatastral(pointMC);
+				
+				//Si descomentamos cerrará el widget una vez que se ha ejecutado.
+				/*this.onActive();
+				
+				this.activo.remove();
+				this.activo = null;
+				this.map.setMapCursor("default");
+				PanelManager.getInstance().closePanel(this.id + "_panel");	*/	
+			}	
+		
+      },
+  });
+  return clazz;
+});

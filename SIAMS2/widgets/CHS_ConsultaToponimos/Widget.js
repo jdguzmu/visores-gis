@@ -1,0 +1,1086 @@
+﻿///////////////////////////////////////////////////////////////////////////
+// Copyright © 2019 - 2021 Confederación Hidrográfica del Segura, O.A.. All Rights Reserved.
+//
+// Licensed under the Apache License Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+///////////////////////////////////////////////////////////////////////////
+define([
+	'dojo/_base/declare',
+	'dijit/_WidgetsInTemplateMixin',
+	"dojo/Deferred",
+	'jimu/BaseWidget',
+	'dijit/form/TextBox',
+	'dijit/form/Button',
+	'dojo/query',
+	'./ServicioNomenclator',
+	'./ServicioCartociudad',
+	'./SistemaReferencia',
+	'jimu/loaderplugins/jquery-loader!https://code.jquery.com/jquery-1.7.min.js',
+	'./ResultList',
+	'./GestorPeticiones',
+	'./Peticion',
+	'dojo/_base/sniff',
+	'./Highlight',
+	'./InfoPopup',
+	'dojo/query',
+	'dojo/dom-style'
+	],
+	function(
+		declare,
+		_WidgetsInTemplateMixin,
+		Deferred,
+		BaseWidget,
+		TextBox,
+		Button,
+		query,
+		ServicioNomenclator,
+		ServicioCartociudad,
+		SistemaReferencia,
+		$,
+		ResultList,
+		GestorPeticiones,
+		Peticion,
+		has,
+		Highlight,
+		InfoPopup,
+		dojoQuery,
+		domStyle
+		){
+			//To create a widget, you need to derive from BaseWidget.
+			return declare([BaseWidget, _WidgetsInTemplateMixin], {
+			  // Custom widget code goes here
+
+			  baseClass: 'jimu-widget-customwidget',
+
+				//this property is set by the framework when widget is loaded.
+				name: 'CHS_ConsultaToponimos',
+				posicionActual: null,
+				serviciosNomenclator: null,
+				serviciosCartociudad: null,
+				paramsSeleccion: null,
+				puntoZoom: null,
+				handleZoom: null,
+				infoPopup: null,
+				highlight: null,
+				pinnedInfoPopups: [],
+
+				srsPeticion: "EPSG:900913",
+
+				startup: function() {
+
+					// para servicios OGC el wkid 102100 no existe.
+					//	por defecto se usa 900913 (WebMercator)
+					//	en caso de que el wkid del mapa sea distinto a 102100, se modifica para recuperar el del mapa
+					if (this.map.spatialReference.wkid != 102100) {
+						this.srsPeticion = "EPSG:" + this.map.spatialReference.wkid;
+					}
+
+					this.inherited(arguments);
+
+					$.getScript(this.folderUrl + "/OpenLayers.js", dojo.hitch(this, function( data, textStatus, jqxhr ) {
+
+						$.getScript(this.folderUrl + "/GetFeatureIdeSigcBA.js", dojo.hitch(this, function( data, textStatus, jqxhr ) {
+							this.iniciarForm();
+							this.setEventos();
+
+							this.serviciosNomenclator = new ServicioNomenclator();
+							this.serviciosCartociudad = new ServicioCartociudad();
+						}));
+
+					}));
+
+					if (this.highlight === null) {
+
+						var theDiv = document.createElement("div");
+
+						if(this.map) {
+							var mapDiv = dojo.byId(this.map.id);
+							mapDiv.appendChild(theDiv);
+							this.highlight = new Highlight({map: this.map}, theDiv);
+						}
+					}
+
+				},				
+				iniciarForm: function(){
+					// mensaje
+					var info = dojo.query(".toponimosModoBusqueda", this.domNode)[0];
+					info.innerHTML = this.config.modoBusqueda;
+
+					this.sistemaReferencia = new SistemaReferencia();
+					this.posicionActual = -1;
+
+					if(typeof(dojoQuery(".dojoxResizeHandle.dojoxResizeNW")[0]) != "undefined"){
+						domStyle.set(dojoQuery(".dojoxResizeHandle.dojoxResizeNW")[0], 'display', 'none');
+					}
+
+					var panelRes = document.getElementsByClassName("resultsPane")[0];
+					if (panelRes.parentNode.parentNode.clientHeight > 550){
+						panelRes.setAttribute("style","height:"+ panelRes.parentNode.parentNode.clientHeight * 0.8 +"px");
+					}
+
+				},
+
+				setEventos: function(){
+
+					dojo.subscribe("widgetHighlightEvent", this, "onWidgetHighlight");
+
+					var miBoton = dojo.byId("btnBuscarToponimos");
+					dojo.connect(miBoton, "onclick", dojo.hitch(this, this.iniciarBusqueda));
+
+					dijit.byId("resultsConsGeom").on("click", dojo.hitch(this, this.onClickResults));
+
+				},
+
+				onWidgetHighlight: function(/*esri.Graphic*/ g, /*esri.geometry.Point*/ location, /*boolean*/ forceNav, /*Number*/ zoomScale) {// g is the graphic in the map that the widget wants highlighted and infoboxed
+
+					if (g && location) {
+
+						try {
+
+							if (forceNav) {
+								var zoomToExt = null;
+								if (zoomScale) {
+									if (dojo.isString(zoomScale)) {
+										zoomScale = parseInt(zoomScale);
+									}
+
+									if (zoomScale > 1) {
+										var currentScale = this.CalculateScale(this.map);
+										// expand/shrink the scale to match zoomScale
+										if (zoomScale / currentScale > 2 || zoomScale / currentScale < 0.5) {
+											zoomToExt = this.map.extent.expand(zoomScale / currentScale);
+											zoomToExt = zoomToExt.centerAt(location);
+										}
+									}
+								}
+
+								if (!zoomToExt) {
+									var ext = this.map.extent.expand(0.5);
+									if (!ext.contains(location)) {
+										zoomToExt = this.map.extent;
+										zoomToExt = zoomToExt.centerAt(location);
+									}
+								}
+
+								if (zoomToExt) {
+									this.map.setExtent(zoomToExt);
+								}
+							} else {
+								if (!this.map.extent.contains(location)) {
+									return;
+								}
+							}
+							this.map.setZoom(this.config.zoomLevel);
+
+							if(!this.highlight) {
+								this.startup();
+							}
+
+							this.highlight.setCoords(location);
+							this.highlight.setMode("flashing");
+
+							// Show InfoPopup
+							if (this.infoPopup === null) {
+								var theDiv = document.createElement("div");
+								var mapDiv = dojo.byId(this.map.id);
+								mapDiv.appendChild(theDiv);
+								var popup = new InfoPopup({map: this.map}, theDiv);
+								this.infoPopup = popup;
+
+								// Connect Close and Pin events
+								// Use of closures to ensure handles are disconnected
+								// and to maintain a link to the correct infoPopup
+								var closeHandle = dojo.connect(popup, "onClose", dojo.hitch(this, function() {
+									dojo.disconnect(closeHandle);
+									if (this.infoPopup === popup) {
+										this.infoPopup = null;
+										if (this.highlight) {
+											this.highlight.setMode("off");
+										}
+									}
+									else {
+										for (var i = 0; i < this.pinnedInfoPopups.length; i++) {
+											if (this.pinnedInfoPopups[i] === popup) {
+												this.pinnedInfoPopups.splice(i, 1);
+												break;
+											}
+										}
+									}
+									popup.destroyRecursive();
+								}));
+
+								var pinHandle = dojo.connect(popup, "onPin", dojo.hitch(this, function() {
+									dojo.disconnect(pinHandle);
+									if (this.infoPopup === popup) {
+										this.infoPopup = null;
+										this.pinnedInfoPopups.push(popup);
+										if (this.highlight) {
+											this.highlight.setMode("off");
+										}
+									}
+								}));
+							}
+							else {
+								this.infoPopup.map = this.map;
+							}
+
+							this.infoPopup.feature = g.id;
+
+							this.infoPopup.setInfo(g);
+							this.infoPopup.setCoords(location);
+							if (this.infoPopup.visible === false) {
+								this.infoPopup.show();
+							}
+
+
+
+						}catch (err) {
+							console.error("Error resaltando elemento", err);
+						}
+
+
+
+					} else {
+						if (this.highlight) {
+							this.highlight.setMode("off");
+						}
+						if (this.infoPopup) {
+							this.infoPopup.hide();
+						}
+					}
+
+				},
+
+				CalculateScale: function(map){
+					var mapLayer = this.map.getLayer(map.layerIds[0]);
+					var mapUnits = mapLayer.units;
+					var extent = this.map.extent;
+
+					var mapWidthMapUnits = extent.xmax - extent.xmin;
+
+					var mapWidthMeters;
+
+					if (mapUnits == "esriFeet") {
+						mapWidthMeters = 0.3048 * mapWidthMapUnits;
+					} else
+					if (mapUnits == "esriMeters") {
+						mapWidthMeters = mapWidthMapUnits;
+					}else
+					if (mapUnits == "esriDecimalDegrees") {
+						lon1 = this.degreesToRadians(extent.xmin);
+						lon2 = this.degreesToRadians(extent.xmax);
+						lat1 = this.degreesToRadians((extent.ymin) / 2);
+						lat2 = lat1;
+
+						mapWidthMeters = 6373000 * Math.acos(Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1));
+					}
+
+					var imageWidthPixels = map.width;
+					var imageWidthMeters = (0.0254 / 96) * imageWidthPixels;
+
+					return Math.round(mapWidthMeters / imageWidthMeters);
+				}, degreesToRadians: function(degrees){
+					return Math.PI * degrees / 180;
+				},
+				onClickResults: function(evt){
+
+					if (evt && evt.target.className == "irAElementoIcon" && this.handleZoom == null) {
+
+						var resultItem = null;
+						//En IE el resultItem no viene en el evento, asi que hay que buscarlo
+						if (typeof(has("ie"))!= "undefined"){
+							for (var i=0; i < this.widget.widgets.resultsConsGeom.getChildren().length;i++){
+								if (dijit.byId("resultsConsGeom").getChildren()[i].id == evt.target.parentNode.id){
+									resultItem = dijit.byId("resultsConsGeom").getChildren()[i];
+									break;
+								}
+							}
+						}else{
+							resultItem = evt.resultItem;
+						}
+
+						var params = {
+							id: "1",
+							title: resultItem.capa,
+							content: resultItem.title
+						};
+
+						this._onClickResults(resultItem,params,{features:[resultItem.feature]});
+
+					}
+
+
+				},
+				puntoMedio: function(geometry) {
+					//X= x1 + x2 /2. Y= y1 + y2 / 2.
+					distancia = this.getLength(geometry)/2;
+					var distSegmento = 0;
+					var incremento = 0;
+					
+					var p1=null,p2=null;
+					
+					while(distSegmento < distancia) {
+						p1 = geometry.paths[0][incremento];
+						p1 = new esri.geometry.Point(p1[0],p1[1]);
+						incremento++;
+						p2 = geometry.paths[0][incremento];
+						p2 = new esri.geometry.Point(p2[0],p2[1]);
+						
+						distSegmento += esri.geometry.getLength(p1,p2);
+					}
+					var x = (p1.x+p2.x)/2;
+					var y = (p1.y+p2.y)/2;
+					
+					return new esri.geometry.Point(x,y);
+				},			
+				getLength: function(geometry) {
+					var length = 0;
+					if(geometry.paths) {
+						for(var i=0;i<geometry.paths[0].length-1;i++) {
+							
+							var p1 = geometry.paths[0][i];
+							var p2 = geometry.paths[0][i+1];
+							p1 = new esri.geometry.Point(p1[0],p1[1]);
+							p2 = new esri.geometry.Point(p2[0],p2[1]);
+							
+							length+=esri.geometry.getLength(p1,p2);
+						}
+					}
+					return length;
+				},
+				_onClickResults: function(resultItem,params,response){
+
+					this.handleMapa = [];
+
+					var feature = response.features[0];
+
+					var p = feature.geometry;
+
+
+					feature.geometry.spatialReference = this.map.spatialReference;
+					var geometria;
+
+					if(feature.geometry.paths) {
+						p = this.puntoMedio(feature.geometry);
+						var line = new esri.geometry.Polyline(feature.geometry);
+						feature.geometry = line;
+						geometria = line.getExtent();
+					}
+					else if(feature.geometry.rings){
+						var polygon = new esri.geometry.Polygon(feature.geometry);
+						p = this.getCentroid(feature.geometry.rings);
+						feature.geometry = polygon;
+						geometria = polygon.getExtent();
+					}
+					else if(feature.geometry.x) {
+						var point = new esri.geometry.Point(feature.geometry);
+						geometria = point;
+						feature.geometry = point;
+					}
+
+					geometria.spatialReference = this.map.spatialReference;
+					if(p.x == null) {
+						p = new esri.geometry.Point(p[0],p[1]);
+					}
+
+					this.paramsSeleccion = [params,p];
+
+					//Comprobamos si es un punto, o un exten
+					resultItem.cached = true;
+					resultItem.feature = feature;
+
+					if (geometria.isInstanceOf(esri.geometry.Point)){						
+						//Si es un punto hacemos un zoom, y despues un move
+						this.puntoZoom = geometria;
+
+						this.handleMapa.push(dojo.connect(this.map,"onZoomEnd",this,this.highlightSeleccion));
+						this.handleMapa.push(dojo.connect(this.map,"onPanEnd",this,this.highlightSeleccion));
+
+						var zoom = this.map.getLevel();
+
+						if(this.elementoSeleccionado) {
+							this.map.graphics.remove(this.elementoSeleccionado);
+							this.elementoSeleccionado = null;
+						}
+
+						if (this.map.getLevel() != zoom){
+
+							try{
+								this.handleZoom = dojo.connect(this.map, "onZoomEnd", this,dojo.hitch(this,this.moverAPunto));
+								this.map.setLevel(zoom);
+							}catch(e){
+								if (this.handleZoom){
+									dojo.disconnect(this.handleZoom);
+									this.handleZoom = null;
+								}
+							}
+						}else{
+							this.moverAPunto();
+						}
+
+					} else if (geometria.isInstanceOf(esri.geometry.Extent)){
+						//Si es un extent se hace directamente
+						this.map.setExtent(geometria,true);
+
+						if(this.elementoSeleccionado) {
+							this.map.graphics.remove(this.elementoSeleccionado);
+							this.elementoSeleccionado = null;
+						}
+						try {
+							var estilo = new esri.symbol.SimpleFillSymbol(
+								esri.symbol.SimpleFillSymbol.STYLE_SOLID,
+								new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID,
+									new dojo.Color([255,0,0]), 2), new dojo.Color([201,216,252,0.2]));
+							var estiloLinea= new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID,new dojo.Color("#FF0000"),
+								3);
+
+							this.elementoSeleccionado = new esri.Graphic(feature,estilo);
+							this.elementoSeleccionado.capa = resultItem.capa;
+							this.elementoSeleccionado.title = resultItem.title;
+
+							if(this.elementoSeleccionado.geometry.type=="polygon") {
+								this.elementoSeleccionado.symbol = estilo;
+							}
+							else if(this.elementoSeleccionado.geometry.type=="polyline"){
+								this.elementoSeleccionado.symbol = estiloLinea;
+							}
+
+							this.map.graphics.add(this.elementoSeleccionado);
+						}
+						catch(e) {
+							console.log("Error resaltando elemento: " + e);
+						}
+
+					}
+
+
+				}, moverAPunto: function(){
+
+					this.map.centerAt(this.puntoZoom);
+
+					if(this.handleZoom) {
+						this.handleZoom.remove();
+						this.handleZoom = null;
+					}
+
+				},
+				getCentroid: function(rings){
+
+					var sumX=0;
+					var sumY=0;
+					var coords = 0;
+					for(var i=0;i<rings.length;i++) {
+						for(var j=0;j<rings[i].length;j++) {
+							sumX+=rings[i][j][0];
+							sumY+=rings[i][j][1];
+							coords++;
+						}
+					}
+					var x = sumX/coords;
+					var y = sumY/coords;
+
+					return new esri.geometry.Point(x,y);
+
+				},
+				highlightSeleccion: function(){
+
+					if(this.handleMapa) {
+						this.handleMapa[0].remove();
+						this.handleMapa[1].remove();
+						this.handleMapa = null;
+						var escala = this.map.__LOD.scale;
+						dojo.publish("widgetHighlightEvent",[this.paramsSeleccion[0],this.paramsSeleccion[1],true,escala]);
+					}
+
+				},
+
+				iniciarBusqueda: function(actual){
+
+					if(actual != undefined && actual!=null && !isNaN(actual)) {
+						this.currentCount = actual;
+						//Funcion para mostrar mensajes
+						this.setMessage("");
+					}
+
+					this.setMessage("Buscando...");
+
+					//Guardamos en opcion la opcion elegida en el select y en funcion de esta lanzamos una peticion u otra.
+					var opcion=dijit.byId("Eleccion").value;
+					var listaServicios = [];
+					if (opcion === "NGN"){
+						listaServicios = this.serviciosNomenclator.getListaServicios();
+					} else if (opcion === "Cartociudad"){
+						listaServicios = this.serviciosCartociudad.getListaServicios();
+					} else{
+						this.setMessage("Elija una de las opciones de búsqueda");
+						return;
+					}
+
+					if (dijit.byId("nombreBuscarToponimos").value == "") {
+						this.setMessage("El campo de búsqueda no puede estar vacío");
+						return;
+					}
+
+					var nombreBuscar = "*" + dijit.byId("nombreBuscarToponimos").value + "*";
+					if(this.posicionActual==-1) {
+						dijit.byId("resultsConsGeom").clear();
+					}
+
+					this.posicionActual++;
+					if(listaServicios.length < this.posicionActual) {
+						this.posicionActual = 0;
+						dijit.byId("resultsConsGeom").clear();
+					}
+
+					if (this.posicionActual < listaServicios.length) {
+						let i = this.posicionActual;
+						let filtro = this.creaFiltroBusqueda(nombreBuscar);
+						
+						if(listaServicios[i].tipoServicio=="WFS") {
+							if(listaServicios[i].requestOptions) {
+								filtro = listaServicios[i].requestOptions["FILTER"] ;
+								filtro = filtro.replace("{textoBusqueda}",nombreBuscar);
+							}
+							
+
+							this.createControlGetFeature();
+
+							this.protocolo = new OpenLayers.Protocol.WFS({
+								url : listaServicios[i].url,
+								featureType :  listaServicios[i].featureType,
+								box : true,
+								maxFeatures : 10,
+								featureNS : listaServicios[i].featureNS,
+								srsName : this.srsPeticion,
+								geometryName :  listaServicios[i].geometryName,
+								version : "1.1.0"
+							});
+
+							var areaControl = this.map.extent;
+							var spatialReference = new esri.SpatialReference({'wkid':parseInt(this.map.spatialReference.wkid)});
+							var spGeom = new esri.SpatialReference({'wkid': 4326});
+
+							var point1 = new esri.geometry.Point(this.map.extent.xmin, this.map.extent.ymin, spatialReference);
+							var point2 = new esri.geometry.Point(this.map.extent.xmax, this.map.extent.ymax, spatialReference);
+
+							this.controlGetFeature.protocol = this.protocolo;
+							this.controlGetFeature.protocol.defaultFilter = filtro;
+
+							esriConfig.defaults.geometryService.project([point1, point2],spGeom,
+								dojo.hitch(this,function(data, args){
+									var res = data;
+
+									areaControl = new OpenLayers.Bounds(
+										res[0].x,
+										res[0].y,
+										res[1].x,
+										res[1].y
+										);
+
+									if(listaServicios[i].invertirCoords) {
+
+										if(listaServicios[i].requestOptions) {
+											filtro = filtro.replace("{upperCorner}",areaControl.top+" "+areaControl.right );
+											filtro = filtro.replace("{lowerCorner}",areaControl.bottom+" "+areaControl.left);
+										}
+
+									} else {
+										delete this.invertirCoords;
+									}
+
+									var optionsRequest = {
+										callback : dojo.hitch(this,this.procesarResultado)
+									};
+
+									if(!listaServicios[i].requestOptions) {
+										this.controlGetFeature.request(areaControl, optionsRequest);
+									} else{
+
+										//peticion
+										var gPeticion = GestorPeticiones();
+										var peticion = Peticion();
+										peticion.url = this.config.proxyCors+listaServicios[i].url;
+										peticion.handleAs = "xml";
+										peticion.params = {};
+
+										for(unParam in listaServicios[i].requestOptions) {
+											peticion.params[unParam] = listaServicios[i].requestOptions[unParam];
+										}
+
+										peticion.params["srsName"] = this.srsPeticion;
+										peticion.params["FILTER"] = filtro;
+										peticion.params.encode = false;
+										peticion.params.httpclient = false;
+										peticion.ambito= this;
+										peticion.type = "get";
+										peticion.onSuccess = dojo.hitch(this,this._responseGetFeature,listaServicios[i]);
+										gPeticion.lanzarPeticion(peticion,false);
+									}
+
+								}),
+								dojo.hitch(this, function(){
+									alert("Error proyectando");
+								})
+								);								
+						}
+						else if(listaServicios[i].tipoServicio=="JSON"){
+							var gPeticion = GestorPeticiones();
+							var peticion = Peticion();
+							peticion.url = this.config.proxyCors+listaServicios[i].url;
+							peticion.handleAs="json";
+							peticion.type="get";
+							peticion.params= {
+								q:nombreBuscar,
+								limit:listaServicios[i].limit,
+								type:listaServicios[i].type
+							};
+							window.callback = dojo.hitch(this,this._responseGetFeature,listaServicios[i]);
+							gPeticion.lanzarPeticion(peticion,false);
+						}
+
+					} else {
+						//Funcion para mostrar mensajes
+						this.setMessage("");
+						this.posicionActual = -1;
+					}
+
+				}, _errorGetFeature: function(data, args){
+
+					var res = data;
+
+				} ,				
+				_responseGetFeature: function(servicio, response) {
+					var features = servicio.parseResponse(response, this.map.spatialReference);
+
+					var result = {
+						features: features,
+						success:  function() {
+							return true;
+						}
+					};
+					var ctr = 0;
+					var proyecciones =  [];
+					var featuresCalcular=[];
+					
+					
+					if (result.features.length > 0) {
+						// solo si se han obtenido resultados
+						result.features.forEach(dojo.hitch(this, function(element, index, array){
+
+							var query = new esri.tasks.Query();
+							if(element.geometry) {
+								query.outSpatialReference = { wkid: element.geometry.spatialReference.wkid };
+								query.spatialRelationship = esri.tasks.Query.SPATIAL_REL_INTERSECTS;
+								query.returnGeometry = false;
+								query.outFields = ["*"];
+								query.geometry = element.geometry;
+								query.where = "1=1";
+								var queryTask = new esri.tasks.QueryTask(this.config.rutaServicioMuniProv);
+
+								queryTask.execute(query,
+									dojo.hitch(this, function(resultado){
+
+										if(resultado.features.length > 0){
+											if(resultado.features[0].attributes.NOMBRE){
+												array[ctr]["MUNICIPIO"] = resultado.features[0].attributes.NOMBRE;
+											}
+											if(resultado.features[0].attributes.NOMBRE_1){
+												array[ctr]["PROVINCIA"] = resultado.features[0].attributes.NOMBRE_1;
+											}
+										}
+
+										ctr++;
+
+										if (ctr === array.length){
+											result.features = array;
+											this.procesarResultado(result);
+										}
+
+									}),
+									dojo.hitch(this, function(error){
+										ctr++;
+										console.log("Error consultando municipio y provincia: " + error);
+										if (ctr === array.length){
+											this.procesarResultado(result);
+										}
+									}));
+							}
+							else {
+								var opcion=dijit.byId("Eleccion").value;
+								var listaServicios = [];
+								if (opcion === "NGN"){
+									listaServicios = this.serviciosNomenclator.getListaServicios();
+								} else if (opcion === "Cartociudad"){
+									listaServicios = this.serviciosCartociudad.getListaServicios();
+								}								
+								if(listaServicios[this.posicionActual].getGeometryServiceUrl) {
+									var gPeticion = new GestorPeticiones();
+									var peticion = new Peticion();
+									peticion.url = this.config.proxyCors+listaServicios[this.posicionActual].getGeometryServiceUrl;
+									peticion.handleAs = "json";
+									peticion.type="get";
+									peticion.params = {
+										type:"callejero",
+										id:element.id,
+										q:element.nombre
+									};
+									
+									if(element.tipo!=null) {
+										peticion.params.type=element.tipo;
+									}
+									
+									peticion.onSuccess = dojo.hitch(this, function(response) {
+										if(response && response.geom) {
+											//var json = listaServicios[this.posicionActual].fromWKT2Json(response.geom);		
+											
+											
+											array[ctr]=listaServicios[this.posicionActual].buildFeature(response);
+											var tipo_via =listaServicios[this.posicionActual].ultimaBusqueda[response.id].attributes.tip_via;
+											
+											if(array[ctr].attributes.tip_via==null) 
+												array[ctr].attributes.tip_via = tipo_via;
+											
+											//array[ctr].geometry = new esri.geometry.Polyline(json);											
+											array[ctr].show=false;
+											if(listaServicios[this.posicionActual].extentCHS.intersects(array[ctr].geometry)) {
+												array[ctr].show=true;
+												proyecciones.push(array[ctr].geometry);
+												featuresCalcular.push(array[ctr]);
+											}
+												
+										}
+										ctr++;
+										if(ctr === array.length){
+											if(proyecciones.length>0) {
+												esriConfig.defaults.geometryService.project(proyecciones,this.map.spatialReference,
+													dojo.hitch(this,function(data,args) {
+														for(var i=0;i<data.length;i++) {
+															featuresCalcular[i].geometry = new esri.geometry.Polyline(data[i]);
+														}
+														this.procesarResultado(result)
+													}));
+											}
+											else {
+												this.procesarResultado(result);
+											}
+										}
+									});
+									gPeticion.lanzarPeticion(peticion,false);								
+									
+								}
+								
+							}
+						}));
+
+					} else {
+						// se "vacia" el campo de espera
+						this.setMessage("");
+					}
+
+				},				
+				procesarMunicipioProvincia : function(feature) {
+
+					var res = feature;
+					/** Consulta de provincia y municipio */
+					var query = new esri.tasks.Query();
+					query.outSpatialReference = { wkid: feature.geometry.spatialReference.wkid };
+					query.spatialRelationship = esri.tasks.Query.SPATIAL_REL_INTERSECTS;
+					query.returnGeometry = false;
+					query.outFields = ["*"];
+					query.geometry = feature.geometry;
+					query.where = "1=1";
+					var queryTask = new esri.tasks.QueryTask(this.config.rutaServicioMuniProv);
+					queryTask.execute(query,
+						dojo.hitch(this, function(resultado){
+
+							if(resultado.features[0].attributes.NOMBRE){
+								aux["MUNICIPIO"] = resultado.features[0].attributes.NOMBRE;
+							}
+
+							if(resultado.features[0].attributes.NOMBRE_1){
+								aux["PROVINCIA"] = resultado.features[0].attributes.NOMBRE_1;
+							}
+
+							return res;
+						}),
+						dojo.hitch(this, function(error){
+							console.log("Error consultando municipio y provincia: " + error);
+							return res;
+						}));
+
+
+				}, procesarResultado: function(result) {
+
+					if (result.success()) {
+
+						var opcion=dijit.byId("Eleccion").value;
+						var listaServicios = [];
+						if (opcion === "NGN"){
+							listaServicios = this.serviciosNomenclator.getListaServicios();
+						} else if (opcion === "Cartociudad"){
+							listaServicios = this.serviciosCartociudad.getListaServicios();
+						} 
+
+						//var listaServicios = this.serviciosNomenclator.getListaServicios();
+						var servicio = listaServicios[this.posicionActual];
+						for(var i in result.features) {
+							
+							var unaFeature = result.features[i];
+
+							if(servicio.FIELDS) {
+								for(attr in unaFeature.attributes) {
+									if(!servicio.FIELDS[attr]) {
+										delete unaFeature.attributes[attr];
+									}
+								}
+							}
+
+							result.features[i].geometry = unaFeature.geometry;
+						}
+
+						result.spatialReference = this.map.spatialReference;
+						result.geometryType = "esriGeometryPoint";
+						result.displayFieldName=servicio.displayField;
+
+						if(servicio.FIELDS) {
+							result.fieldAliases = servicio.FIELDS;
+						}
+
+						result.features.sort(function(a,b) {
+							var value = 0;
+
+							if(a.attributes[servicio.displayField] && (a.attributes[servicio.displayField] > b.attributes[servicio.displayField])) {
+								value = 1;
+							}
+
+							return value;
+						});
+
+						var capaToponimos = "Toponimo";
+						this.obtieneResultados(capaToponimos, "url", result);
+
+					}
+
+					var cuenta = null;
+					if(result.features) {
+						cuenta = result.features.length;
+					}
+
+					this.iniciarBusqueda(cuenta);
+
+				},
+
+				obtieneResultados: function(nombreCapa,urlCapa, featureSet){
+
+					if (featureSet && featureSet.features){
+
+						var keyField = "OBJECTID";
+						var features = featureSet.features;
+						var fieldTypes = {};
+
+						if (features.length > 0 && this.geometryTodasCapas != null){
+
+							var params = {
+								title: nombreCapa + ":"
+							};
+
+							dijit.byId("resultsConsGeom").add(params);
+							//Cambiamos el padding-left de los titulos
+							var indice = dijit.byId("resultsConsGeom").getChildren().length - 1;
+							var domNode = dijit.byId("resultsConsGeom").getChildren()[indice].domNode;
+							domNode.style.cssText += "padding-left:18px !important";
+
+							if(featureSet.fields) {
+								for(var i=0;i<featureSet.fields.length;i++) {
+									var field = featureSet.fields[i];
+									fieldTypes[field.name] = field.type;
+									if(field.type=="esriFieldTypeOID") {
+										keyField = field.name;
+									}
+								}
+							}
+						}
+
+						for (var i=0; i < features.length;i++){
+							
+							var feature = features[i];
+							
+							if(feature.show!=null && feature.show==false) {
+								continue;
+							}
+							
+							var geometria = 1;
+
+							if (geometria){
+
+
+								var nivelZoom = 10;
+								var unaFeature = featureSet.features[i];
+								var title = unaFeature.attributes[featureSet.displayFieldName];
+
+								if(!title) {
+									title = "Sin Nombre";
+								}
+
+								var content = "<table width='100%'><col width='20%'><col width='80%'>";
+								for (var fIdx in unaFeature.attributes) {
+									var value = unaFeature.attributes[fIdx];
+									var enlace =  "Enlace";
+
+									if(value!=null) {
+
+										if(fieldTypes[fIdx]!=null && fieldTypes[fIdx] == "esriFieldTypeDate") {
+											value = new Date(value);
+											value = dojo.date.locale.format(value,{selector: "date", formatLength: "short", locale: "es",datePattern:"dd/MM/yyyy"});
+										}
+										else if(value.toString().indexOf("http://")!=-1 ||
+											value.toString().indexOf("https://")!=-1 	) {
+											var antesUrl = value.substring(0,value.indexOf("http://"));
+										antesUrl = antesUrl.substring(0,value.indexOf("https://"));
+										var valueUrl = value.substring(value.indexOf("http://"));
+										valueUrl = valueUrl.substring(value.indexOf("https://"));
+										var partes = valueUrl.split(" ");
+										var url = partes[0];
+										var despuesUrl ="";
+										if(partes.length>1) {
+											for(var idx=1;idx<partes.length;idx++) {
+												despuesUrl =+partes[idx]+" ";
+											}
+										}
+										value = antesUrl+"<a target='_black' href='"+url+"'>"+ enlace +"</a>"+despuesUrl;
+									}
+									else if(value.toString().indexOf("ftp://") != -1) {
+										var antesUrl = value.substring(0, value.indexOf("ftp://"));
+										var valueUrl = value.substring(value.indexOf("ftp://"));
+										var partes = valueUrl.split(" ");
+										var url = partes[0];
+										var despuesUrl = "";
+										if (partes.length > 1) {
+											for (var idx = 1; idx < partes.length; idx++) {
+												despuesUrl = + partes [idx] + " ";
+											}
+										}
+										value = antesUrl + "<a href='" + url + "' target='_blank'>" + enlace + "</a>" + despuesUrl;
+									}
+									else if(value.toString().indexOf("\\\\") != -1) {
+										var antesUrl = value.substring(0, value.indexOf("\\\\"));
+										var valueUrl = value.substring(value.indexOf("\\\\"));
+										var partes = valueUrl.split(" ");
+										var url = partes[0];
+										var urlMod = "file:///" + url.replace(/\\/g, "/");
+										var despuesUrl = "";
+										if (partes.length > 1) {
+											for (var idx = 1; idx < partes.length; idx++) {
+												despuesUrl = + partes [idx] + " ";
+											}
+										}
+										value = antesUrl + "<a href='" + urlMod + "' target='_blank'>" + enlace + "</a>" + despuesUrl;
+									}
+								}
+								else {
+									value = "";
+								}
+
+								if(featureSet.fieldAliases && featureSet.fieldAliases[fIdx]) {
+									content += "<tr><td style='white-space:nowrap;'><div width='auto;'>" + featureSet.fieldAliases[fIdx] + ":<div></td>"+
+									"<td><div class='resultadoConsulta'>" + value + "</div></td></tr>";
+								}
+								else {
+									content += "<tr><td>" + fIdx + ":</td>"+
+									"<td><div style='"+estilo+"'>" + value + "</div></td></tr>";
+								}
+							}
+
+							/** Coordenadas */
+							if(unaFeature.geometry) {
+								if(unaFeature.geometry.x && unaFeature.geometry.y){
+									content += "<tr><td>X:</td>"+
+									"<td><div style=''>" + unaFeature.geometry.x + "</div></td></tr>";
+									content += "<tr><td>Y:</td>"+
+									"<td><div style=''>" + unaFeature.geometry.y + "</div></td></tr>";
+								}
+							}
+
+							/** Provincia y municipio */
+							if(unaFeature.MUNICIPIO){
+								content += "<tr><td>Municipio:</td>"+
+								"<td><div style=''>" + unaFeature.MUNICIPIO + "</div></td></tr>";
+							}
+
+							if(unaFeature.PROVINCIA){
+								content += "<tr><td>Provincia:</td>"+
+								"<td><div style=''>" + unaFeature.PROVINCIA + "</div></td></tr>";
+							}
+
+
+							content += "</table>";
+
+							var params = {
+								title: title,
+								content: content,
+								capa: nombreCapa,
+								keyField:keyField,
+								url:urlCapa,
+								geometria:geometria,
+								irAElemento: true,
+								feature: feature,
+								fields: featureSet.fieldAliases,
+								grupo:nombreCapa,
+								nivelZoom: nivelZoom
+							};
+
+							dijit.byId("resultsConsGeom").add(params);
+						}
+					}
+
+				}
+
+				if (dijit.byId("resultsConsGeom").getChildren().length == 0){
+					this.setMessage("No hay elementos");
+				}else{
+					this.setMessage("");
+				}
+
+			},
+			setMessage: function(mensaje){
+
+				dojo.byId("resultsMsgConsGeom").innerHTML = mensaje;
+
+			},
+			creaFiltroBusqueda: function(elem) {
+				var listaServicios = this.serviciosNomenclator.getListaServicios();
+				var servicio = listaServicios[this.posicionActual];
+				var filter = new OpenLayers.Filter.Comparison({
+					type : OpenLayers.Filter.Comparison.LIKE,
+					matchCase : false,
+					property : servicio.propertyName,
+					value : elem
+				});
+
+				return filter;
+			},
+
+			createControlGetFeature: function() {
+
+				OpenLayers.ProxyHost = this.config.proxy;
+
+				var listaServicios = this.serviciosNomenclator.getListaServicios();
+				var servicio = listaServicios[this.posicionActual];
+
+				this.controlGetFeature = new OpenLayers.Control.GetFeatureIdeSigcBA({
+					box : true,
+					geometryName : servicio.geometryType
+				});
+
+			}
+		});
+});

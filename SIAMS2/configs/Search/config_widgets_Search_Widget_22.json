@@ -1,0 +1,180 @@
+{
+  "allPlaceholder": "",
+  "showInfoWindowOnSelect": true,
+  "sources": [
+    {
+      "layerId": "Base_division_administrativa_7676_4",
+      "url": "https://siams.chminosil.es/server/rest/services/CapasSIAMS/Base_division_administrativa/MapServer/4",
+      "name": "Municipios",
+      "placeholder": "Nombre municipio",
+      "searchFields": [
+        "Municipio"
+      ],
+      "displayField": "Municipio",
+      "exactMatch": false,
+      "searchInCurrentMapExtent": false,
+      "panToScale": false,
+      "zoomScale": null,
+      "maxSuggestions": 16,
+      "maxResults": 16,
+      "type": "query"
+    },
+    {
+      "layerId": null,
+      "url": "https://siams.chminosil.es/server/rest/services/Hosted/Núcleos_Población/FeatureServer/0",
+      "name": "Núcleos Población",
+      "placeholder": "Nombre núcleo",
+      "searchFields": [
+        "etiqueta"
+      ],
+      "displayField": "etiqueta",
+      "exactMatch": false,
+      "searchInCurrentMapExtent": false,
+      "panToScale": false,
+      "zoomScale": null,
+      "maxSuggestions": 16,
+      "maxResults": 16,
+      "type": "query"
+    },
+    {
+      "layerId": "Hidrografia_4354_2",
+      "url": "https://siams.chminosil.es/server/rest/services/CapasSIAMS/Hidrografia/MapServer/2",
+      "name": "Ríos",
+      "placeholder": "Nombre río",
+      "searchFields": [
+        "NOMBRE",
+        "CAUNOM50",
+        "NOM_RIO"
+      ],
+      "displayField": "NOMBRE",
+      "exactMatch": false,
+      "searchInCurrentMapExtent": false,
+      "panToScale": false,
+      "zoomScale": null,
+      "maxSuggestions": 16,
+      "maxResults": 16,
+      "type": "query"
+    },
+    {
+      "layerId": "Hidrografia_4354_3",
+      "url": "https://siams.chminosil.es/server/rest/services/CapasSIAMS/Hidrografia/MapServer/3",
+      "name": "Embalses",
+      "placeholder": "Nombre embalse",
+      "searchFields": [
+        "NOMBRE"
+      ],
+      "displayField": "NOMBRE",
+      "exactMatch": false,
+      "searchInCurrentMapExtent": false,
+      "panToScale": false,
+      "zoomScale": null,
+      "maxSuggestions": 16,
+      "maxResults": 16,
+      "type": "query"
+    },
+    {
+      "layerId": "EXPEDIENTES_131_0",
+      "url": "https://siams.chminosil.es/server/rest/services/EXPEDIENTES/MapServer/0",
+      "name": "Autorizaciones y concesiones",
+      "placeholder": "Código expediente",
+      "searchFields": [
+        "CE_COD_EXPEDI_CHN"
+      ],
+      "displayField": "CE_COD_EXPEDI_CHN",
+      "exactMatch": false,
+      "searchInCurrentMapExtent": false,
+      "panToScale": false,
+      "zoomScale": null,
+      "maxSuggestions": 16,
+      "maxResults": 16,
+      "type": "query"
+    },
+    {
+      "layerId": "EXPEDIENTES_131_1",
+      "url": "https://siams.chminosil.es/server/rest/services/EXPEDIENTES/MapServer/1",
+      "name": "Aprovechamientos Hidroeléctricos",
+      "placeholder": "Código expediente",
+      "searchFields": [
+        "CE_COD_EXPEDI_CHN"
+      ],
+      "displayField": "CE_COD_EXPEDI_CHN",
+      "exactMatch": false,
+      "searchInCurrentMapExtent": false,
+      "panToScale": false,
+      "zoomScale": null,
+      "maxSuggestions": 16,
+      "maxResults": 16,
+      "type": "query"
+    },
+    {
+      "layerId": "EXPEDIENTES_131_2",
+      "url": "https://siams.chminosil.es/server/rest/services/EXPEDIENTES/MapServer/2",
+      "name": "Registro de Aguas",
+      "placeholder": "Código expediente",
+      "searchFields": [
+        "CE_COD_EXPEDI_CHN"
+      ],
+      "displayField": "CE_COD_EXPEDI_CHN",
+      "exactMatch": false,
+      "searchInCurrentMapExtent": false,
+      "panToScale": false,
+      "zoomScale": null,
+      "maxSuggestions": 16,
+      "maxResults": 16,
+      "type": "query"
+    },
+    {
+      "layerId": "EXPEDIENTES_131_3",
+      "url": "https://siams.chminosil.es/server/rest/services/EXPEDIENTES/MapServer/3",
+      "name": "Sancionadores",
+      "placeholder": "Código expediente",
+      "searchFields": [
+        "CE_COD_EXPEDI_CHN",
+        "CE_ID_PVERTIDO"
+      ],
+      "displayField": "CE_COD_EXPEDI_CHN",
+      "exactMatch": false,
+      "searchInCurrentMapExtent": false,
+      "panToScale": false,
+      "zoomScale": null,
+      "maxSuggestions": 16,
+      "maxResults": 16,
+      "type": "query"
+    },
+    {
+      "layerId": "EXPEDIENTES_131_4",
+      "url": "https://siams.chminosil.es/server/rest/services/EXPEDIENTES/MapServer/4",
+      "name": "Vertidos",
+      "placeholder": "Código expediente",
+      "searchFields": [
+        "CE_COD_EXPEDI_CHN",
+        "CE_ID_PVERTIDO"
+      ],
+      "displayField": "CE_COD_EXPEDI_CHN",
+      "exactMatch": false,
+      "searchInCurrentMapExtent": false,
+      "panToScale": false,
+      "zoomScale": null,
+      "maxSuggestions": 16,
+      "maxResults": 16,
+      "type": "query"
+    },
+    {
+      "url": "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer",
+      "name": "Buscar dirección",
+      "singleLineFieldName": "SingleLine",
+      "placeholder": "",
+      "countryCode": "",
+      "panToScale": false,
+      "zoomScale": null,
+      "maxSuggestions": 6,
+      "maxResults": 6,
+      "searchInCurrentMapExtent": false,
+      "enableLocalSearch": true,
+      "localSearchMinScale": 300000,
+      "localSearchDistance": 50000,
+      "radiusUnit": "",
+      "type": "locator"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "urlServicio": "https://siams.chminosil.es/server/rest/services/MDTs/MDT_02_CHMS_NoCh/MapServer/identify",
+  "proxyCors": "https://siams.chminosil.es/proxy/proxy.jsp?",
+  "campoCota": "Pixel Value",
+  "noResultados": "No se han encontrado resultados.",
+  "folderUrl": "./widgets/CHS_CotaTerreno/images/"
+}

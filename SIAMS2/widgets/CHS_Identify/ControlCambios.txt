@@ -1,0 +1,37 @@
+************************************************************ *** * * ***
+****			v.19.06.13		     	     *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	widget.js
+	----------------------------------------------
+	OBJETIVO:
+	No identifica correctamente cuando se usa previamente el buscador catastral.
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Al usar el buscador catastral, se añade el wms de la zona con la referencia catastral para que enseñe resaltada la parcela devuelta, al hacer el identify usa la url con dicha referencia catastral para hacer el getcapabilities y por tanto da error.
+
+************************************************************ *** * * ***
+****			v.19.07.23			     *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	widget.js widget.html css/style.css nls/string.js
+	----------------------------------------------
+	OBJETIVO:
+	Mostrar en una sola pestaña los resultados de las capas de servicio y de los servicios WMS.
+	mostrar en el panel de resultaos solo el DisplayField o atributo principal.
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Se elimina la pestaña de resultads WMS y se añaden estos al paner de resultados, se retoca el html del panel y la hoja de estilos para adaptarlo visualmente.
+	Se edita el widjet.js para que solo recoja en el html dinámico que forma el panel el atributo DisplayField.
+
+************************************************************ *** * * ***
+****			v.20.09.14			     *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	widget.js
+	----------------------------------------------
+	OBJETIVO:
+	Permitir identify a capas raster
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Se habilita el identify a capas rásters y si la capa no tiene un display name que mostrar, toma el primer campo de la tabla

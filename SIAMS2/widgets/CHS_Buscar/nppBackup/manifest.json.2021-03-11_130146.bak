@@ -1,0 +1,15 @@
+{
+	"name": "CHS_Buscar",
+	"platform": "HTML",
+    "version": "1.0",
+	"wabVersion": "2.4",
+    "author" : "AYESA ADVANCED TECHN. S.A.",
+	"description": "",
+	"copyright": "",
+	"license": "http://www.apache.org/licenses/LICENSE-2.0",
+	"properties": {
+    "hasVersionManager": true,
+    "inPanel": false,
+	"hasSettingPage":true
+	}
+}

@@ -1,0 +1,120 @@
+{
+  "proxyCors": "https://siams.chminosil.es/proxy/proxy.jsp?",
+  "identifylayeroption": "visible",
+  "identifytolerance": 5,
+  "defaultzoomscale": 5000,
+  "keepidentifyactive": true,
+  "returngeometryforzoom": true,
+  "enablelineselect": true,
+  "enablefreehandlineselect": true,
+  "enablepolylineselect": true,
+  "enableextentselect": true,
+  "enabletriangleselect": false,
+  "enablepolyselect": true,
+  "enablefreehandpolyselect": true,
+  "enablecircleselect": true,
+  "enableellipseselect": true,
+  "enablegraphicclickinfo": true,
+  "usemaptime": false,
+  "infoautoclosemilliseconds": 2000,
+  "autoactivatedtool": "point",
+  "disablelayerdropdown": false,
+  "disablealllayerschoice": false,
+  "replacenullswithemptystring": true,
+  "enablemouseoverrecordinfo": true,
+  "enablemouseovergraphicsinfo": true,
+  "layers": {
+    "onlythese": false,
+    "excludelayer": []
+  },
+  "symbols": {
+    "simplemarkersymbol": {
+      "color": [
+        68,
+        140,
+        203,
+        153
+      ],
+      "size": 8,
+      "angle": 0,
+      "xoffset": 0,
+      "yoffset": 0,
+      "type": "esriSMS",
+      "style": "esriSMSCircle",
+      "outline": {
+        "color": [
+          255,
+          255,
+          255,
+          153
+        ],
+        "width": 1,
+        "type": "esriSLS",
+        "style": "esriSLSSolid"
+      }
+    },
+    "picturemarkersymbol": {
+      "url": "images/i_info.png",
+      "height": "20",
+      "width": "20",
+      "type": "esriPMS",
+      "angle": "0"
+    },
+    "simplelinesymbol": {
+      "type": "esriSLS",
+      "style": "esriSLSSolid",
+      "color": [
+        68,
+        140,
+        203,
+        153
+      ],
+      "width": 2
+    },
+    "simplefillsymbol": {
+      "color": [
+        68,
+        140,
+        203,
+        153
+      ],
+      "outline": {
+        "color": [
+          68,
+          140,
+          203,
+          153
+        ],
+        "width": 2,
+        "type": "esriSLS",
+        "style": "esriSLSSolid"
+      },
+      "type": "esriSFS",
+      "style": "esriSFSSolid"
+    }
+  },
+  "resultFormat": {
+    "attTitlesymbol": {
+      "bold": false,
+      "italic": true,
+      "underline": false,
+      "color": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    "attValuesymbol": {
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "color": [
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  }
+}

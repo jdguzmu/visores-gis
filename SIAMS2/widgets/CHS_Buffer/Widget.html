@@ -1,0 +1,93 @@
+<div>
+  <div div data-dojo-attach-point="seccionPrincipal">
+	<table style="width:99%;">
+	  <tr>
+	    <td>
+			<label><b>1.</b> Seleccionar una capa:</label>
+	    </td>
+		<td>
+			<img id="Img_Info" title="Información del Widget" src="" data-dojo-attach-event="onclick:openInfo">
+		</td>
+	  </tr>
+	  <tr>
+	    <td>
+			<div style="white-space: nowrap; text-align: center;" data-dojo-attach-point="bufferGraDiv">
+				<select name="cBox_Capas" style="width:90%;height:31px;margin: 8px 5px 5px 8px;" required data-dojo-attach-event="onchange:ServiceToFeature">
+                <option selected="true" disabled="disabled">Seleccione capa</option>
+				</select>
+				<input type="text" name= "anotacionesExport" style="width:90%;height:31px;margin: 8px 5px 5px 8px; border: 1px solid #ddd; display:none" value="Widget de Anotaciones" disabled>
+			</div>
+	    </td>
+	  </tr>
+	  <tr style="height:28px; vertical-align: bottom;">
+		<td>
+			<label><b>2.</b> Introducir tamaño de zona de influencia:</label>
+		</td>
+	  </tr>	  
+	  <tr style="padding-top:8px;">
+		<table style="margin-left:auto;margin-right:auto;margin-bottom:18px;">
+		  <tr style="vertical-align: initial;">
+			<td>
+			  <input type="text" name= "dist" style="width:90px; height:30px; border:1px solid #ddd; margin: 8px 20px 5px 0px; text-align: center;" value="1" />
+			</td>
+			<td>
+			  <select name= "unit" style="width:100px; height:30px; margin-top:8px; text-align: center;">
+				<option value="Metros">Metros</option>
+				<option value="Kilometros">Kilometros</option>
+			  </select>	
+			</td>
+		  </tr>
+		</table>
+	  </tr>
+	  <tr>
+		<td>
+			<label><b>3.</b> Tipo de zona de influencia:</label>
+		</td>
+	  </tr>	  	 
+	  <tr style="padding-top:8px;">
+		<div style="text-align: center;">
+			<select name="tipo" style="width:75%;height:31px; margin:8px 5px 5px 8px;" required data-dojo-attach-event="onchange:cambioTipo">
+                <option selected="true" disabled="disabled">Seleccione tipo</option>
+				<option value="Solapar">Solapar</option>
+				<option value="Disolver">Disolver</option>
+			</select>
+		</div> 
+	  </tr>	
+	  <tr>
+		<p name="text_tipo" style="padding:10px 0px 0px 18px; font-size:10px"></p>
+	  </tr>	  
+	  <tr>
+			<img name="imagen_tipo" src="" alt="imagen" style="display:block; margin:auto; padding-top:1px;">
+	  </tr>
+	  <tr>
+	  	<div style="text-align: center;">
+		  <button id="Btn_Ejecutar" class="Boton" style="margin-top: 15px;" data-dojo-attach-event="onclick:lanzaProceso" >Ejecutar</button>
+		</div>
+	  </tr>
+	</table>
+	
+	<div style="position:relative; padding-top: 20px;" id="idDiv">
+		<div style="position:relative; float: left;" id="idDiv1">
+			<span title="Estilo" class="claseBotonVerde" id="estiloBoton" data-dojo-attach-event="onclick:estilo" style="text-align: left">&nbsp;</span>
+		</div>
+		<div style="position:relative; float: right;" id="idDiv2">
+			<span title="Exportar a Anotación" class="claseBotonAzul" id="toAnnotation" data-dojo-attach-event="onclick:exportarAnotaciones">&nbsp;</span>
+			<span title="Descargar Shape" class="claseBotonAzul" id="descargarShapeBoton" data-dojo-attach-event="onclick:exportarGraficos">&nbsp;</span>
+			<span title="Limpiar Buffer" class="claseBotonRojo" id="limpiarBoton" data-dojo-attach-event="onclick:limpiarGraficos">&nbsp;</span>
+		</div>
+	</div>
+  </div>	
+
+	<div data-dojo-attach-point="settingContent" style="width:100%;">
+		<label>Seleccione simbología para el buffer: </label>
+		<div class="polygon-section" data-dojo-attach-point="polygonSection" style="margin-top: 5px;">
+			<div data-dojo-attach-point="fillSymChooser" data-dojo-type="jimu/dijit/SymbolChooser" data-dojo-props='type:"fill"'></div>
+		</div>
+		<div style="text-align: center;">
+		  <button id="Btn_Aceptar" class="BotonAceptar" style="margin-top: 5px;" data-dojo-attach-event="onclick:botonAceptar" >Aceptar</button>
+		</div>
+		
+	</div>
+	
+
+</div>

@@ -1,0 +1,745 @@
+///////////////////////////////////////////////////////////////////////////
+// Copyright © 2019 - 2021 Confederación Hidrográfica del Segura, O.A.. All Rights Reserved.
+//
+// Licensed under the Apache License Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+///////////////////////////////////////////////////////////////////////////
+define([
+	'dojo/_base/declare',
+    'dijit/_WidgetsInTemplateMixin',
+	'jimu/BaseWidget',
+	'dojo/_base/lang',
+	"esri/map",
+	'jimu/dijit/Message',
+	"esri/geometry/jsonUtils",
+	'./GestorPeticiones',
+	'./Peticion',
+	"esri/layers/GraphicsLayer",
+	"esri/layers/FeatureLayer",
+	"esri/graphic",
+	'jimu/dijit/DrawBox',
+	'jimu/LayerInfos/LayerInfos',
+	'jimu/WidgetManager',
+	"esri/geometry/Polygon",
+	"esri/SpatialReference",
+	'jimu/dijit/SymbolChooser',
+	'jimu/dijit/LoadingIndicator',
+	'esri/geometry/geometryEngine'
+	],
+  function(declare, _WidgetsInTemplateMixin, BaseWidget, lang, map, Message, geometryJsonUtils, GestorPeticiones, Peticion, GraphicsLayer, FeatureLayer, Graphic, DrawBox, LayerInfos, WidgetManager, Polygon, SpatialReference, SymbolChooser, LoadingIndicator, geometryEngine) {
+	  	  
+    //To create a widget, you need to derive from BaseWidget.
+    return declare([BaseWidget, _WidgetsInTemplateMixin], {
+      // Custom widget code goes here
+
+      baseClass: 'jimu-widget-CHS_Buffer',
+
+      //this property is set by the framework when widget is loaded.
+      //name: 'CHS_Buffer',
+			capasServ: [],
+			capasGraf: [],
+			arrayAnotaciones:[],
+
+      geometryEngine: geometryEngine,
+      //methods to communication with app container:
+		
+      postCreate: function() {
+		this.inherited(arguments);
+      },
+
+      onOpen: function(){
+		//Cargamos las imagenes del widget
+		document.getElementsByName("text_tipo")[0].innerHTML="Entidades de entrada:";
+		document.getElementsByName("imagen_tipo")[0].src=this.config.folderUrl+ "Input.png";
+		document.getElementById("Img_Info").src=this.config.folderUrl+ "Info.png";
+		
+		var panel = this.getPanel();
+        panel.position.width = 368;
+        panel.position.height = 490;
+        panel.setPosition(panel.position);
+        panel.panelManager.normalizePanel(panel);
+		
+		this.settingContent.style.display = "none";
+		this.map.estiloBuffer = false
+		this.cargarCapas();
+		
+	  },
+	  
+	  getLayersActive: function(){
+		this.capasServ=[];
+		this.capasGraf=[];
+		
+		var layers= this.map.layerIds;
+		for (var i=0; i<layers.length; i++){ //recorre los Servicios añadidos al mapa
+			if (this.map.getLayer(layers[i]).tileInfo==undefined && this.map.getLayer(layers[i]).visible && this.map.getLayer(layers[i]).declaredClass!=="esri.layers.WMSLayer"){ //si no es un Servicio Raster entra y ademas visible
+				var lvisibles=[];
+				lvisibles=this.map.getLayer(layers[i]).visibleLayers; //Recoje las capas visibles
+				if(lvisibles)
+				for (var j=0;j<lvisibles.length;j++){
+					if (lvisibles[j]!=-1){	//Al recoger las capas algunas aparecen como -1, evitamos que estas se recojan
+						var v=lvisibles[j];
+						var ex = this.config.capas;
+						var excluida = false;
+						
+						for (var k=0;k<ex.length;k++){
+							if (ex[k].url==this.map.getLayer(layers[i]).url +"/"+v){
+								excluida = true
+							}
+						}
+						
+						//Vemos si las capas visibles estan habilitadas en los rangos de escala, si no lo estan no las cargamos
+						var esc=this.map.getScale();
+						var e_min=this.map.getLayer(layers[i]).layerInfos[v].minScale;
+						var e_max=this.map.getLayer(layers[i]).layerInfos[v].maxScale;
+						if (e_min==0 && e_max==0 && excluida==false){
+							this.capasServ.push (this.map.getLayer(layers[i]).layerInfos[v]); //Añadimos en el array el las capas visibles
+						}
+						else if (e_max==0 && e_min>esc && excluida==false){
+							this.capasServ.push (this.map.getLayer(layers[i]).layerInfos[v]); //Añadimos en el array el las capas visibles
+						}
+						else if (e_min==0 && e_max<esc && excluida==false){
+							this.capasServ.push (this.map.getLayer(layers[i]).layerInfos[v]); //Añadimos en el array el las capas visibles
+						}
+						else if (e_min>esc && esc>e_max && excluida==false){
+							this.capasServ.push (this.map.getLayer(layers[i]).layerInfos[v]); //Añadimos en el array el las capas visibles
+						}
+						else{
+							//console.log("La capa " + this.map.getLayer(layers[i]).layerInfos[v].name + " no está activa a esta escala")
+						}
+					}
+				}
+			}
+		}
+		for (var i=0; i<this.map.graphicsLayerIds.length; i++){ //recorre las layers individuales
+			if (this.map.getLayer(this.map.graphicsLayerIds[i]).name!==undefined && this.map.getLayer(this.map.graphicsLayerIds[i]).visible && this.map.getLayer(this.map.graphicsLayerIds[i]).id.indexOf("layerSnapping")<0){	//si tienen un campo nombre
+				this.capasGraf.push (this.map.getLayer(this.map.graphicsLayerIds[i])); //añadimos al array
+				//console.log(this.map.getLayer(this.map.graphicsLayerIds[i]))
+			}
+		}
+		return this.capasServ, this.capasGraf;
+    },
+
+      cargarCapas: function() {//llena el comboBox		
+		select = document.getElementsByName("cBox_Capas")[0];
+		l_cbox=document.getElementsByName("cBox_Capas")[0].length;
+		//Borra el select
+		for (i=l_cbox-1;i>-1;i--){
+			select.remove(i);
+		}
+		var option = document.createElement("option");
+		option.text = "Seleccione capa";
+		option.selected = true
+		select.add(option, select[0]);//añade los names de cada objeto en el array
+		select[0].disabled = true
+		
+		this.getLayersActive();		
+
+		for (var i=0;i<this.capasServ.length;i++){	//recorre el array de capas
+			var option = document.createElement("option");
+			option.text = this.capasServ[i].name;
+			select.add(option);//añade los names de cada objeto en el array
+		}
+		for (var i=0;i<this.capasGraf.length;i++){	//recorre el array de capas
+			var option = document.createElement("option");
+			option.text = this.capasGraf[i].name;
+			select.add(option);//añade los names de cada objeto en el array
+		} 
+      },
+      
+	  openInfo: function(){
+		test= this.config.msnInfo;
+		new Message({message: test});	  
+	  },
+	  
+	  ServiceToFeature : function(){
+		//Si hay alguna capa layerBuffer la borramos
+		for (var i=0; i<this.map.graphicsLayerIds.length; i++){
+			if (this.map.graphicsLayerIds[i]=="layerBuffer"){
+				lay=this.map.getLayer(this.map.graphicsLayerIds[i]);
+				this.map.removeLayer(lay);
+				}
+		}
+		//Si es una capa de servicios la tenemos q añadir como Feature Layer para poder recoger la geometría    
+			var capa=document.getElementsByName("cBox_Capas")[0].value
+
+		for (var i=0; i<this.capasServ.length; i++){
+			if (this.capasServ[i].name==capa){
+				capa=this.capasServ[i];
+				var layers= this.map.layerIds;
+				for (var i=0; i<layers.length; i++){ //recorre los Servicios añadidos al mapa
+					if (this.map.getLayer(layers[i]).tileInfo==undefined){ //si no es raster entra
+						//var l_capas=this.map.getLayer(layers[i]).dynamicLayerInfos
+						var l_capas=this.map.getLayer(layers[i]).layerInfos;
+						for (var j=0; j<this.map.getLayer(layers[i]).layerInfos.length; j++){
+							if (this.map.getLayer(layers[i]).layerInfos[j].name==capa.name && this.map.getLayer(layers[i]).layerInfos[j].parentLayerId==capa.parentLayerId){
+								url=this.map.getLayer(layers[i]).url + '/' + this.map.getLayer(layers[i]).layerInfos[j].id; //formamos la url de la capa
+								var idLayer="layerBuffer"; //Le metemos este atributo para que en LayerList no dibuje la capa, hay q añadirlo al layerListView
+								
+								capa = new esri.layers.FeatureLayer(url,{id:idLayer, outFields:"*"});
+								if (this.map.getLayer(layers[i]).layerDefinitions[j]){
+									capa.setDefinitionExpression(this.map.getLayer(layers[i]).layerDefinitions[j]);
+								}
+								
+								this.map.addLayer(capa);
+								capa.setOpacity(0);
+							}
+						}
+					}
+				}
+			}
+		}
+	  },
+	  
+	  cambioTipo: function(){
+		  //Carga las imagenes del tipo de buffer en funcion del select
+		  var Tipo= document.getElementsByName("tipo")[0].value;
+		  var Folder= this.config.folderUrl;
+		  if (Tipo=="Solapar"){
+			  document.getElementsByName("text_tipo")[0].innerHTML="Resultado de Solapar:";
+			  document.getElementsByName("imagen_tipo")[0].src = this.config.folderUrl + "Overlap.png";
+		  }
+		  else{
+			  document.getElementsByName("text_tipo")[0].innerText="Resultado de Disolver:";
+			  document.getElementsByName("imagen_tipo")[0].src = this.config.folderUrl + "Dissolve.png";
+		  }
+	  },
+	  
+
+	  lanzaProceso : function(){
+		//Gráfico loading
+		this.loading = new LoadingIndicator();
+		this.loading.placeAt(this.domNode);
+		
+		  //Distancia de buffer
+		  var Distancia= document.getElementsByName("dist")[0].value;
+				if (isNaN(Distancia)!==false || Distancia<=0){
+					new Message({
+						titleLabel:"Aviso",
+						message: "Introduzca una distancia válida"
+					});
+					this.loading.destroy();
+					return;
+				}				
+		  
+		  //Unidades WKID del buffer
+		  var Unidad= document.getElementsByName("unit")[0].value;
+		  if (Unidad=="Metros"){
+			  Unidad=9001;
+		  }
+		  else{
+			  Unidad=9036;
+		  }
+		  
+		  //Tipo de Buffer
+		  var Tipo= document.getElementsByName("tipo")[0].value;
+		  if (Tipo=="Solapar"){
+			  Tipo=false;
+		  }
+		  else if(Tipo=="Disolver"){
+			  Tipo=true;
+		  }
+		  else{
+			  new Message({
+						titleLabel:"Aviso",
+						message: "Seleccione el tipo de buffer"
+					});
+					this.loading.destroy();
+					return;
+		  }
+
+			//Capas exportadas desde anotaciones
+			if (document.getElementsByName("cBox_Capas")[0].value.indexOf("Capa Anotaciones")>-1){
+				var arrayGeom =[];
+				for (var i=0; i<this.map.graphicsLayerIds.length; i++){
+					if (this.map.graphicsLayerIds[i]=="AnotacionesExportadas"){
+						capa= this.map.getLayer(this.map.graphicsLayerIds[i])
+					}
+				}
+				arrayGeom =capa.graphics
+			}
+		
+			//Capas de Servicios o FeatureLayers
+			else{
+			    //Lanzamos un mensaje de error si no seleecionamos una capa
+				if (document.getElementsByName("cBox_Capas")[0].value=="Seleccione capa"){
+					new Message({
+						titleLabel:"Aviso",
+						message: "Seleccione una capa del listado"
+					});
+					this.loading.destroy();
+					return;
+				}	
+				
+				var arrayGeom =[];
+				if (this.map.graphicsLayerIds.indexOf("layerBuffer")==-1){
+					this.ServiceToFeature();
+				}
+				for (var n=0; n<this.map.graphicsLayerIds.length; n++){
+					if (this.map.getLayer(this.map.graphicsLayerIds[n]).id=="layerBuffer"){
+						capa=(this.map.getLayer(this.map.graphicsLayerIds[n]));
+						break;
+					}
+				}	
+						
+				if (capa.geometryType!==undefined){
+					var Geom=capa.toJson(); //Devuelve la geometria en JSON
+					for (var i=0; i<Geom.featureSet.features.length; i++){ //recorremos el JSON de la geometria y creamos el array de coordenadas para el buffer
+						arrayGeom.push(Geom.featureSet.features[i]);//Guarda todas las geometrías en el array
+					}
+				}
+			}
+		
+		//Contamos el numero de elementos que se muestran dependiendo del tipo de geometria:
+			var nElement=this.contarElementos(capa);
+			//Lanzamos un mensaje de error si no seleecionamos una capa
+			if (nElement>this.config.nMaxElementos){
+				new Message({
+					titleLabel:"Aviso",
+					message: this.config.msnMaxElementos
+				});
+				this.loading.destroy();
+				return;
+			}
+		
+		if (Tipo == false){		//Si SOLAPAR
+			for (var i=0; i<arrayGeom.length; i++){
+				this.bufferSolapar(arrayGeom[i], Distancia, Unidad, Tipo);
+			}
+		}
+		else{		//Si DISOLVER
+			var listaGeometrias = {geometry:[]};
+			for (var i=0; i<arrayGeom.length; i++){
+			    listaGeometrias.geometry.push(arrayGeom[i].geometry)
+			}
+			this.bufferDisolver(listaGeometrias, Distancia, Unidad, Tipo);
+		}
+
+		this.loading.destroy();		  
+	  },
+
+
+	  bufferSolapar:function(Geom, Distancia, Unidad, Union){
+			
+		var buff = this.geometryEngine.buffer(Geom.geometry, Distancia, Unidad, Union);
+
+			//Si la respuesta es satisfactoria pintamos y no se ha modificado el estilo lo pinta aleatoriamente
+			if (this.map.estiloBuffer==false){
+				var red=Math.floor(Math.random() * 255)+1;
+				var gre=Math.floor(Math.random() * 255)+1;
+				var blu=Math.floor(Math.random() * 255)+1
+			
+				var Symbol = {
+					color:[red,gre,blu,50],
+					outline:{
+						color:[red,gre,blu,255],
+						width:1,
+						type:"esriSLS",
+						style:"esriSLSSolid"
+						},
+					type:"esriSFS",
+					style:"esriSFSSolid"
+					};
+			}
+			else {
+				var Symbol = {
+					color: this.fillSymChooser.fillColor.color,
+					outline:{
+						color:this.fillSymChooser.fillOutlineColor.color,
+						width:this.fillSymChooser.fillOutlineWidth.value,
+						type:"esriSLS",
+						style:"esriSLSSolid"
+						},
+					type:"esriSFS",
+					style:"esriSFSSolid"
+					};
+			}
+
+			var polygon={
+				type:"polygon",
+				spatialReference:{wkid:25830},
+				rings: buff.rings
+			};
+
+			// Add the geometry and symbol to a new graphic
+			var polygonGraphic = new Graphic({
+				attributes: Geom.attributes,
+				geometry: polygon,
+				symbol: Symbol
+				});
+			polygonGraphic.attributes.DistBuf = Distancia;
+			polygonGraphic.attributes.AreaBuf_Has = this.geometryEngine.planarArea(polygonGraphic.geometry,"hectares");
+			polygonGraphic.isBuffer=true;
+			polygonGraphic.layer=document.getElementsByName("cBox_Capas")[0].value;
+			polygonGraphic.Nombre= "Buffer Solapar" + polygonGraphic.layer
+			
+			this.map.graphics.add((polygonGraphic));
+	  },
+
+	  bufferDisolver:function(Geom, Distancia, Unidad, Union){
+			
+		var buff = this.geometryEngine.buffer(Geom.geometry, Distancia, Unidad, Union);
+
+		for (var i=0; i<buff[0].rings.length; i++){
+			//Si la respuesta es satisfactoria pintamos y no se ha modificado el estilo lo pinta aleatoriamente
+			if (this.map.estiloBuffer==false){
+				var red=Math.floor(Math.random() * 255)+1;
+				var gre=Math.floor(Math.random() * 255)+1;
+				var blu=Math.floor(Math.random() * 255)+1
+			
+				var Symbol = {
+					color:[red,gre,blu,50],
+					outline:{
+						color:[red,gre,blu,255],
+						width:1,
+						type:"esriSLS",
+						style:"esriSLSSolid"
+						},
+					type:"esriSFS",
+					style:"esriSFSSolid"
+					};
+			}
+			else {
+				var Symbol = {
+					color: this.fillSymChooser.fillColor.color,
+					outline:{
+						color:this.fillSymChooser.fillOutlineColor.color,
+						width:this.fillSymChooser.fillOutlineWidth.value,
+						type:"esriSLS",
+						style:"esriSLSSolid"
+						},
+					type:"esriSFS",
+					style:"esriSFSSolid"
+					};
+			}
+
+			var polygon={
+				type:"polygon",
+				spatialReference:{wkid:25830},
+				rings: [buff[0].rings[i]]
+			};
+
+			// Add the geometry and symbol to a new graphic
+			var polygonGraphic = new Graphic({
+				attributes: [],
+				geometry: polygon,
+				symbol: Symbol
+				});
+			polygonGraphic.attributes.Id = i;
+			polygonGraphic.attributes.DistBuf = Distancia;
+			polygonGraphic.attributes.AreaBuf_Has = this.geometryEngine.planarArea(polygonGraphic.geometry,"hectares");
+			polygonGraphic.isBuffer=true;
+			polygonGraphic.layer=document.getElementsByName("cBox_Capas")[0].value;
+			polygonGraphic.Nombre= "Buffer Disolver " + polygonGraphic.layer
+			
+			this.map.graphics.add((polygonGraphic));
+		}
+	  },
+
+	limpiarGraficos:function() {
+		var graficosALimpiar = [];
+		for(var i = 0; i<this.map.graphics.graphics.length ; i++) {
+			if(this.map.graphics.graphics[i].isBuffer) {
+				graficosALimpiar.push(this.map.graphics.graphics[i]);
+			}
+		}
+		
+		for(var i=0;i<graficosALimpiar.length;i++) {
+			this.map.graphics.remove(graficosALimpiar[i]);
+		}
+	},
+	
+	exportarGraficos:function() { //Reutilizamos las funciones del wigget de anotaciones
+		//Exporta todos los graficos a shape
+		//Vamos a crear el Json que vamos a pasar como parametro de la peticion al servicio DownloadAnotaciones
+		var json = "{'graphics':[";
+			var json_aux = "";
+			
+			for (var i=0; i<this.map.graphics.graphics.length; i++){ //Recorremos cada gráfico
+				var geometry = null;
+				g=this.map.graphics.graphics[i];
+				if (g.geometry.type=="polygon"){
+					geometry = g.geometry.toJson(); //Guardamos la geometria de cada gráfico en Json
+			
+					var jsonObject = null; //Creamos el objeto Json y le asignamos los valores
+					jsonObject = {
+						geometry: geometry,
+						symbol: g.symbol.toJson(),
+						attributes: g.attributes
+					};
+				
+					json_aux += dojo.toJson(jsonObject)+ ","; //Vamos añadiendo a json_aux cada objeto segun recorremos los gráficos
+				}
+			}	
+
+			if (json_aux == ""){
+				new Message({
+					titleLabel:"Aviso",
+					message: "No hay elementos que descargar"
+				});
+				return;
+			}
+			else {
+				json_aux = json_aux.substring(0,
+						json_aux.length - 1);	//Elimina el ultimo caracter de json_aux que es una coma
+			}
+
+
+			json += json_aux + "]}";	//Añade a json el json_aux más los caracteres al final para formar el Json correcto
+			
+			//Preparamos la peticion al servicio DownloadAnotaciones
+			var peticion = Peticion();
+			var gPeticion = GestorPeticiones();
+			peticion.url = this.config.servicioDownloadAnotaciones;
+			peticion.handleAs = "json";
+			peticion.type = "post";
+
+			peticion.params = {
+				operacion : "dowloadShp",
+				jsonParam : encodeURI(json)
+			};
+			if(this.config.maxPostSize>peticion.params.jsonParam.length) {
+				peticion.ambito = this;
+				peticion.onSuccess = dojo.hitch(this, this.descargarShapeFile);//Si la peticion es correcta
+				peticion.onFailure = dojo.hitch(this, this.errorExportShp);//Si la peticion falla
+				gPeticion.lanzarPeticion(peticion, false);
+			}
+			else {
+				var msnMaxElementosExport = this.config.msnMaxElementosExport.replace("#{maxPostSize}", this.config.maxPostSize.toString());
+				new Message({
+					titleLabel:"Aviso",
+					message: msnMaxElementosExport
+				});
+			}
+	},
+
+
+	descargarShapeFile: function(response){ //Funcion que descarga los resultados
+		if (response.fileId) {
+			var ifrm = document.getElementById("downloadDrawFile");
+			
+			if (ifrm == null) {
+				ifrm = document.createElement("iframe");
+				dojo.attr(ifrm, "style", "display:none");
+				document.body.appendChild(ifrm);
+			}
+			
+			var fileName = "Buffer.zip";
+
+			ifrm.src = this.config.servicioDownloadFichero+"?delete=true&filename="
+					+ fileName + "&method=downloadFile&id="
+					+ response.fileId; + "&";
+		}
+
+	},
+
+	
+	contarElementos: function(Capa){
+	//CUENTA LOS VERTICES DE LA CAPA LANZADA
+		var nElement=0;
+			
+		if (Capa.geometryType=="esriGeometryPoint" || Capa.graphics[0].geometry.x){
+			nElement=Capa.graphics.length;	
+			}
+
+		else if (Capa.geometryType=="esriGeometryPolyline" || Capa.graphics[0].geometry.paths){
+			for (var i=0; i<Capa.graphics.length; i++){
+				for (var j=0; j<Capa.graphics[i].geometry.paths.length; j++){
+					nElement += Capa.graphics[i].geometry.paths[j].length;
+				}
+			}
+		}	
+		else if (Capa.geometryType=="esriGeometryPolygon" || Capa.graphics[0].geometry.rings){
+			for (var i=0; i<capa.graphics.length; i++){
+				for (var j=0; j<Capa.graphics[i].geometry.rings.length; j++){
+					nElement += Capa.graphics[i].geometry.rings[j].length;
+				}
+			}
+		}			
+		return nElement;
+	},
+	
+	errorExportShp: function(response){ //Funcion que reporta el error
+		new Message({
+			titleLabel:"Error",
+			message: "Error en la descarga del fichero"
+		});
+	},
+
+	
+	onFailureExport: function(data) {
+		this.loading.destroy(); 
+	},
+
+	
+	onClose: function(){
+		//Borramos el select
+		//if (document.getElementsByName("cBox_Capas")[0].value.indexOf("Capa Anotaciones")>-1){
+		//	document.getElementsByName("cBox_Capas")[0][0].remove();
+		//}
+		
+		for (var i=0; i<this.map.graphicsLayerIds.length; i++){
+			if (this.map.graphicsLayerIds[i]=="layerBuffer" || this.map.graphicsLayerIds[i]=="AnotacionesExportadas"){
+				lay=this.map.getLayer(this.map.graphicsLayerIds[i]);
+				this.map.removeLayer(lay);
+				}
+		}
+		//Se establecen los valores por defecto para que así se muestren la proxima vez q se abra
+		document.getElementsByName("cBox_Capas")[0].value="Seleccione capa";
+		document.getElementsByName("dist")[0].value="1";
+		document.getElementsByName("unit")[0].value="Metros";
+		document.getElementsByName("tipo")[0].value="Seleccione tipo";
+		document.getElementsByName("text_tipo")[0].innerText="Entidades de entrada:";
+		document.getElementsByName("imagen_tipo")[0].src="./Widgets/CHS_Buffer/images/Input.png";
+	},
+
+	
+	startup: function() {
+		this.cargarCapas()
+		//Añadimos un evento para cuando haya un cambio en la lista de capas.
+		LayerInfos.getInstance(this.map, this.map.itemInfo)
+          .then(lang.hitch(this, function(operLayerInfos) {
+            this.own(operLayerInfos.on('layerInfosIsVisibleChanged',
+              lang.hitch(this, this._onLayerInfosIsVisibleChanged)));
+          }));
+	},	 
+
+	
+	_onLayerInfosIsVisibleChanged: function(){
+		this.cargarCapas()
+	},
+
+			  
+    onReceiveData: function(name, widgetId, data) {
+		//Borramos todas las opciones del select
+		l_cbox=document.getElementsByName("cBox_Capas")[0].length;
+		for (i=l_cbox-1;i>-1;i--){
+			select.remove(i);
+		}
+		if (!data.elementosImportar){return};
+		//Añadimos al select la opcion Capa Anotaciones
+		var l = data.elementosImportar.length
+		if (l==1){
+			textEntidades= " (" + l + " entidad)"
+		}
+		else{
+			textEntidades= " (" + l + " entidades)"	
+		}
+		//select = document.getElementsByName("cBox_Capas")[0];
+		var option = document.createElement("option");
+		option.text = "Capa Anotaciones" + textEntidades;
+		option.selected = true
+		select.add(option, select[0]);//añade los names de cada objeto en el array
+
+		//Si existe una capa llamada AnotacionesExportadas, por haberse lanzado con anterioridad, la elimina
+		for (var i=0; i<this.map.graphicsLayerIds.length; i++){
+			if (this.map.graphicsLayerIds[i]=="AnotacionesExportadas"){
+				lay=this.map.getLayer(this.map.graphicsLayerIds[i]);
+				this.map.removeLayer(lay);
+				}
+		}
+		//Creamos la capa AnotacionesExportadas
+		var CapaAnot = new esri.layers.GraphicsLayer({
+            id:"AnotacionesExportadas",
+        });
+		//Importamos las geometrias en dicha capa
+		for (var i=0; i<data.elementosImportar.length; i++){
+			CapaAnot.graphics.push(data.elementosImportar[i])
+		}
+		//Añadimos la capa al mapa
+		this.map.addLayer(CapaAnot);
+    },
+
+	
+	exportarAnotaciones:function() { 
+		var widgetManager;
+		var widget = this.widgetManager.appConfig.getConfigElementsByName("CHS_Anotaciones")[0];
+		
+		//si el widget de anotaciones no esta cargado lanza un error
+		if (!widget){
+			new Message({
+				titleLabel:"Aviso",
+				message: "El widget de anotaciones no está cargado en dicha aplicación"
+			});
+			return;			
+		}
+		
+		widgetManager = WidgetManager.getInstance();
+	
+		widgetManager.triggerWidgetOpen(widget.id).then(lang.hitch(this, function() { 
+
+          /** Inicialización de variables a consumir por el widget de anotaciones */
+			var elementosExportar = [];
+			
+			for (var i=0; i < this.map.graphics.graphics.length; i++){
+				if (this.map.graphics.graphics[i].Nombre){
+					elementosExportar.push(this.map.graphics.graphics[i])
+				}
+			}			
+			//Si no hay elementos para exportar lanza un error
+			if (elementosExportar.length==0){
+				new Message({
+					titleLabel:"Aviso",
+					message: "No hay geometrías para exportar"
+				});
+				return;
+			}
+			
+			var objJsonAnotaciones = {};
+			objJsonAnotaciones["graphics"] = [];
+			
+			for (var i=0; i < elementosExportar.length; i++){
+			
+				var obj = {};
+				obj.attributes = {};
+				obj.attributes = elementosExportar[i].attributes;
+				obj.attributes.name = elementosExportar[i].Nombre ;
+				obj.attributes.comment = "Anotación importada desde el widget de Buffer";
+				obj.geometry = elementosExportar[i]["geometry"];
+				obj.symbol = elementosExportar[i].symbol;
+				obj.geometry.spatialReference.wkid = this.map.spatialReference.wkid;
+				obj.geometry.spatialReference.latestWkid = this.map.spatialReference.latestWkid
+				
+				objJsonAnotaciones.graphics.push(obj);
+
+			}
+			//Hay que añadir los siguientes campos al objJsonAnotaciones para que funcione correctamente
+		    objJsonAnotaciones["displayFieldName"] = "";
+            objJsonAnotaciones["fieldAliases"] = {};
+            objJsonAnotaciones["spatialReference"] = {};
+            objJsonAnotaciones["spatialReference"]["wkid"] = this.map.spatialReference.wkid;
+            objJsonAnotaciones["spatialReference"]["latestWkid"] = this.map.spatialReference.latestWkid;
+            objJsonAnotaciones["fields"] = [];
+		
+			
+			this.publishData({
+				'target': 'CHS_Anotaciones',
+				"timestamp": new Date().getTime(),
+				'elementosImportar': objJsonAnotaciones
+			}, false);
+		}))
+	},
+
+
+	estilo:function() {
+		this.seccionPrincipal.style.display = "none";
+		this.settingContent.style.display = "block";
+	},
+
+
+	botonAceptar:function() {
+		this.seccionPrincipal.style.display = "block";
+		this.settingContent.style.display = "none";
+		this.map.estiloBuffer=true
+	},
+
+    });
+  });

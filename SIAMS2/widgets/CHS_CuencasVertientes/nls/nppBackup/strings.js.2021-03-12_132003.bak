@@ -1,0 +1,11 @@
+﻿define({
+    root:({
+         _widgetLabel: "Cuencas y vertientes",
+  		descriptionlabel: "Una vez seleccionado un punto en el mapa se identificará el cauce significativo más cercano y se calculará la cuenca vertiente aproximada a ese cauce así como la red precedente al mismo.",
+  		identifica:"Identificar Punto",
+        limpiar:"Limpiar",
+        cotmax:"Cota máxima:",
+        cotmin:"Cota mínima:",
+        area:"Área total:"
+    }) 
+});

@@ -1,0 +1,32 @@
+******************************************************
+						Origen:
+******************************************************
+
+- Custom widget Cuencas y vertientes (Marzo)
+
+
+******************************************************
+						ChangeLog:
+******************************************************
+
+
+
+******************************************************
+						NOTAS:
+******************************************************
+- El widget se ha desarrollado desde 0, para probar en modo local y no tener problemas de cors, hay que instalar en el navegador chrome el plugins 'CORS' que se habilitará antes de indicar un punto en Pantalla. 
+Si al seleccionar un punto da error de demasiados resultados, significa que el identify a encontrado en su tolerancia dos elementos, por lo que se deberá hacer zoom hasta que éste sólo seleccione uno.
+
+
+
+- Pruebas:
+	
+	
+
+
+
+
+
+
+
+

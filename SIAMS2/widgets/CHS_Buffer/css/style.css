@@ -1,0 +1,68 @@
+#Btn_Ejecutar{
+	cursor:pointer;
+	height:28px;
+	width:80px;
+}
+
+#limpiarBoton {
+    background-image: url("images/clear.png");
+}
+#descargarShapeBoton {
+    background-image: url("images/download_shp.png");
+}
+#toAnnotation {
+    background-image: url("images/toAnnotation.png");
+}
+
+#estiloBoton {
+    background-image: url("images/color.png");
+}
+
+.claseBotonAzul {
+    background-color: rgba(115, 185, 255, 0.7);
+	display: inline-block;
+	width: 30px;
+	height:30px;
+    border-radius: 5px;
+	margin: 4px 0px 4px 2px;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 28px;
+}
+.claseBotonAzul:hover {
+    background-color: rgba(115, 185, 255, 1);
+    cursor: pointer;
+	border: 1px solid rgb(72, 85, 102);
+}
+.claseBotonRojo {
+    background-color: rgba(255, 150, 115, 0.7);
+	display: inline-block;
+	width: 30px;
+	height:30px;
+    border-radius: 5px;
+	margin: 4px 0px 4px 2px;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 28px;
+}
+.claseBotonRojo:hover {
+    background-color: rgba(255, 150, 115, 1);
+    cursor: pointer;
+	border: 1px solid rgb(72, 85, 102);
+}
+.claseBotonVerde {
+    background-color: rgba(100, 220, 100, 0.7);
+	display: inline-block;
+	width: 30px;
+	height:30px;
+    border-radius: 5px;
+	margin: 4px 0px 4px 2px;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 28px;
+}
+.claseBotonVerde:hover {
+    background-color: rgba(100, 220, 100, 1);
+    cursor: pointer;
+	border: 1px solid rgb(72, 85, 102);
+}

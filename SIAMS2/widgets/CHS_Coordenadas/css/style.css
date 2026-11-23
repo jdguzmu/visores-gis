@@ -1,0 +1,81 @@
+.panCoordenada {
+	background-image: url(images/Pan.png);
+	background-repeat: no-repeat;
+	height: 18px;
+	text-align: center;
+	width: 18px;
+	background-color: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.zoomCoordenada {
+	background-image: url(images/ZoomIn.png);
+	background-repeat: no-repeat;
+	height: 18px;
+	text-align: center;
+	width: 18px;
+}
+
+.punteroToolbar {
+	background-image: url(images/Puntero.png);
+	background-repeat: no-repeat;
+	height: 18px;
+	text-align: center;
+	width: 18px;
+}
+
+.puntoCoordenada {
+	background-image: url(images/Punto.png);
+	background-repeat: no-repeat;
+	height: 18px;
+	text-align: center;
+	width: 18px;
+}
+
+.puntoXYCoordenada {
+	background-image: url(images/PuntoXY.png);
+	background-repeat: no-repeat;
+	height: 18px;
+	text-align: center;
+	width: 18px;
+}
+
+.globoCoordenada {
+	background-image: url(images/Globo.png);
+	background-repeat: no-repeat;
+	height: 18px;
+	text-align: center;
+	width: 18px;
+}
+
+.borradoEdicion {
+	background-image: url(images/BorradoEdicion.png);
+	background-repeat: no-repeat;
+	height: 18px;
+	text-align: center;
+	width: 18px;
+}
+
+#toolbarCoordenada{
+	background-color: transparent;
+    border: none;
+    box-shadow: none;
+}
+/** Comprobar el id del widget en \apps\#\widgets\config.json, o bien establecerlo como wCoordenadas
+para que en caso de estar en la barra superior sea redimensionado correctamente. */
+#wCoordenadas_panel{
+	width: 400px !important;
+	height: 180px !important;
+}
+
+.visible-xs {
+	display:none;
+}
+
+@media (max-width:360px){
+	.visible-xs {
+		display:block;
+		margin-top:2px;
+	}
+}

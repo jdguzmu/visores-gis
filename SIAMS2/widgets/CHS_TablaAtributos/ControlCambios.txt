@@ -1,0 +1,39 @@
+************************************************************ *** * * ***
+****				v.20.01.15		     *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	_FeatureTable.js
+	----------------------------------------------
+	OBJETIVO:
+	Enlazar la edición de estilos con el popup emergente al hacer click sobre un campo.
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Si un campo es de tipo String, al hacer click sobre uno de sus campos, abre en el pop-up o menu desplegable la opcion de editar estilos.
+	Dicho botón abre el widget de edición de estilos, recoge la capa y el campo desde el que se lanza y lo aplica a los select para automatizar el proceso de rotulación.
+
+************************************************************ *** * * ***
+****				v.20.03.30		     *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	widget.html		_FeatureTable.js	css/style.css	css/images/ config.json 	nls/es/string.js
+	----------------------------------------------
+	OBJETIVO:
+	Se añade la funcionalidad "Seleccionar todo"/"Borrar selección".
+	Se reorganizan las funciones de exportación en el panel del widget y se añade la exportación a JSON y KML.
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Si no hay ningun elemento seleccionado en la tabla se muestra el botón de "Seleccionar todo", en el caso de que haya algún elemento seleccionado se oculta dicho botón y se muestra el botón de "Borrar seleccion".
+	Se añade en el menu desplegable un submenu de exportación, desde el que se puede exportar a Shape, JSON, KML, CSV y a Anotaciones. La etiqueta del botón cambia en función de los elementos seleccionados que haya o la ausencia de ellos. En caso de no haber ningún elemento seleccionado se exportarán todos los elementos. En caso de haber elementos seleccionados tan solo se exportará dicha selección.
+	Desde el fichero de configuración se puede establecer el numero de elementos a exportar para cada tipo de exportación.
+
+************************************************************ *** * * ***
+****				v.20.12.02		     *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	table/_FeatureTable.js
+	----------------------------------------------
+	OBJETIVO:
+	Si la capa esta filtrada por el widget de filtro, no permite ejecutar el filtrado a traves de la tabla de atributos
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Se modifica el código para leer en la capa si esta tiene aplicado un filtro, ya sea espacial o alfanumerico, y desactivar la opcion de filtro desde la tabla.

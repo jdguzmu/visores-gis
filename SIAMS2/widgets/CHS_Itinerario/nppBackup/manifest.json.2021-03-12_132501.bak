@@ -1,0 +1,15 @@
+{
+	"name": "CHS_Itinerario",
+	"label": "Cargar Itinerario",
+	"platform": "HTML",
+	"version": "1.0",
+	"wabVersion": "2.5",
+	"author": "AYESA ADVANCED TECHN. S.A.",
+	"description": "",
+	"copyright": "",
+	"license": "http://www.apache.org/licenses/LICENSE-2.0",
+	"properties": {
+		"inPanel": true,
+		"hasConfig": true
+  }
+}

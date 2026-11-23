@@ -1,0 +1,7 @@
+﻿{
+	"urlServicio": "https://www.chsegura.es/rest/services/VISOR_CHSIC3/CONSULTA_COTAS/MapServer/identify",
+	"proxyCors": "http://localhost:8080/LoginChsPortal/proxy.jsp?",
+	"campoCota": "Valor de píxel",
+	"noResultados": "No se han encontrado resultados.",
+	"folderUrl":"./Widgets/CHS_CotaTerreno/images/"
+}

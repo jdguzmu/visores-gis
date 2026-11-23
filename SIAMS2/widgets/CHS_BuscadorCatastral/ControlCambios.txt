@@ -1,0 +1,11 @@
+************************************************************ *** * * ***
+****						v.19.07.16						 *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	css\style.css
+	----------------------------------------------
+	OBJETIVO:
+	Poder hacer click sobre el highlight o circulo rojo y que se recoja como evento.
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Se modifica la clase highlight con el atributo pointer-events para capturar eventos sobre el png de la imagen.

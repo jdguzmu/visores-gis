@@ -1,0 +1,29 @@
+define([
+  'dojo/_base/declare',
+  'dojo/_base/lang',
+  'dojo/_base/array',
+  'esri/lang'
+], function(declare, lang, array, esriLang) {
+  return declare([], {
+    
+	constructor:function() {
+				
+	},
+	
+	/*Url de peticion*/
+	url: /*String*/null,
+	/*parametros a enviar a servidor en formato json {param1:value1,param2:value2}*/
+	params:/*JSON*/null,
+	/*handler manejador de exito en la peticion, si no se especifica se usar? por defecto el del GestorPeticiones*/
+	onSuccess:/*function*/null,
+	/*handler manejador de error en la peticion, si no se especifica se usar? por defecto el del GestorPeticiones*/
+	onError:/*function*/null,
+	/**/
+	sync: false,
+	/*no especificar, ser? rellenado por el gestor de peticion*/
+	seq: /*int*/null,
+	handleAs: "json",
+	type: "post"
+		
+  });
+});

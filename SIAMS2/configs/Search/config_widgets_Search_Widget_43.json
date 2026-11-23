@@ -1,0 +1,57 @@
+{
+  "allPlaceholder": "",
+  "showInfoWindowOnSelect": true,
+  "sources": [
+    {
+      "layerId": null,
+      "url": "https://siams.chminosil.es/server/rest/services/Hosted/poblaciones/FeatureServer/0",
+      "name": "Núcleos población",
+      "placeholder": "",
+      "searchFields": [
+        "etiqueta"
+      ],
+      "displayField": "etiqueta",
+      "exactMatch": false,
+      "searchInCurrentMapExtent": false,
+      "panToScale": false,
+      "zoomScale": null,
+      "maxSuggestions": 16,
+      "maxResults": 16,
+      "type": "query"
+    },
+    {
+      "layerId": "Base_division_administrativa_4538_4",
+      "url": "https://siams.chminosil.es/server/rest/services/CapasSIAMS/Base_division_administrativa/MapServer/4",
+      "name": "Municipios",
+      "placeholder": "",
+      "searchFields": [
+        "ETIQUETA"
+      ],
+      "displayField": "ETIQUETA",
+      "exactMatch": false,
+      "searchInCurrentMapExtent": false,
+      "panToScale": false,
+      "zoomScale": null,
+      "maxSuggestions": 16,
+      "maxResults": 16,
+      "type": "query"
+    },
+    {
+      "layerId": "Base_division_administrativa_4538_5",
+      "url": "https://siams.chminosil.es/server/rest/services/CapasSIAMS/Base_division_administrativa/MapServer/5",
+      "name": "Provincias",
+      "placeholder": "",
+      "searchFields": [
+        "ETIQUETA"
+      ],
+      "displayField": "ETIQUETA",
+      "exactMatch": false,
+      "searchInCurrentMapExtent": false,
+      "panToScale": false,
+      "zoomScale": null,
+      "maxSuggestions": 6,
+      "maxResults": 6,
+      "type": "query"
+    }
+  ]
+}

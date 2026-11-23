@@ -1,0 +1,12 @@
+************************************************************ *** * * ***
+****			v.20.12.02		     	     *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	widget.js	config.json	css/style.css
+	----------------------------------------------
+	OBJETIVO:
+	No identifica correctamente cuando se usa previamente el buscador catastral.
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Al usar el buscador catastral, se añade el wms de la zona con la referencia catastral para que enseñe resaltada la parcela devuelta, al hacer el identify usa la url con dicha referencia catastral para hacer el getcapabilities y por tanto da error.
+

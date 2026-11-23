@@ -1,0 +1,25 @@
+************************************************************ *** * * ***
+****						v.19.09.24						 *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	widget.js	widget.html		css/style.css	css/images
+	----------------------------------------------
+	OBJETIVO:
+	Hacer buffer a anotaciones.
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Se modifica el widget para que recoja las anotaciones enviadas desde CHS_Anotaciones y modifciando los parámetros ejecutar el geoproceso. Se añade un botón que exporta los resultados del geoproceso al widget de anotaciones.
+	
+************************************************************ *** * * ***
+****						v.20.04.13						 *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	widget.js	widget.html		config.json		css/style.css	css/images/color.png
+	----------------------------------------------
+	OBJETIVO:
+	Excluir capas.
+	Simbología del buffer.
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Se añade al config.json un parámetro "capas" con el título y la url de las capas de las que no se podrán hacer buffer, bien por su numero de elementos o por su complejidad.
+	Se añade un botón para aplicar simbología al buffer.

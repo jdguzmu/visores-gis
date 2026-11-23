@@ -1,0 +1,24 @@
+************************************************************ *** * * ***
+****						v.19.09.09						 *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	widget.js	widget.html		css/style.css	css/images/download_shp.png		css/images/toAnotation.png
+	----------------------------------------------
+	OBJETIVO:
+	Añadir botón para exportar los resultados a anotaciones.
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Se añade al panel del widget un botón para exportar al widget de anotaciones las cuencas vertientes y los cauces obtenidos. Dicho botón se muestra y oculta en función de que haya resultados que exportar o no.
+
+************************************************************ *** * * ***
+****						v.19.10.22						 *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	widget.js	config.json Servicio 	CuencasVertientes
+	----------------------------------------------
+	OBJETIVO:
+	Modificar el servicio para que devuelva todos los campos de los cauces y los necesarios de las cuencas.
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Se modifica el Model Builder que realiza los cálculos, se publica el servicio y se hacen los cambios necesarios en el widget.js para obtener todos los campos necesarios y que se exporten a anotaciones.
+	Se modifican algunos mensajes de error.

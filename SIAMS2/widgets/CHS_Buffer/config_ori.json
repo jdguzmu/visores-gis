@@ -1,0 +1,11 @@
+{
+	"proxyCors": "http://localhost:8080/LoginChsPortal/proxy.jsp?",
+	"servicioDownloadAnotaciones": "http://localhost:8080/LoginChsPortal/DownloadAnotaciones",
+	"servicioDownloadFichero": "http://localhost:8080/LoginChsPortal/DownloadFichero",
+	"folderUrl":"./widgets/CHS_Buffer/images/",
+	"nMaxElementos": 15000,
+	"maxPostSize":3176448,
+	"msnInfo":"Tenga en cuenta que se va a realizar el buffer solo de las entidades visibles en la vista actual. Puede aplicar un filtro para reducir el número de entidades o zoom in para aumentar la precision del buffer",
+	"msnMaxElementos":"La geometría es demasiado compleja para realizar el buffer. Pruebe a aplicar un filtro para reducir el número de entidades",
+	"msnMaxElementosExport":"El tamaño del fichero a generar es demadiado grande.El tamaño máximo permitido es #{maxPostSize} bytes"
+}

@@ -1,0 +1,13 @@
+{
+  "name": "CHS_Coordenadas",
+  "2D": true,
+  "3D": false,
+  "platform": "HTML",
+  "version": "1.0",
+  "wabVersion": "2.4",
+  "author": "AYESA ADVANCED TECHN. S.A.",
+  "description": "Widget de representación de coordenadas",
+  "copyright": "",
+  "license": "http://www.apache.org/licenses/LICENSE-2.0",
+  "properties": {}
+}

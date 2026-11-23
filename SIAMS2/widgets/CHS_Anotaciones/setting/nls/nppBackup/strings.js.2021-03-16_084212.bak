@@ -1,0 +1,5 @@
+define({
+	root: ({
+		configText: "Este widget permite dibujar sobre el visor puntos, líneas, polígonos y etiquetas. Permite la exportación/importación de dichas entidades en formato SHP o JSON"
+  })
+});

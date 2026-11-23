@@ -1,0 +1,6 @@
+{
+  "fileNameForAllSessions": "Marcadores_CHMS.json",
+  "fileNameTplForSession": "Marcadores_CHMS_${name}.json",
+  "useServerToDownloadFile": false,
+  "saveToFileUrl": ""
+}

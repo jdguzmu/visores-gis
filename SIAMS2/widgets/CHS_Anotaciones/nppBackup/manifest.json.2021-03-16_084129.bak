@@ -1,0 +1,18 @@
+{
+    "name": "CHS_Anotaciones",
+    "platform": "HTML",
+    "version": "1.0",
+	"wabVersion": "2.4",
+    "author" : "CONFEDERACIÓN HIDROGRÁFICA DEL SEGURA, O.A.",
+    "description": "Widget de anotaciones",
+    "copyright": "CONFEDERACIÓN HIDROGRÁFICA DEL SEGURA, O.A.",
+    "license": "http://www.apache.org/licenses/LICENSE-2.0",
+	"properties": {
+		"hasConfig": true,
+		"hasSettingPage": true
+	},
+	"featureActions": [{
+		"name": "ExportAnotaciones",
+		"uri": "ExportAnotacionesFeatureAction"
+  }]
+}

@@ -1,0 +1,109 @@
+************************************************************ *** * * ***
+****						v.19.07.10						 *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	widget.js
+	----------------------------------------------
+	OBJETIVO:
+	Mejorar el tiempo de borrado de un conjunto de anotaciones.
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Se modifica la función _removeGraphic para que no actualce la lista de graficos cada vez q borra uno pues incrementa mucho el tiempo de borrado, dicha actualización se hace una vez se borran todos los graficos.
+
+************************************************************ *** * * ***
+****						v.19.08.19						 *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	widget.js	nls.\string.js	
+	LoginChsPortal\WEB-INF\classes\es\chsegura\chsic\servlet\UploadAnotaciones.class
+	----------------------------------------------
+	OBJETIVO:
+	En ocasiones no carga shapes que se han exportado desde un dxf.
+	----------------------------------------------
+	DESCRIPCIÓN:
+	El problema es que dichos shapes no traen el prj con el SRS asociado, por ejemplo cuando se exportan desde ArcCatalog. Se modifica la aplicacion LoginChsPortal y el widget para tratar dicho error y se muestra en pantalla.
+
+************************************************************ *** * * ***
+****						v.19.08.22						 *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	widget.js	widget.html		css/style.css	
+	----------------------------------------------
+	OBJETIVO:
+	Se añade la digitalización de rectángulos por coordenadas.
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Se añade una casilla de verificación para entrar en modo "digitalización por coordenadas" tanto en círculos como rectángulos.
+	Al entrar en dicho modo se habre un cuadro de dialogo en el mismo panel para introducir los datos.
+	
+************************************************************ *** * * ***
+****						v.19.09.24						 *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	widget.js	widget.html		css/style.css	css/images/Buffer.png
+	----------------------------------------------
+	OBJETIVO:
+	Hacer buffer a anotaciones.
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Se modifica el código para meter un botón en la parte inferior del widget para hacer buffer a las anotaciones seleccionadas. Dicho botón exporta las anotaciones seleccionadas al widget de buffer para aplicar los parámetros necesarios.
+	
+************************************************************ *** * * ***
+****						v.19.11.27						 *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	ExportAnotacionesFeatureAction.js
+	----------------------------------------------
+	OBJETIVO:
+	Error al importar desde el widget de identify.
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Para importar desde el widget identify, se hace con feature action colocado en el popup del panel. Por cambios en la API ahora no puede recoger la simbologia y ocasionaba el error. Se comenta dicha parte para que funcione...aunque no represente la simbologia real. Se detecta que al importar no recoge los campos de forma correcta, solucionar esto involucra cambios mas profundos en el widget, pues realmente lo que exporta es el gráfico de la ventana emergente, no la geometria en sí.
+
+************************************************************ *** * * ***
+****						v.19.12.03						 *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	widget.js	config.json		config_PRO.json		esri.symbol.MultiLineTextSymbol.js
+	----------------------------------------------
+	OBJETIVO:
+	Formatear superficies y perímetros.
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Se vuelca la calse MultiLineTextSymbol que permite introducir textos multilineas mediante el caracter "\n". Se modifican los patrones de etiquetado para añadir una cadena de texto desciptiva del resultado y para que recoja la abreviatura al final como unidad de medida. Todo ello se puede configurar desde el config.json.
+	
+************************************************************ *** * * ***
+****						v.20.01.03						 *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	widget.js	widget.html 	config.json		config_PRO.json		nls/strings.js		css/style.css		css/images/...
+	----------------------------------------------
+	OBJETIVO:
+	Exportar a KML.
+	Importar información de ficheros en formato CSV y GPX.
+	Simbolizar vértices e incluir el texto de las coordenadas.
+
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Se implementa la capacidad de exportar a KML a partir de una clase java downloadAnotaciones que hace uso de librerias geotools, pasandole al servicio un json con las features.
+	
+	Se crean las funciones importCSV y importGPX que envian el fichero al servicio uploadAnotaciones y que convierte las geometrías en formato WKT a json para ser importadas en PORTAl.
+	
+	Se crean funciones que convierten los vertices de una linea o poligonno a nodos o puntos. Otra función rotula las coordenadas de estos puntos, estando dichos rotulos relacionados con los puntos a los que pertenece. En ambos casos recoge del config.json el límite de vertices a vectorizar o puntos a rotular. 
+	
+************************************************************ *** * * ***
+****						v.20.05.13						 *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	widget.js	widget.html		css/style.css		css/images/...
+	----------------------------------------------
+	OBJETIVO:
+	CArgar plantilla de atributos.
+
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Se implementa la capacidad de cargar una plantilla de atributos para un gráfico a partir de un fichero shape comprimido en .zip. 
+	
+		
+	
+	
