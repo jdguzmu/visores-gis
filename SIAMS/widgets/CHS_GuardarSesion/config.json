@@ -1,0 +1,4 @@
+{   
+    "fileNameForAllSessions": "Marcadores_CHS.json",
+    "fileNameTplForSession": "Marcadores_CHS_${name}.json"
+}

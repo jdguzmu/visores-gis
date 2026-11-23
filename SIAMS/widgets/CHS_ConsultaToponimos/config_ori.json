@@ -1,0 +1,6 @@
+﻿{
+	"zoomLevel" : 8,
+	"modoBusqueda": "Buscará los topónimos en el área de la ventana",
+	"rutaServicioMuniProv": "https://www.chsegura.es/arcgis/rest/services/VISOR_CHSIC3/VISOR_PUBLICO_ETRS89_v5_vectorial_dinamico/MapServer/114/",
+	"proxyCors":"http://localhost:8080/LoginChsPortal/proxy.jsp?"
+}

@@ -1,0 +1,13 @@
+{
+  "servicioDownloadFichero": "http://localhost:8080/LoginChsPortal/DownloadFichero",
+	"servicioDownloadAnotaciones": "http://localhost:8080/LoginChsPortal/DownloadAnotaciones",
+  "layerInfos": [],
+  "table": {
+    "pageSizeOptions": [25, 50, 100, 1000]
+  },
+  "hideExportButton": false,
+  "initiallyExpand": false,
+  "filterByMapExtent": true,
+  "maxExportAnotaciones": 50,
+  "maxExportShp": 5
+}

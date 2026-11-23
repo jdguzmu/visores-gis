@@ -1,0 +1,8 @@
+{
+  "style": "vertical",
+  "scopeSize": "medium",
+  "layers": [],
+  "swipeLayerHeight": 160,
+  "urlGeometryService": "https://www.chsegura.es/rest/services/Utilities/Geometry/GeometryServer",
+  "proxyCors": "http://localhost:8080/LoginChsPortal/proxy/ItinerarioService"
+}

@@ -1,0 +1,42 @@
+<div class="jimu-widget-itinerario">
+	<table class="widgetTable" style="width:300px;height:90px;">
+			<tr>
+				<td style="padding-left:15px;">
+					<form dojoType="dijit.form.Form" data-dojo-attach-point="uploadFormItinerario" id="uploadFormItinerario"
+						method="post" encType="multipart/form-data" 
+						action="">
+						<input type="file" 
+							id="inputFileItinerario"
+							name="fileuploadItineario"		
+							style="font-family: Arial;
+							font-size: inherit;font-weight: bold;"/><br/>
+					</form>
+				</td>				
+			</tr>
+			<tr>
+				<td colspan="3" style="padding-left:15px;">
+					<div id="checkMarcadores" data-dojo-attach-point="checkMarcadores" name="checkMarcadores" dojoType="dijit.form.CheckBox" value="false"></div>
+					<span class="etiquetasWidgets">mostrarMarcadores</span>
+				</td>
+			</tr>	
+			<tr>
+				<td colspan="4">
+					<div id="processItinerario" data-dojo-attach-point="processItinerario" name="processItinerario" style='color:white;padding-left:15px;'></div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<button name="btnItinerarioLimpiar"  data-dojo-attach-point="btnItinerarioLimpiar" type="button" style="padding-left:15px;"
+						dojoType="dijit.form.Button">limpiar</button>			
+				</td>				
+			</tr>	
+			<tr>
+				<td>
+					<div style="padding: 10px; text-align: justify;">
+						<p>Esta herramienta permite la visualización sobre el mapa de itinerarios en formato GPX o un TXT con pares de coordenadas en UTM ETRS89 separadas por comas o espacios.<p></br>
+						<p>Asegurese que los ficheros cargados utilizan codificación de caracteres UTF-8.</p>
+					</div>
+				</td>
+			</tr>
+		</table>
+</div>

@@ -1,0 +1,3 @@
+13/06/2019
+	widget.html widget.js
+	Se añade evento onchange en el imput de sistema de referencia para que cuando se elija el de Google cambie la X/Y por long/lat 

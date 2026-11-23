@@ -1,0 +1,25 @@
+define([
+  'dojo/_base/declare',
+  'dojo/_base/lang',
+  'dojo/_base/array',
+  'esri/lang'
+], function(declare, lang, array, esriLang) {
+  return declare([], {
+    
+	url: null,
+	featureNS: null,
+	nombreNS: null,
+	campoGeometrico: null,
+	srsName: null,
+	
+    constructor: function(){
+		this.url="";
+		this.featureNS="";
+		this.nombreNS="";
+		this.campoGeometrico="";
+		this.srsName="";
+    }
+	
+	
+  });
+});

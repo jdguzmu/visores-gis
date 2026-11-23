@@ -1,0 +1,170 @@
+{
+  "name": "Modelo222",
+  "displayName": "Coord a PuntosV3",
+  "description": "modelo de pruebas 2",
+  "category": "",
+  "helpUrl": "https://siams.chminosil.es/server/rest/directories/arcgisoutput/geoprocesamiento/PuntoCoordv3_GPServer/geoprocesamiento_PuntoCoordv3/Modelo222.htm",
+  "serverInfo": {
+    "currentVersion": 10.91,
+    "url": "https://siams.chminosil.es/server/rest/services/geoprocesamiento/PuntoCoordv3/GPServer/",
+    "hasResultMapServer": false,
+    "resultMapServerName": "",
+    "supportsUpload": true,
+    "maxUploadFileSize": 2000
+  },
+  "useResultMapServer": false,
+  "taskUrl": "https://siams.chminosil.es/server/rest/services/geoprocesamiento/PuntoCoordv3/GPServer/Coord a PuntosV3",
+  "isSynchronous": false,
+  "inputParams": [
+    {
+      "name": "Archivo_coordenadas",
+      "dataType": "GPDataFile",
+      "description": "Coordenadas de entrada",
+      "defaultValue": "itemID:",
+      "category": "",
+      "label": "Archivo coordenadas",
+      "visible": true,
+      "required": true,
+      "tooltip": "Archivo coordenadas"
+    },
+    {
+      "name": "Coord_X",
+      "dataType": "GPString",
+      "description": "Coordenadas X",
+      "defaultValue": "X",
+      "category": "",
+      "choiceList": [
+        "X"
+      ],
+      "label": "Coord X",
+      "visible": true,
+      "required": true,
+      "tooltip": "Coord X"
+    },
+    {
+      "name": "Coord_Y",
+      "dataType": "GPString",
+      "description": "Coordenadas Y",
+      "defaultValue": "Y",
+      "category": "",
+      "choiceList": [
+        "Y"
+      ],
+      "label": "Coord Y",
+      "visible": true,
+      "required": true,
+      "tooltip": "Coord Y"
+    },
+    {
+      "name": "Coordinate_System",
+      "dataType": "GPString",
+      "description": "Sistema de coordenadas del archivo de entrada",
+      "defaultValue": null,
+      "category": "",
+      "label": "Sistema de coordenadas",
+      "visible": false,
+      "required": false,
+      "tooltip": "Sistema de coordenadas"
+    }
+  ],
+  "outputParams": [
+    {
+      "name": "puntos",
+      "dataType": "GPFeatureRecordSetLayer",
+      "description": "",
+      "defaultValue": {
+        "displayFieldName": "",
+        "geometryType": "esriGeometryPoint",
+        "spatialReference": {
+          "wkid": 25829,
+          "latestWkid": 25829
+        },
+        "fields": [
+          {
+            "name": "OBJECTID",
+            "type": "esriFieldTypeOID",
+            "alias": "OBJECTID"
+          },
+          {
+            "name": "X",
+            "type": "esriFieldTypeInteger",
+            "alias": "X"
+          },
+          {
+            "name": "Y",
+            "type": "esriFieldTypeInteger",
+            "alias": "Y"
+          }
+        ],
+        "features": [],
+        "exceededTransferLimit": false
+      },
+      "category": "",
+      "label": "puntos",
+      "visible": true,
+      "required": false,
+      "featureSetMode": "layers",
+      "tooltip": "puntos",
+      "renderer": {
+        "type": "simple",
+        "symbol": {
+          "color": [
+            0,
+            0,
+            128,
+            128
+          ],
+          "size": 18,
+          "angle": 0,
+          "xoffset": 0,
+          "yoffset": 0,
+          "type": "esriSMS",
+          "style": "esriSMSCircle",
+          "outline": {
+            "color": [
+              0,
+              0,
+              128,
+              255
+            ],
+            "width": 0.75,
+            "type": "esriSLS",
+            "style": "esriSLSSolid"
+          }
+        }
+      },
+      "popup": {
+        "title": "",
+        "fields": [
+          {
+            "name": "OBJECTID",
+            "alias": "OBJECTID",
+            "type": "esriFieldTypeOID",
+            "visible": true
+          },
+          {
+            "name": "X",
+            "alias": "X",
+            "type": "esriFieldTypeInteger",
+            "visible": true
+          },
+          {
+            "name": "Y",
+            "alias": "Y",
+            "type": "esriFieldTypeInteger",
+            "visible": true
+          }
+        ],
+        "enablePopup": true
+      },
+      "useDynamicSchema": false,
+      "ignore": false,
+      "layerInvisible": false
+    }
+  ],
+  "shareResults": true,
+  "layerOrder": [
+    "puntos"
+  ],
+  "showExportButton": true
+}

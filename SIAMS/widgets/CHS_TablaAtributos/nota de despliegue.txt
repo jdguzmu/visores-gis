@@ -1,0 +1,8 @@
+Nota importante: El fichero CSVUtils.js contenido
+dentro de la carpeta del widget hay que desplegarlo en las carpetas
+de portal:
+
+
+D:\Portal\apps\webappviewer\jimu.js\
+
+D:\Portal\apps\webappbuilder\jimu.js\

@@ -1,0 +1,10 @@
+{
+  "name": "CHS_CuencasVertientes",
+  "platform": "HTML",
+  "version": "2.6",
+  "wabVersion": "2.6",
+  "author": "Confederación Hidrográfica del Segura, O,A.",
+  "description": "This is the widget used in developer guide",
+  "copyright": "Confederación Hidrográfica del Segura, O,A.",
+  "license": "http://www.apache.org/licenses/LICENSE-2.0"
+}

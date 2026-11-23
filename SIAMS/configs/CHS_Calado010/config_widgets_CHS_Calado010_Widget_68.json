@@ -1,0 +1,7 @@
+{
+  "urlServicio": "https://siams.chminosil.es/server/rest/services/CapasSIAMS/Mapa_de_Peligrosidad_Calados_10/MapServer/identify",
+  "proxyCors": "https://siams.chminosil.es/proxy/proxy.jsp?",
+  "campoCota": "Valor de píxel",
+  "noResultados": "No se han encontrado resultados.",
+  "folderUrl": "./widgets/CHS_Calado010/images/"
+}

@@ -1,0 +1,6 @@
+define({
+  root: ({
+    "CotaRasterPromedio":"Cota (MDT LIDAR 5 m. IGN)",
+	"cota": "Z"
+  })
+});

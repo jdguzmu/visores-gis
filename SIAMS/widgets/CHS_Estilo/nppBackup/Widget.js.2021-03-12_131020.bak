@@ -1,0 +1,1773 @@
+///////////////////////////////////////////////////////////////////////////
+// Copyright © 2014 - 2017 Esri. All Rights Reserved.
+//
+// Licensed under the Apache License Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+///////////////////////////////////////////////////////////////////////////
+
+define([
+    'dojo/_base/declare',
+    'dijit/_WidgetsInTemplateMixin',
+    'jimu/BaseWidget',
+    'dojo/on',
+    'dojo/Deferred',
+    'dojo/_base/html',
+    'dojo/_base/lang',
+    'dojo/_base/Color',
+    'dojo/_base/array',
+    'dojo/dom-style',
+    'esri/config',
+    'esri/graphic',
+    'esri/geometry/Polyline',
+    'esri/geometry/Polygon',
+    'esri/symbols/TextSymbol',
+    'esri/symbols/Font',
+    'esri/units',
+    'esri/geometry/webMercatorUtils',
+    'esri/geometry/geodesicUtils',
+    'esri/symbols/SimpleMarkerSymbol',
+    'esri/symbols/SimpleLineSymbol',
+    'esri/symbols/SimpleFillSymbol',
+    'esri/renderers/SimpleRenderer',
+    'esri/tasks/GeometryService',
+    'esri/tasks/AreasAndLengthsParameters',
+    'esri/tasks/LengthsParameters',
+    'esri/undoManager',
+    'esri/OperationBase',
+    'esri/layers/GraphicsLayer',
+    'esri/layers/FeatureLayer',
+    'esri/renderers/UniqueValueRenderer',
+    'jimu/dijit/ViewStack',
+    'jimu/utils',
+    'jimu/SpatialReference/wkidUtils',
+    'jimu/LayerInfos/LayerInfos',
+    'jimu/dijit/LoadingIndicator',
+    'jimu/dijit/DrawBox',
+    'jimu/dijit/SymbolChooser',
+    'dijit/form/Select',
+    'dijit/form/NumberSpinner',
+    'esri/dijit/Legend',
+	'jimu/dijit/Message',
+	'./GestorPeticiones',
+	'./Peticion',
+	'./LineCursor',
+	'jimu/WidgetManager',
+	"dojo/parser",
+	"dijit/form/ToggleButton"
+
+  ],
+  function(declare, _WidgetsInTemplateMixin, BaseWidget, on, Deferred, html, lang, Color, array, domStyle,
+    esriConfig, Graphic, Polyline, Polygon, TextSymbol, Font, esriUnits, webMercatorUtils, geodesicUtils, SimpleMarkerSymbol,SimpleLineSymbol, SimpleFillSymbol, SimpleRenderer, GeometryService, AreasAndLengthsParameters, LengthsParameters, UndoManager, OperationBase, GraphicsLayer, FeatureLayer, UniqueValueRenderer, ViewStack, jimuUtils, wkidUtils, LayerInfos,
+    LoadingIndicator, DrawBox, SymbolChooser, Select, NumberSpinner, Legend, Message, GestorPeticiones, Peticion, LineCursor, WidgetManager, parser, ToggleButton) {
+    //custom operations
+    var customOp = {};
+
+
+
+    customOp.Add = declare(OperationBase, {
+      label: 'Add Graphic',
+      constructor: function( /*graphicsLayer, addedGraphics*/ params) {
+        this._graphicsLayer = params.graphicsLayer;
+        this._addedGraphics = params.addedGraphics;
+      },
+
+      performUndo: function() {
+        array.forEach(this._addedGraphics, lang.hitch(this, function(g) {
+          this._graphicsLayer.remove(g);
+        }));
+      },
+
+      performRedo: function() {
+        array.forEach(this._addedGraphics, lang.hitch(this, function(g) {
+          this._graphicsLayer.add(g);
+        }));
+      }
+    });
+    customOp.Delete = declare(OperationBase, {
+      label: 'Delete Graphic',
+      constructor: function( /*graphicsLayer, deletedGraphics*/ params) {
+        this._graphicsLayer = params.graphicsLayer;
+        this._deletedGraphics = params.deletedGraphics;
+      },
+
+      performUndo: function() {
+        array.forEach(this._deletedGraphics, lang.hitch(this, function(g) {
+          this._graphicsLayer.add(g);
+        }));
+      },
+
+      performRedo: function() {
+        array.forEach(this._deletedGraphics, lang.hitch(this, function(g) {
+          this._graphicsLayer.remove(g);
+        }));
+      }
+    });
+
+    return declare([BaseWidget, _WidgetsInTemplateMixin], {
+      name: 'Draw',
+      baseClass: 'jimu-widget-draw',
+      _gs: null,
+      _defaultGsUrl: '//tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer',
+      _undoManager: null,
+      _graphicsLayer: null,
+      _objectIdCounter: 1,
+      _objectIdName: 'OBJECTID',
+      _objectIdType: 'esriFieldTypeOID',
+      _pointLayer: null,
+      _polylineLayer: null,
+      _polygonLayer: null,
+      _labelLayer: null,
+      layerEdit: null,
+      changeStyle: false,
+      capasServ: [],
+      capasGraf: [],
+      capasFL: [],
+      options:[],
+      selected: null,
+      operLayerInfos: null,
+
+      postMixInProperties: function() {
+
+        this.inherited(arguments);
+        this.config.isOperationalLayer = !!this.config.isOperationalLayer;
+
+        if (esriConfig.defaults.geometryService) {
+          this._gs = esriConfig.defaults.geometryService;
+        } else {
+          this._gs = new GeometryService(this._defaultGsUrl);
+        }
+
+        this._resetUnitsArrays();
+        this._undoManager = new UndoManager({
+          maxOperations: 0
+        });
+      },
+
+      postCreate: function() {
+        this.inherited(arguments);
+        this._initLayers();
+        jimuUtils.combineRadioCheckBoxWithLabel(this.showMeasure, this.showMeasureLabel);
+        this.drawBox.setMap(this.map);
+
+        this.viewStack = new ViewStack({
+          viewType: 'dom',
+          views: [this.pointSection, this.lineSection, this.polygonSection, this.textSection, this.complexSection]
+        });
+        html.place(this.viewStack.domNode, this.settingContent);
+
+        this._initUnitSelect();
+        this._bindEvents();
+        //let all buttons disable-like
+        this._enableBtn(this.btnUndo, false);
+        this._enableBtn(this.btnRedo, false);
+        this._enableBtn(this.btnClear, false);
+		dojo.style(this.bNegrita.domNode,{width:"22px"});
+		dojo.style(this.bCursiva.domNode,{width:"22px"});
+		dojo.style(this.bSubr.domNode,{width:"22px"});
+      },
+
+
+      onOpen: function() {
+        var panel = this.getPanel();
+        panel.position.width = 400;
+        panel.position.height = 590;
+        panel.setPosition(panel.position);
+        panel.panelManager.normalizePanel(panel);
+      },
+
+      getLayersActive: function() {
+
+        this.capasServ = []
+        this.capasGraf = []
+        this.capasFL = [];
+
+        var layers = this.map.layerIds;
+        for (var i = 0; i < layers.length; i++) { //recorre los Servicios añadidos al mapa
+          if (this.map.getLayer(layers[i]).tileInfo == undefined && this.map.getLayer(layers[i]).visible) { //si no es un Servicio Raster entra y ademas visible
+            var lvisibles = [];
+            lvisibles = this.map.getLayer(layers[i]).visibleLayers //Recoje las capas visibles
+            if (lvisibles)
+              for (var j = 0; j < lvisibles.length; j++) {
+                if (lvisibles[j] != -1) { //Al recoger las capas algunas aparecen como -1, evitamos que estas se recojan
+                  var k = lvisibles[j]
+                  //Vemos si las capas visibles estan habilitadas en los rangos de escala, si no lo estan no las cargamos
+                  if (this.map.getLayer(layers[i]).layerInfos[k]!=undefined && this.map.getLayer(layers[i]).layerInfos[k].subLayerIds==null){
+					var esc = this.map.getScale()
+                    var e_min = this.map.getLayer(layers[i]).layerInfos[k].minScale
+                    var e_max = this.map.getLayer(layers[i]).layerInfos[k].maxScale                     
+                  
+					if ((e_min == 0 && e_max == 0) || (e_max == 0 && e_min > esc) || (e_min == 0 && e_max < esc) || e_min > esc && esc > e_max) {
+						this.capasServ.push(this.map.getLayer(layers[i]).layerInfos[k]); //Añadimos en el array el las capas visibles
+						this.capasFL.push(new FeatureLayer(this.map.getLayer(layers[i]).url + "/" + this.map.getLayer(layers[i]).layerInfos[k].id));
+						this.capasFL[this.capasFL.length - 1].id = layers[i];
+					} else {
+                    //console.log("La capa " + this.map.getLayer(layers[i]).layerInfos[k].name + " no está activa a esta escala")
+					}
+				  }
+                }
+              }
+          }
+        }
+        for (var i = 0; i < this.map.graphicsLayerIds.length; i++) { //recorre las layers individuales
+          if (this.map.getLayer(this.map.graphicsLayerIds[i]).name !== undefined && this.map.getLayer(this.map.graphicsLayerIds[i]).visible) { //si tienen un campo nombre
+            this.capasGraf.push(this.map.getLayer(this.map.graphicsLayerIds[i])) //añadimos al array
+            this.capasFL.push(this.map.getLayer(this.map.graphicsLayerIds[i])) //añadimos al array
+            //console.log(this.map.getLayer(this.map.graphicsLayerIds[i]))
+          }
+        }
+
+        return this.capasServ, this.capasGraf;
+      },
+
+      cargarCapas: function() { //llena el comboBox
+        select = document.getElementById("selectCapaStyle");
+        l_select = document.getElementById("selectCapaStyle").length;
+        for (i = l_select - 1; i > 0; i--) {
+          select[i].remove()
+        }
+        this.getLayersActive();
+        this.selected = "-1";
+        this.options = [];
+        this.viewStack.switchView(null);
+        for (var i = 0; i < this.capasServ.length; i++) { //recorre el array de capas
+          // var option = document.createElement("option");
+          // option.text = this.capasServ[i].name;
+          // select.add(option); //añade los names de cada objeto en el array
+          var option = dojo.create("option", {
+            value: this.capasServ[i].id,
+            innerHTML: this.capasServ[i].name
+          });
+          select.add(option);
+        }
+        for (var i = 0; i < this.capasGraf.length; i++) { //recorre el array de capas
+          // var option = document.createElement("option");
+          // option.text = this.capasGraf[i].name;
+          // select.add(option); //añade los names de cada objeto en el array
+          var option = dojo.create("option", {
+            value: this.capasGraf[i].id,
+            innerHTML: this.capasGraf[i].name
+          });
+          select.add(option);
+        }
+        select.value = this.selected;
+		this.limpiarRotulos();
+		document.getElementById("divEtiquetado").style.display = "none";
+      },
+	  
+	  cargarCampos: function(layer) { //llena el comboBox con los campos de una tabla
+        select = document.getElementById("selectCampo");
+        l_select = document.getElementById("selectCampo").length;
+        for (i = l_select - 1; i > 0; i--) {
+          select[i].remove()
+        }  
+	    for(var i=0; i<layer.fields.length; i++){
+          var alias = layer.fields[i].alias
+		  if(layer.fields[i].type=="esriFieldTypeString" || layer.fields[i].type=="esriFieldTypeInteger" || layer.fields[i].type=="esriFieldTypeDouble"){
+			var option = dojo.create("option", {
+			  value: alias,
+              innerHTML: alias
+			});
+          select.add(option);			
+		  }
+		}	  
+	  },
+	  
+
+	  cargarTiposFuente: function() { //llena el comboBox con los campos de una tabla
+        select = document.getElementById("selectTipoLetra");
+        var fontFamilies = this.config.fontFamilies;
+  
+	    for(var i=0; i<fontFamilies.length; i++){
+          var alias = fontFamilies[i].label
+		  if(true){
+			var option = dojo.create("option", {
+			  value: alias,
+              innerHTML: alias
+			});
+          select.add(option);			
+		  }
+		}	  
+	  },
+
+      modoEdicionEstilo: function() {
+        this.selectedIndex = document.getElementById("selectCapaStyle").selectedIndex;
+        this.selected = document.getElementById("selectCapaStyle").options[this.selectedIndex].text
+        var url = this.capasFL[this.selectedIndex-1].url
+
+        var geometryLayer = null;
+        this.layerEdit = {};
+        for (var i = 0; i < this.capasFL.length; i++) {
+        	if (this.selected==this.capasFL[i].name && url==this.capasFL[i].url){
+                this.layerEdit.layerObject = this.capasFL[i];
+                geometryLayer = this.layerEdit.layerObject.geometryType;
+                break;
+        	}
+        }
+
+        this._comprobarSublayStyle(this.layerEdit.layerObject);
+        if (geometryLayer == "esriGeometryPoint") {
+          this._onIconSelected(null, null, 'point');
+
+        } else if (geometryLayer == "esriGeometryPolygon") {
+          this._onIconSelected(null, null, 'polygon');
+
+        } else if (geometryLayer == "esriGeometryPolyline") {
+          this._onIconSelected(null, null, 'polyline');
+
+        } else if (geometryLayer == "esriGeometryComplex") {
+          this._onIconSelected(null, null, 'complex');
+        }
+		this.etiquetadoCapas();
+      },
+      
+	  etiquetadoCapas: function() {
+		//Lanzamos el etiquetado de Capas
+        document.getElementById("divEtiquetado").style.display = "block";
+		
+		//Escribimnos texto de pruebas y lo ocultamos
+		document.getElementsByClassName("text-section2")[0].children[0].children[3].children[0].children[1].children[1].children[1].children[0].value="Texto de prueba";
+		
+		document.getElementsByClassName("text-section2")[0].children[0].children[3].children[0].children[1].children[1].style.display = "none";		
+		
+		document.getElementsByClassName("text-section2")[0].children[0].children[3].children[0].children[1].children[0].children[1].style.textAlign = "center"
+		
+		this.cargarCampos(this.layerEdit.layerObject);	  
+	  },
+	  
+      onReceiveData: function(name, source, params) {
+        if (params && params.target === "CHS_Estilo") {
+          var id = params.layer.layerObject.graphics.length == 0 ? params.layer.layerObject.layerId : params.layer.id;
+          var select = document.getElementById("selectCapaStyle");
+          if(!params.layer.isVisible() && this.options.indexOf(id) < 0){
+            //Metemos en el select la capa del widget de ListaCapas desde el que hemos lanzado el widget de estilo
+            var option = document.createElement("option");
+            option.text = params.layer.title;
+            option.value = id;
+            select.add(option); //añade los names de cada objeto en el array
+            select.value = id;
+            this.options.push(id);
+          }
+          else{
+            select.value = id;
+          }
+
+          this.selected = id;
+		  
+		  params.layer.layerObject.idServicio = params.layer.originOperLayer.mapService.layerInfo.id
+
+          this.layerEdit = params.layer || params.layerInfo;
+          this._comprobarSublayStyle(this.layerEdit.layerObject);
+          if (params.layer != null) {
+            var geometryLayer = params.layer.layerObject.geometryType;
+
+            if (geometryLayer == "esriGeometryPoint") {
+              this._onIconSelected(null, null, 'point');
+
+            } else if (geometryLayer == "esriGeometryPolygon") {
+              this._onIconSelected(null, null, 'polygon');
+
+            } else if (geometryLayer == "esriGeometryPolyline") {
+              this._onIconSelected(null, null, 'polyline');
+
+            } else if (geometryLayer == "esriGeometryComplex") {
+              this._onIconSelected(null, null, 'complex');
+            }
+          }
+		  this.etiquetadoCapas();
+        }
+		
+		if (params && params.target === "CHS_TablaAtributos") {
+			var select = document.getElementById("selectCapaStyle");
+			var id = params.layer.layerObject.graphics.length == 0 ? params.layer.layerObject.layerId : params.layer.id;
+			
+			select.value = id
+			this.selected = id;
+			
+			params.layer.layerObject.idServicio = params.layer.originOperLayer.mapService.layerInfo.id
+			
+			this.layerEdit = params.layer || params.layerInfo;
+			this._comprobarSublayStyle(this.layerEdit.layerObject);
+			if (params.layer != null) {
+				var geometryLayer = params.layer.layerObject.geometryType;
+
+				if (geometryLayer == "esriGeometryPoint") {
+					this._onIconSelected(null, null, 'point');
+
+				} else if (geometryLayer == "esriGeometryPolygon") {
+				this._onIconSelected(null, null, 'polygon');
+
+				} else if (geometryLayer == "esriGeometryPolyline") {
+				this._onIconSelected(null, null, 'polyline');
+
+				} else if (geometryLayer == "esriGeometryComplex") {
+				this._onIconSelected(null, null, 'complex');
+				}
+			}
+			this.etiquetadoCapas();
+			var selectCampo = document.getElementById("selectCampo");
+			
+			selectCampo.value = params.campo;
+			//this.selected = 3;			
+			//for (var i=0; i < selectCampo.options.length; i++){
+				
+			//}
+
+		}
+      },
+
+      _initLayers: function() {
+        this._graphicsLayer = new GraphicsLayer();
+
+        if (this.config.isOperationalLayer) {
+          var layerDefinition = {
+            "name": "",
+            "geometryType": "",
+            "fields": [{
+              "name": this._objectIdName,
+              "type": this._objectIdType,
+              "alias": this._objectIdName
+            }]
+          };
+          var pointDefinition = lang.clone(layerDefinition);
+          pointDefinition.name = this.nls.points; //this.label + "_" +
+          pointDefinition.geometryType = "esriGeometryPoint";
+          this._pointLayer = new FeatureLayer({
+            layerDefinition: pointDefinition,
+            featureSet: null
+          });
+
+          var polylineDefinition = lang.clone(layerDefinition);
+          polylineDefinition.name = this.nls.lines;
+          polylineDefinition.geometryType = "esriGeometryPolyline";
+          this._polylineLayer = new FeatureLayer({
+            layerDefinition: polylineDefinition,
+            featureSet: null
+          });
+
+          var polygonDefinition = lang.clone(layerDefinition);
+          polygonDefinition.name = this.nls.areas;
+          polygonDefinition.geometryType = "esriGeometryPolygon";
+          this._polygonLayer = new FeatureLayer({
+            layerDefinition: polygonDefinition,
+            featureSet: null
+          });
+
+          var labelDefinition = lang.clone(layerDefinition);
+          labelDefinition.name = this.nls.text;
+          labelDefinition.geometryType = "esriGeometryPoint";
+          this._labelLayer = new FeatureLayer({
+            layerDefinition: labelDefinition,
+            featureSet: null
+          });
+
+          var loading = new LoadingIndicator();
+
+          loading.placeAt(this.domNode);
+
+          LayerInfos.getInstance(this.map, this.map.itemInfo)
+            .then(lang.hitch(this, function(layerInfos) {
+              if (!this.domNode) {
+                return;
+              }
+
+              loading.destroy();
+              var layers = [this._polygonLayer, this._polylineLayer,
+                this._pointLayer, this._labelLayer
+              ];
+              layerInfos.addFeatureCollection(layers, this.label + "_" + this.nls.results);
+            }), lang.hitch(this, function(err) {
+              loading.destroy();
+              console.error("Can not get LayerInfos instance", err);
+            }));
+        } else {
+          this._pointLayer = new GraphicsLayer();
+          this._polylineLayer = new GraphicsLayer();
+          this._polygonLayer = new GraphicsLayer();
+          this._labelLayer = new GraphicsLayer();
+          this.map.addLayer(this._polygonLayer);
+          this.map.addLayer(this._polylineLayer);
+          this.map.addLayer(this._pointLayer);
+          this.map.addLayer(this._labelLayer);
+        }
+      },
+
+      onActive: function() {
+        this.map.setInfoWindowOnClick(false);
+      },
+
+      onDeActive: function() {
+        this._closeColorPicker();
+        this.drawBox.deactivate();
+        this.map.setInfoWindowOnClick(true);
+      },
+
+      onClose: function() {
+        this._closeColorPicker();
+		this.limpiarRotulos();
+      },
+
+      _closeColorPicker: function() {
+        var choosers = ["pointSymChooser", "lineSymChooser", "fillSymChooser", "textSymChooser", "pointSymChooserComplex", "lineSymChooserComplex", "fillSymChooserComplex"];
+        for (var i = 0, len = choosers.length; i < len; i++) {
+          var chooserStr = choosers[i];
+          if (this[chooserStr]) {
+            this[chooserStr].hideColorPicker();
+          }
+        }
+      },
+
+      _resetUnitsArrays: function() {
+        this.defaultDistanceUnits = [];
+        this.defaultAreaUnits = [];
+        this.configDistanceUnits = [];
+        this.configAreaUnits = [];
+        this.distanceUnits = [];
+        this.areaUnits = [];
+      },
+
+      _bindEvents: function() {
+        //bind DrawBox
+        this.own(on(this.drawBox, 'icon-selected', lang.hitch(this, this._onIconSelected)));
+        this.own(on(this.drawBox, 'DrawEnd', lang.hitch(this, this._onDrawEnd)));
+
+        //bind symbol change events
+        this.own(on(this.pointSymChooser, 'change', lang.hitch(this, function() {
+          this._setDrawDefaultSymbols();
+        })));
+        this.own(on(this.pointSymChooserComplex, 'change', lang.hitch(this, function() {
+          this._setDrawDefaultSymbols();
+        })));
+        this.own(on(this.lineSymChooser, 'change', lang.hitch(this, function() {
+          this._setDrawDefaultSymbols();
+        })));
+        this.own(on(this.lineSymChooserComplex, 'change', lang.hitch(this, function() {
+          this._setDrawDefaultSymbols();
+        })));
+        this.own(on(this.fillSymChooser, 'change', lang.hitch(this, function() {
+          this._setDrawDefaultSymbols();
+        })));
+        this.own(on(this.fillSymChooserComplex, 'change', lang.hitch(this, function() {
+          this._setDrawDefaultSymbols();
+        })));
+        this.own(on(this.textSymChooser, 'change', lang.hitch(this, function(symbol) {
+          this.drawBox.setTextSymbol(symbol);
+        })));
+		this.own(on(this.textSymChooser2, 'change', lang.hitch(this, function(symbol) {
+          this.drawBox.setTextSymbol(symbol);
+		  this.actualizarPreview();
+        })));
+
+        //bind unit events
+        this.own(on(this.showMeasure, 'click', lang.hitch(this, this._setMeasureVisibility)));
+
+        //bind UndoManager events
+        this.own(on(this._undoManager, 'change', lang.hitch(this, this._onUndoManagerChanged)));
+		
+		//eventos del etiquetado de campos
+		this.own(on(this._undoManager, 'change', lang.hitch(this, this._onUndoManagerChanged)));
+      },
+
+      _onIconSelected: function(target, geotype, commontype) { //Carga l panel de simbologia en funcion del geometryType
+        /*jshint unused: false*/
+
+        if (commontype === 'point') {
+          this.viewStack.switchView(this.pointSection);
+        } else if (commontype === 'polyline') {
+          this.viewStack.switchView(this.lineSection);
+        } else if (commontype === 'polygon') {
+          this.viewStack.switchView(this.polygonSection);
+        } else if (commontype === 'text') {
+          this.viewStack.switchView(this.textSection);
+        } else if (commontype === 'complex') {
+          this.viewStack.switchView(this.complexSection);
+        }
+
+        this._setMeasureVisibility();
+      },
+      /*
+            _onDrawEnd:function(graphic, geotype, commontype){
+
+              this.drawBox.clear();
+
+              var geometry = graphic.geometry;
+              if(geometry.type === 'extent'){
+                var a = geometry;
+                var polygon = new Polygon(a.spatialReference);
+                var r = [
+                  [a.xmin, a.ymin],
+                  [a.xmin, a.ymax],
+                  [a.xmax, a.ymax],
+                  [a.xmax, a.ymin],
+                  [a.xmin, a.ymin]
+                ];
+                polygon.addRing(r);
+                geometry = polygon;
+                commontype = 'polygon';
+              }
+              if(commontype === 'polyline'){
+                if(this.showMeasure.checked){
+                  this._addLineMeasure(geometry, graphic);
+                }else{
+                  this._pushAddOperation([graphic]);
+                }
+              }
+              else if(commontype === 'polygon'){
+                if(this.showMeasure.checked){
+                  this._addPolygonMeasure(geometry, graphic);
+                }else{
+                  this._pushAddOperation([graphic]);
+                }
+              }
+              else if (commontype === "text") {
+                if (graphic.symbol && graphic.symbol.font && graphic.symbol.font.setFamily) {
+                  graphic.symbol.font.setFamily("Arial Unicode MS");//set font-family for print unicode,#11085
+                }
+                this._pushAddOperation([graphic]);
+              } else {
+                this._pushAddOperation([graphic]);
+              }
+            },
+      */
+      _initUnitSelect: function() {
+        this._initDefaultUnits();
+        this._initConfigUnits();
+        var a = this.configDistanceUnits;
+        var b = this.defaultDistanceUnits;
+        this.distanceUnits = a.length > 0 ? a : b;
+        var c = this.configAreaUnits;
+        var d = this.defaultAreaUnits;
+        this.areaUnits = c.length > 0 ? c : d;
+        array.forEach(this.distanceUnits, lang.hitch(this, function(unitInfo) {
+          var option = {
+            value: unitInfo.unit,
+            label: unitInfo.label
+          };
+          this.distanceUnitSelect.addOption(option);
+        }));
+
+        array.forEach(this.areaUnits, lang.hitch(this, function(unitInfo) {
+          var option = {
+            value: unitInfo.unit,
+            label: unitInfo.label
+          };
+          this.areaUnitSelect.addOption(option);
+        }));
+      },
+
+      _initDefaultUnits: function() {
+        this.defaultDistanceUnits = [{
+          unit: 'KILOMETERS',
+          label: this.nls.kilometers
+        }, {
+          unit: 'MILES',
+          label: this.nls.miles
+        }, {
+          unit: 'METERS',
+          label: this.nls.meters
+        }, {
+          unit: 'FEET',
+          label: this.nls.feet
+        }, {
+          unit: 'YARDS',
+          label: this.nls.yards
+        }, {
+          unit: 'NAUTICAL_MILES',
+          label: this.nls.nauticalmiles
+        }];
+
+        this.defaultAreaUnits = [{
+          unit: 'SQUARE_KILOMETERS',
+          label: this.nls.squareKilometers
+        }, {
+          unit: 'SQUARE_MILES',
+          label: this.nls.squareMiles
+        }, {
+          unit: 'ACRES',
+          label: this.nls.acres
+        }, {
+          unit: 'HECTARES',
+          label: this.nls.hectares
+        }, {
+          unit: 'SQUARE_METERS',
+          label: this.nls.squareMeters
+        }, {
+          unit: 'SQUARE_FEET',
+          label: this.nls.squareFeet
+        }, {
+          unit: 'SQUARE_YARDS',
+          label: this.nls.squareYards
+        }];
+      },
+
+      _initConfigUnits: function() {
+        array.forEach(this.config.distanceUnits, lang.hitch(this, function(unitInfo) {
+          var unit = unitInfo.unit;
+          if (esriUnits[unit]) {
+            var defaultUnitInfo = this._getDefaultDistanceUnitInfo(unit);
+            unitInfo.label = defaultUnitInfo.label;
+            this.configDistanceUnits.push(unitInfo);
+          }
+        }));
+
+        array.forEach(this.config.areaUnits, lang.hitch(this, function(unitInfo) {
+          var unit = unitInfo.unit;
+          if (esriUnits[unit]) {
+            var defaultUnitInfo = this._getDefaultAreaUnitInfo(unit);
+            unitInfo.label = defaultUnitInfo.label;
+            this.configAreaUnits.push(unitInfo);
+          }
+        }));
+      },
+
+      _getDefaultDistanceUnitInfo: function(unit) {
+        for (var i = 0; i < this.defaultDistanceUnits.length; i++) {
+          var unitInfo = this.defaultDistanceUnits[i];
+          if (unitInfo.unit === unit) {
+            return unitInfo;
+          }
+        }
+        return null;
+      },
+
+      _getDefaultAreaUnitInfo: function(unit) {
+        for (var i = 0; i < this.defaultAreaUnits.length; i++) {
+          var unitInfo = this.defaultAreaUnits[i];
+          if (unitInfo.unit === unit) {
+            return unitInfo;
+          }
+        }
+        return null;
+      },
+
+      _getDistanceUnitInfo: function(unit) {
+        for (var i = 0; i < this.distanceUnits.length; i++) {
+          var unitInfo = this.distanceUnits[i];
+          if (unitInfo.unit === unit) {
+            return unitInfo;
+          }
+        }
+        return null;
+      },
+
+      _getAreaUnitInfo: function(unit) {
+        for (var i = 0; i < this.areaUnits.length; i++) {
+          var unitInfo = this.areaUnits[i];
+          if (unitInfo.unit === unit) {
+            return unitInfo;
+          }
+        }
+        return null;
+      },
+
+      _setMeasureVisibility: function() {
+        html.setStyle(this.measureSection, 'display', 'none');
+        html.setStyle(this.areaMeasure, 'display', 'none');
+        html.setStyle(this.distanceMeasure, 'display', 'none');
+        var lineDisplay = html.getStyle(this.lineSection, 'display');
+        var polygonDisplay = html.getStyle(this.polygonSection, 'display');
+        if (lineDisplay === 'block') {
+          html.setStyle(this.measureSection, 'display', 'block');
+          if (this.showMeasure.checked) {
+            html.setStyle(this.distanceMeasure, 'display', 'block');
+          }
+        } else if (polygonDisplay === 'block') {
+          html.setStyle(this.measureSection, 'display', 'block');
+          if (this.showMeasure.checked) {
+            html.setStyle(this.areaMeasure, 'display', 'block');
+            html.setStyle(this.distanceMeasure, 'display', 'block');
+          }
+        }
+      },
+
+      _getPointSymbol: function() {
+        return this.pointSymChooser.getSymbol();
+      },
+      _getPointSymbolComplex: function() {
+        return this.pointSymChooserComplex.getSymbol();
+      },
+      _getLineSymbol: function() {
+        return this.lineSymChooser.getSymbol();
+      },
+      _getLineSymbolComplex: function() {
+        return this.lineSymChooserComplex.getSymbol();
+      },
+      _getPolygonSymbol: function() {
+        return this.fillSymChooser.getSymbol();
+      },
+      _getPolygonSymbolComplex: function() {
+        return this.fillSymChooserComplex.getSymbol();
+      },
+
+      _getTextSymbol: function() {
+        return this.textSymChooser.getSymbol();
+      },
+
+      _comprobarSublayStyle: function(layEdit) {
+        var renderLayEdit = layEdit.renderer;
+
+        this.selectSubCapaStyle.options = [];
+        if (renderLayEdit != null && renderLayEdit.infos != undefined && renderLayEdit.infos.length > 0) { //Comprueba si tiene subcapas
+          dojo.style("selectSubCapaStyle", "visibility", "visible"); //Si tiene subcalas hace visible el span y el select
+          dojo.style("spanSubCapaStyle", "visibility", "visible");
+		  this.subCapa_Node.style.height = "30px"
+          this.selectSubCapaStyle.remove;
+          array.forEach(renderLayEdit.infos, lang.hitch(this, function(infoSymb) { //Añade cada option del array al select
+            var option = {
+              value: infoSymb.value,
+              label: infoSymb.label
+            };
+            this.selectSubCapaStyle.addOption(option);
+          }));
+        } else{
+        dojo.style("selectSubCapaStyle","visibility","hidden");
+        dojo.style("spanSubCapaStyle","visibility","hidden");
+		this.subCapa_Node.style.height = "0px"
+        }
+
+      },
+
+      _setDrawDefaultSymbols: function() {
+
+        this.drawBox.setPointSymbol(this._getPointSymbol());
+        this.drawBox.setLineSymbol(this._getLineSymbol());
+        this.drawBox.setPolygonSymbol(this._getPolygonSymbol());
+
+
+        if (this.layerEdit != null) {
+          var urlLayerEdit = this.layerEdit.layerObject.url;
+          var layerIdEdit = this.layerEdit.layerObject.layerId;
+          var typeLayer = this.layerEdit.layerObject.type;
+          var idLayerEdit = this.layerEdit.layerObject.id;
+          var layersMapId = this.map.layerIds;
+          var graphicMapId = this.map.graphicsLayerIds;
+          var layer = null;
+          var optionsArray = [];
+          var lay = null;
+
+          if (this.layerEdit.layerObject.type == "Feature Layer" && this.layerEdit.layerObject.graphics.length == 0) {
+            //Se extrae la layer del mapa por su ID
+            for (var i in layersMapId) {
+              var layMap = this.map.getLayer(layersMapId[i]);
+              if (this.layerEdit.layerObject.id.includes(layMap.id)) {
+                lay = layMap;
+              }
+            }
+            //Se compara la url de la layer a editar con la extraida del mapa
+            if (lay != null && urlLayerEdit.includes(lay.url)) {
+              layer = lay;
+              var renderLayEdit = this._getRenderByGeometryType(this.layerEdit.layerObject.geometryType);
+              var render = this._getRenderByGeometryType(this.layerEdit.layerObject.geometryType);
+
+              //Si tiene subcapas el tipo de render es UniqueValue
+              // Tiene subcapas
+              //Si el render de la capa a editar tiene infos es que tiene estilos en las subcapas
+              var layEditInfos = this.layerEdit.layerObject.renderer.infos;
+              if (layEditInfos != undefined && layEditInfos.length > 0) {
+                //Se crea UniqueValueRender para añadir cada estilo a cada subcapa
+                var attributeField = this.layerEdit.layerObject.renderer.attributeField;
+                var render = new UniqueValueRenderer(renderLayEdit, attributeField);
+                //cogemos la simbologias que tiene actualmente la layer a editar.
+
+                if (lay.layerDrawingOptions != undefined && lay.layerDrawingOptions[layerIdEdit] != undefined) {
+                  var infosLayEdit = lay.layerDrawingOptions[layerIdEdit].renderer.infos;
+
+                } else {
+                  var infosLayEdit = this.layerEdit.layerObject.renderer.infos;
+                }
+
+                for (var i in infosLayEdit) {
+                  render.addValue(infosLayEdit[i].value, infosLayEdit[i].symbol);
+                }
+
+                //Eliminamos la capa seleccionada e incluimos la seleccionada
+                var subcapa = this.selectSubCapaStyle.value;
+                render.removeValue(subcapa);
+                render.addValue(subcapa, renderLayEdit.symbol);
+              }
+
+
+              //Si existe lay con estilos ya definimos lo incluimos antes de añadir el nuevo.
+
+
+              var drawingOptions = new esri.layers.LayerDrawingOptions();
+              drawingOptions.renderer = render;
+              drawingOptions.scaleSymbols = true;
+              //    drawingOptions.setVisibleLayers=[layerIdEdit];
+              if (lay.layerDrawingOptions != undefined) {
+                optionsArray = lay.layerDrawingOptions;
+                optionsArray[layerIdEdit] = drawingOptions;
+              } else {
+                optionsArray[layerIdEdit] = drawingOptions;
+              }
+
+
+              lay.visibleAtMapScales = true;
+
+              esriConfig.defaults.io.corsEnabledServers.push(lay.url);
+              if (typeof lay.setLayerDrawingOptions === "function") {
+                lay.setLayerDrawingOptions(optionsArray);
+              }
+              if(render != null) {
+                lay.setRenderer(render);
+              }
+              lay.refresh();
+              // this.layerEdit.layerObject.setRenderer(render);
+              // this.layerEdit.layerObject.refresh();
+              // this.publishData({
+              //   target:"CHS_ListaCapas",
+              //   capa:this.layerEdit
+              // });
+
+            }
+
+          } else {
+            for (var j in graphicMapId) {
+              var layGraphic = this.map.getLayer(graphicMapId[j]);
+              if (idLayerEdit == layGraphic.id) {
+                layer = layGraphic;
+                break;
+              }
+            }
+
+
+            if (layer != null) {
+              var geometryLay = layer.geometryType;
+              var render = this._getRenderByGeometryType(geometryLay);
+
+              if (render != null) {
+                layer.setRenderer(render);
+              }
+
+              if (geometryLay == "esriGeometryComplex") {
+                layer.setPointSymbol(this._getPointSymbolComplex());
+                layer.setPolygonSymbol(this._getPolygonSymbolComplex());
+                layer.setLineSymbol(this._getLineSymbolComplex());
+                layer.setRenderer();
+              }
+              layer.refresh();
+
+            }
+          }
+        }
+      },
+
+
+      _getRenderByGeometryType: function(geometryType) {
+        var render = null;
+
+        if (geometryType == "esriGeometryPoint") {
+
+          render = new esri.renderer.SimpleRenderer(this._getPointSymbol());
+
+        } else if (geometryType == "esriGeometryPolygon") {
+          render = new esri.renderer.SimpleRenderer(this._getPolygonSymbol());
+
+        } else if (geometryType == "esriGeometryPolyline") {
+          render = new esri.renderer.SimpleRenderer(this._getLineSymbol());
+        }
+
+        return render;
+      },
+
+      _applyRenderer: function(renderer, lay, idLay) {
+        if (renderer != undefined) {
+          if (renderer.renderType == "UniqueValueRenderer") {
+
+            var optionsArray = [];
+            var drawingOptions = new esri.layers.LayerDrawingOptions();
+
+            drawingOptions.renderer = renderer.renderer;
+
+            if (lay.layerDrawingOptions != undefined) {
+              optionsArray = lay.layerDrawingOptions;
+              optionsArray[idLay] = drawingOptions;
+            } else {
+              optionsArray[idLay] = drawingOptions;
+              lay.setLayerDrawingOptions(optionsArray);
+            }
+          }
+          if (renderer.renderType == "SimpleRenderer") {
+            lay.setRenderer(renderer.render);
+          }
+          lay.refresh();
+        }
+      },
+
+
+
+      _getSymbol: function(geometryType) {
+        var symbol = null;
+
+        if (geometryType == "esriGeometryPoint") {
+          symbol = this._getPointSymbol();
+        } else if (geometryType == "esriGeometryPolygon") {
+          symbol = this._getPolygonSymbol();
+        } else if (geometryType == "esriGeometryPolyline") {
+          symbol = this._getLineSymbol();
+        }
+
+        return symbol;
+      },
+
+
+      _getRender: function(renderOption) {
+        var render = null;
+        var renderType = "";
+
+
+        //Si la layer tiene infos es de tipo UniqueValueRenderer
+        if (renderOption.layMap.layerDrawingOptions != undefined && renderOption.layMap.layerDrawingOptions[renderOption.layerIdEdit] != undefined) {
+          renderType = "UniqueValueRenderer";
+          var renderLayMap = renderOption.layMap.layerDrawingOptions[renderOption.layerIdEdit].renderer;
+          render = new esri.renderer.UniqueValueRenderer(renderLayMap.infos[0].symbol, renderLayMap.attributeField,
+            renderLayMap.attributeField2, renderLayMap.attributeField3);
+
+          for (var i in renderLayMap.infos) {
+            render.addValue(renderLayMap.infos[i].value, renderLayMap.infos[i].symbol);
+          }
+          render.removeValue(renderOption.subcapa);
+          render.addValue(renderOption.subcapa, renderOption.symbol);
+
+        } else if (renderOption.renderLayEdit.infos != undefined && renderOption.renderLayEdit.infos.length > 0) {
+          renderType = "UniqueValueRenderer";
+          render = new esri.renderer.UniqueValueRenderer(renderOption.renderLayEdit.infos[0].symbol, renderOption.renderLayEdit.attributeField,
+            renderOption.renderLayEdit.attributeField2, renderOption.renderLayEdit.attributeField3);
+
+          for (var i in renderOption.renderLayEdit.infos) {
+            render.addValue(renderOption.renderLayEdit.infos[i].value, renderOption.renderLayEdit.infos[i].symbol);
+          }
+          render.removeValue(renderOption.subcapa);
+          render.addValue(renderOption.subcapa, renderOption.newSymbol);
+          //Si la layer no tiene infos es de tipo SimpleRenderer
+        } else {
+          renderType = "SimpleRenderer";
+          render = new esri.renderer.SimpleRenderer(renderOption.newSymbol);
+        }
+
+        var newRender = {
+          "render": render,
+          "renderType": renderType
+        };
+        return newRender;
+      },
+
+
+
+      _addLineMeasure: function(geometry, graphic) {
+        this._getLengthAndArea(geometry, false).then(lang.hitch(this, function(result) {
+          if (!this.domNode) {
+            return;
+          }
+          var length = result.length;
+          var a = Font.STYLE_ITALIC;
+          var b = Font.VARIANT_NORMAL;
+          var c = Font.WEIGHT_BOLD;
+          var symbolFont = new Font("16px", a, b, c, "Courier");
+          var fontColor = new Color([0, 0, 0, 1]);
+          var ext = geometry.getExtent();
+          var center = ext.getCenter();
+
+          var unit = this.distanceUnitSelect.value;
+          var abbr = this._getDistanceUnitInfo(unit).label;
+          var localeLength = jimuUtils.localizeNumber(length.toFixed(1));
+          var lengthText = localeLength + " " + abbr;
+
+          var textSymbol = new TextSymbol(lengthText, symbolFont, fontColor);
+          var labelGraphic = new Graphic(center, textSymbol, null, null);
+          this._pushAddOperation([graphic, labelGraphic]);
+        }), lang.hitch(this, function(err) {
+          console.log(err);
+          if (!this.domNode) {
+            return;
+          }
+          this._pushAddOperation([graphic]);
+        }));
+      },
+
+      _addPolygonMeasure: function(geometry, graphic) {
+        this._getLengthAndArea(geometry, true).then(lang.hitch(this, function(result) {
+          if (!this.domNode) {
+            return;
+          }
+          var length = result.length;
+          var area = result.area;
+
+          var a = Font.STYLE_ITALIC;
+          var b = Font.VARIANT_NORMAL;
+          var c = Font.WEIGHT_BOLD;
+          var symbolFont = new Font("16px", a, b, c, "Courier");
+          var fontColor = new Color([0, 0, 0, 1]);
+          var ext = geometry.getExtent();
+          var center = ext.getCenter();
+
+          var areaUnit = this.areaUnitSelect.value;
+          var areaAbbr = this._getAreaUnitInfo(areaUnit).label;
+          var localeArea = jimuUtils.localizeNumber(area.toFixed(1));
+          var areaText = localeArea + " " + areaAbbr;
+
+          var lengthUnit = this.distanceUnitSelect.value;
+          var lengthAbbr = this._getDistanceUnitInfo(lengthUnit).label;
+          var localeLength = jimuUtils.localizeNumber(length.toFixed(1));
+          var lengthText = localeLength + " " + lengthAbbr;
+
+          var text = areaText + "    " + lengthText;
+          var textSymbol = new TextSymbol(text, symbolFont, fontColor);
+          var labelGraphic = new Graphic(center, textSymbol, null, null);
+          this._pushAddOperation([graphic, labelGraphic]);
+        }), lang.hitch(this, function(err) {
+          if (!this.domNode) {
+            return;
+          }
+          console.log(err);
+          this._pushAddOperation([graphic]);
+        }));
+      },
+
+      _getLengthAndArea: function(geometry, isPolygon) {
+        var def = new Deferred();
+        var defResult = {
+          length: null,
+          area: null
+        };
+        var wkid = geometry.spatialReference.wkid;
+        var areaUnit = this.areaUnitSelect.value;
+        var esriAreaUnit = esriUnits[areaUnit];
+        var lengthUnit = this.distanceUnitSelect.value;
+        var esriLengthUnit = esriUnits[lengthUnit];
+        if (wkidUtils.isWebMercator(wkid)) {
+          defResult = this._getLengthAndArea3857(geometry, isPolygon, esriAreaUnit, esriLengthUnit);
+          def.resolve(defResult);
+        } else if (wkid === 4326) {
+          defResult = this._getLengthAndArea4326(geometry, isPolygon, esriAreaUnit, esriLengthUnit);
+          def.resolve(defResult);
+        } else {
+          def = this._getLengthAndAreaByGS(geometry, isPolygon, esriAreaUnit, esriLengthUnit);
+        }
+        return def;
+      },
+
+      _getLengthAndArea4326: function(geometry, isPolygon, esriAreaUnit, esriLengthUnit) {
+        var result = {
+          area: null,
+          length: null
+        };
+
+        var lengths = null;
+
+        if (isPolygon) {
+          var areas = geodesicUtils.geodesicAreas([geometry], esriAreaUnit);
+          var polyline = this._getPolylineOfPolygon(geometry);
+          lengths = geodesicUtils.geodesicLengths([polyline], esriLengthUnit);
+          result.area = Math.abs(areas[0]); //Convert area's result to Absolute value for the reason of ellipse's negative value.
+          result.length = lengths[0];
+        } else {
+          lengths = geodesicUtils.geodesicLengths([geometry], esriLengthUnit);
+          result.length = lengths[0];
+        }
+
+        return result;
+      },
+
+      _getLengthAndArea3857: function(geometry3857, isPolygon, esriAreaUnit, esriLengthUnit) {
+        var geometry4326 = webMercatorUtils.webMercatorToGeographic(geometry3857);
+        var result = this._getLengthAndArea4326(geometry4326,
+          isPolygon,
+          esriAreaUnit,
+          esriLengthUnit);
+        return result;
+      },
+
+      _getLengthAndAreaByGS: function(geometry, isPolygon, esriAreaUnit, esriLengthUnit) {
+        var def = new Deferred();
+        var defResult = {
+          area: null,
+          length: null
+        };
+        var gsAreaUnit = this._getGeometryServiceUnitByEsriUnit(esriAreaUnit);
+        var gsLengthUnit = this._getGeometryServiceUnitByEsriUnit(esriLengthUnit);
+        if (isPolygon) {
+          var areasAndLengthParams = new AreasAndLengthsParameters();
+          areasAndLengthParams.lengthUnit = gsLengthUnit;
+          areasAndLengthParams.areaUnit = gsAreaUnit;
+          this._gs.simplify([geometry]).then(lang.hitch(this, function(simplifiedGeometries) {
+            if (!this.domNode) {
+              return;
+            }
+            areasAndLengthParams.polygons = simplifiedGeometries;
+            this._gs.areasAndLengths(areasAndLengthParams).then(lang.hitch(this, function(result) {
+              if (!this.domNode) {
+                return;
+              }
+              defResult.area = result.areas[0];
+              defResult.length = result.lengths[0];
+              def.resolve(defResult);
+            }), lang.hitch(this, function(err) {
+              def.reject(err);
+            }));
+          }), lang.hitch(this, function(err) {
+            def.reject(err);
+          }));
+        } else {
+          var lengthParams = new LengthsParameters();
+          lengthParams.polylines = [geometry];
+          lengthParams.lengthUnit = gsLengthUnit;
+          lengthParams.geodesic = true;
+          this._gs.lengths(lengthParams).then(lang.hitch(this, function(result) {
+            if (!this.domNode) {
+              return;
+            }
+            defResult.length = result.lengths[0];
+            def.resolve(defResult);
+          }), lang.hitch(this, function(err) {
+            console.error(err);
+            def.reject(err);
+          }));
+        }
+
+        return def;
+      },
+
+      _getGeometryServiceUnitByEsriUnit: function(unit) {
+        var gsUnit = -1;
+        switch (unit) {
+          case esriUnits.KILOMETERS:
+            gsUnit = GeometryService.UNIT_KILOMETER;
+            break;
+          case esriUnits.MILES:
+            gsUnit = GeometryService.UNIT_STATUTE_MILE;
+            break;
+          case esriUnits.METERS:
+            gsUnit = GeometryService.UNIT_METER;
+            break;
+          case esriUnits.FEET:
+            gsUnit = GeometryService.UNIT_FOOT;
+            break;
+          case esriUnits.YARDS:
+            gsUnit = GeometryService.UNIT_INTERNATIONAL_YARD;
+            break;
+          case esriUnits.SQUARE_KILOMETERS:
+            gsUnit = GeometryService.UNIT_SQUARE_KILOMETERS;
+            break;
+          case esriUnits.SQUARE_MILES:
+            gsUnit = GeometryService.UNIT_SQUARE_MILES;
+            break;
+          case esriUnits.ACRES:
+            gsUnit = GeometryService.UNIT_ACRES;
+            break;
+          case esriUnits.HECTARES:
+            gsUnit = GeometryService.UNIT_HECTARES;
+            break;
+          case esriUnits.SQUARE_METERS:
+            gsUnit = GeometryService.UNIT_SQUARE_METERS;
+            break;
+          case esriUnits.SQUARE_FEET:
+            gsUnit = GeometryService.UNIT_SQUARE_FEET;
+            break;
+          case esriUnits.SQUARE_YARDS:
+            gsUnit = GeometryService.UNIT_SQUARE_YARDS;
+            break;
+        }
+        return gsUnit;
+      },
+
+      _getPolylineOfPolygon: function(polygon) {
+        var polyline = new Polyline(polygon.spatialReference);
+        var points = polygon.rings[0];
+        polyline.addPath(points);
+        return polyline;
+      },
+
+      destroy: function() {
+        if (this._undoManager) {
+          this._undoManager.destroy();
+          this._undoManager = null;
+        }
+        if (this.drawBox) {
+          this.drawBox.destroy();
+          this.drawBox = null;
+        }
+        if (this._graphicsLayer) {
+          this._graphicsLayer.clear();
+          this.map.removeLayer(this._graphicsLayer);
+          this._graphicsLayer = null;
+        }
+        if (this._pointLayer) {
+          this.map.removeLayer(this._pointLayer);
+          this._pointLayer = null;
+        }
+        if (this._polylineLayer) {
+          this.map.removeLayer(this._polylineLayer);
+          this._polylineLayer = null;
+        }
+        if (this._polygonLayer) {
+          this.map.removeLayer(this._polygonLayer);
+          this._polygonLayer = null;
+        }
+        if (this._labelLayer) {
+          this.map.removeLayer(this._labelLayer);
+          this._labelLayer = null;
+        }
+        if (this.pointSymChooser) {
+          this.pointSymChooser.destroy();
+          this.pointSymChooser = null;
+        }
+        if (this.pointSymChooserComplex) {
+          this.pointSymChooserComplex.destroy();
+          this.pointSymChooserComplex = null;
+        }
+        if (this.lineSymChooser) {
+          this.lineSymChooser.destroy();
+          this.lineSymChooser = null;
+        }
+        if (this.lineSymChooserComplex) {
+          this.lineSymChooserComplex.destroy();
+          this.lineSymChooserComplex = null;
+        }
+        if (this.fillSymChooser) {
+          this.fillSymChooser.destroy();
+          this.fillSymChooser = null;
+        }
+        if (this.fillSymChooserComplex) {
+          this.fillSymChooserComplex.destroy();
+          this.fillSymChooserComplex = null;
+        }
+        if (this.textSymChooser) {
+          this.textSymChooser.destroy();
+          this.textSymChooser = null;
+        }
+        this.inherited(arguments);
+      },
+
+      startup: function() {
+        this.inherited(arguments);
+        this.viewStack.startup();
+        this.viewStack.switchView(null);
+        this.own(on(this.selectCapaStyle, "change", lang.hitch(this, this.modoEdicionEstilo)))
+
+        //Añadimos un evento para cuando haya un cambio en la lista de capas.
+        LayerInfos.getInstance(this.map, this.map.itemInfo)
+        .then(lang.hitch(this, function(operLayerInfos) {
+          this.operLayerInfos = operLayerInfos;
+          this.own(this.operLayerInfos.on('layerInfosIsVisibleChanged',
+          lang.hitch(this, this._onLayerInfosIsVisibleChanged)));
+        }));
+        this.cargarCapas()
+		this.cargarTiposFuente();
+      },
+
+      _onLayerInfosIsVisibleChanged: function() {
+        this.cargarCapas()
+      },
+
+
+      _getAllGraphics: function() {
+        //return a new array
+        return array.map(this._graphicsLayer.graphics, lang.hitch(this, function(g) {
+          return g;
+        }));
+      },
+
+      _onUndoManagerChanged: function() {
+        this._enableBtn(this.btnUndo, this._undoManager.canUndo);
+        this._enableBtn(this.btnRedo, this._undoManager.canRedo);
+        var graphics = this._getAllGraphics();
+        this._enableBtn(this.btnClear, graphics.length > 0);
+        this._syncGraphicsToLayers();
+      },
+
+      _syncGraphicsToLayers: function() {
+        /*global isRTL*/
+        this._pointLayer.clear();
+        this._polylineLayer.clear();
+        this._polygonLayer.clear();
+        this._labelLayer.clear();
+        var graphics = this._getAllGraphics();
+        array.forEach(graphics, lang.hitch(this, function(g) {
+          var graphicJson = g.toJson();
+          var clonedGraphic = new Graphic(graphicJson);
+          var geoType = clonedGraphic.geometry.type;
+          var layer = null;
+          var isNeedRTL = false;
+
+          if (geoType === 'point') {
+            if (clonedGraphic.symbol && clonedGraphic.symbol.type === 'textsymbol') {
+              layer = this._labelLayer;
+              isNeedRTL = isRTL;
+            } else {
+              layer = this._pointLayer;
+            }
+          } else if (geoType === 'polyline') {
+            layer = this._polylineLayer;
+          } else if (geoType === 'polygon' || geoType === 'extent') {
+            layer = this._polygonLayer;
+          }
+          if (layer) {
+            var graphic = layer.add(clonedGraphic);
+            if (true === isNeedRTL && graphic.getNode) {
+              var node = graphic.getNode();
+              if (node) {
+                //SVG <text>node can't set className by domClass.add(node, "jimu-rtl"); so set style
+                //It's not work that set "direction:rtl" to SVG<text>node in IE11, it is IE's bug
+                domStyle.set(node, "direction", "rtl");
+              }
+            }
+          }
+        }));
+      },
+
+      _pushAddOperation: function(graphics) {
+        array.forEach(graphics, lang.hitch(this, function(g) {
+          var attrs = g.attributes || {};
+          attrs[this._objectIdName] = this._objectIdCounter++;
+          g.setAttributes(attrs);
+          this._graphicsLayer.add(g);
+        }));
+        var addOperation = new customOp.Add({
+          graphicsLayer: this._graphicsLayer,
+          addedGraphics: graphics
+        });
+        this._undoManager.add(addOperation);
+      },
+
+      _pushDeleteOperation: function(graphics) {
+        var deleteOperation = new customOp.Delete({
+          graphicsLayer: this._graphicsLayer,
+          deletedGraphics: graphics
+        });
+        this._undoManager.add(deleteOperation);
+      },
+
+      _enableBtn: function(btn, isEnable) {
+        if (isEnable) {
+          html.removeClass(btn, 'jimu-state-disabled');
+        } else {
+          html.addClass(btn, 'jimu-state-disabled');
+        }
+      },
+
+      _onBtnUndoClicked: function() {
+        this._undoManager.undo();
+      },
+
+      _onBtnRedoClicked: function() {
+        this._undoManager.redo();
+      },
+
+      _onBtnClearClicked: function() {
+        var graphics = this._getAllGraphics();
+        if (graphics.length > 0) {
+          this._graphicsLayer.clear();
+          this._pushDeleteOperation(graphics);
+        }
+        this._enableBtn(this.btnClear, false);
+      },
+	 
+	 //Petición al servidor de las geometrias y el campo a etiquetar
+	petDatos:function(){
+		var campo = document.getElementById("selectCampo").value		
+		
+		if (campo=="-1"){
+			new Message({
+				titleLabel:"Aviso",
+				message: "Seleccione una campo"
+			});
+			return;
+		}
+		var layer = this.layerEdit.layerObject;
+		var url = layer.url;
+		for (var i=0;i<layer.fields.length;i++) {
+			if (layer.fields[i].alias==campo){
+				campo = layer.fields[i].name
+			}
+		}
+		
+		var SR = parseInt(this.map.spatialReference.wkid);
+		
+		//Vemos si la capa esta filtrada:
+		
+		if (layer.idServicio!=undefined && this.map.getLayer(layer.idServicio).layerDefinitions!=undefined && this.map.getLayer(layer.idServicio).layerDefinitions[layer.layerId]){
+			filtro = this.map.getLayer(layer.idServicio).layerDefinitions[layer.layerId]
+		}
+		else if (this.map.getLayer(layer.id)!=undefined && this.map.getLayer(layer.id).layerDefinitions!=undefined && this.map.getLayer(layer.id).layerDefinitions[layer.layerId]){
+			filtro = this.map.getLayer(layer.id).layerDefinitions[layer.layerId] //filtro a la capa
+		}
+		else if (this.map.getLayer(layer.id)!=undefined && this.map.getLayer(layer.id)._defnExpr!=undefined){ //Para FeatureLayers, el filro va en _defnExpr
+			filtro = this.map.getLayer(layer.id)._defnExpr
+		}
+		else{
+			filtro = "1=1"
+		}
+
+		
+		//almacenamos en un objeto los parametros de la peticion
+		var params = {
+			f:'json',
+			inSR:SR,
+			outSR:SR,
+			where: filtro,
+			outFields: campo,
+			returnGeometry : true,
+			};
+		
+		//parameros de la peticion
+		var peticion = new Peticion();
+		peticion.params =params;	//parametros
+		peticion.ambito = this;
+		peticion.onSuccess = this.onResults;	//si satisfactoria
+		peticion.onFailure = this.onFailureExport;	//si erronea
+		peticion.url = this.config.proxyCors+url + "/query";	//url del servicio con proxy
+		
+		//Lanza la peticion		
+		var gPeticion = new GestorPeticiones();		
+		gPeticion.lanzarPeticion(peticion, false);
+    },
+	
+	onResults: function(respuesta) {
+		if (respuesta.error && respuesta.error.code==500){
+			new Message({
+				titleLabel:"Aviso",
+				message: "La capa contiene demasiados elementos o son muy complejos. Aplique un filtro para reducir los elementos a etiquetar"
+			});
+			return;
+		}
+		var campoAlias = document.getElementById("selectCampo").value
+		var campo = Object.keys(respuesta.fieldAliases)[0]
+		var layer = this.layerEdit.layerObject.name
+		var idGrafico = "Etiqueta_" + layer
+		var type = respuesta.geometryType;
+		var TipoFuente = document.getElementById("selectTipoLetra").value
+		var count = 0;
+		
+		
+		//Limpiamos las etiquetas que ya se hayan generado para esta capa
+		this.limpiarRotulosCapa(idGrafico)
+		
+		
+		//Recorremos todas la features de la capa para rotular cada entidad
+		for (var i=0;i<respuesta.features.length;i++) {
+			var unaFeature = respuesta.features[i];
+			if (unaFeature.geometry!=undefined){
+				unaFeature.geometry.spatialReference = this.map.spatialReference;
+				var geometry = null;
+				var grEtiqueta = null;
+				var textSymbol = this.textSymChooser2.symbol;
+				textSymbol.angle = 0; //Reiniciamos el angulo pues se queda guardado el valor de la ultima ejecucion.
+				
+				//Parametrizamos la simbología del texto
+				textSymbol.text = unaFeature.attributes[campo];
+				textSymbol.font.family=TipoFuente;
+
+				if (this.bNegrita.checked){
+					textSymbol.font.weight = "bold"
+				}
+				else{textSymbol.font.weight = "normal"}
+				
+				if (this.bCursiva.checked){
+					textSymbol.font.style="italic"
+				}
+				else{textSymbol.font.style = "nomal"}
+				
+				if (this.bSubr.checked){
+					textSymbol.font.decoration="underline"
+				}
+				else{textSymbol.font.decoration = "nomal"}
+				
+				if(type=="esriGeometryPoint") { 
+					if (textSymbol.text){
+						geometry = new esri.geometry.Point(unaFeature.geometry);
+						pointEtiqueta = geometry;
+					
+						textSymbol = new esri.symbol.TextSymbol(textSymbol);
+						grEtiqueta = new esri.Graphic(pointEtiqueta,textSymbol);
+					}
+				}
+				
+				else if(type=="esriGeometryPolyline") {
+					/*Para determinar la posicion del texto en la polilinea se usa la clase lineCursor, que calcula el centro
+					de la linea, la inclinacion...para determinar las coordenadas de inserción del texto*/
+					geometry = new esri.geometry.Polyline(unaFeature.geometry)
+					var lsCursor = new LineCursor(geometry);
+
+					var length = lsCursor.getLineLength();
+					lsCursor.moveRelative(length/3);
+					textSymbol.angle = lsCursor.getLabelOrientation()*180.0/Math.PI;
+					var pointEtiqueta = lsCursor.getCurrentPosition();	
+					pointEtiqueta.spatialReference = this.map.spatialReference;
+					textSymbol = new esri.symbol.TextSymbol(textSymbol);
+					grEtiqueta = new esri.Graphic(pointEtiqueta,textSymbol);
+				}
+				
+				else if(type=="esriGeometryPolygon") {
+					geometry = new esri.geometry.Polygon(unaFeature.geometry)
+					pointEtiqueta = geometry.getCentroid();
+						
+					textSymbol = new esri.symbol.TextSymbol(textSymbol);
+					grEtiqueta = new esri.Graphic(pointEtiqueta,textSymbol);
+					}
+				
+				else{
+					new Message({
+						titleLabel:"Aviso",
+						message: "El tipo de capa o entidad no permite su rotulación"
+					});
+					return;
+				}
+			
+				//var gr = new esri.Graphic(grEtiqueta, grEtiqueta.symbol);
+				if (grEtiqueta){
+					grEtiqueta.id= "Etiqueta_" + layer
+					this.map.graphics.add(grEtiqueta);
+					count++
+				}
+			}
+		}
+		
+	console.log("Se han rotulado " + count + " entidades")
+	},
+	
+	onFailureExport: function(data) {
+		new Message({
+			titleLabel:"Aviso",
+			message: "Error en la petición de datos al servidor"
+		});
+		return;
+	},
+	
+	limpiarRotulosCapa: function(){
+		
+		var layer = this.layerEdit.layerObject.name
+		var idGrafico = "Etiqueta_" + layer	
+		var graficosALimpiar = [];	
+		
+		for (var i=0;i<this.map.graphics.graphics.length;i++) { //Recorremos todos los gráficos
+			if (this.map.graphics.graphics[i].id == idGrafico){//Si los graficos tienen id solo borra estos
+				graficosALimpiar.push(this.map.graphics.graphics[i]); 
+			}
+		}
+		
+		for(var i=0;i<graficosALimpiar.length;i++) {
+			this.map.graphics.remove(graficosALimpiar[i]);
+		}	
+	},
+	
+	limpiarRotulos: function(){
+		var graficosALimpiar = [];
+		var idGrafico = "Etiqueta_"
+		
+		for (var i=0;i<this.map.graphics.graphics.length;i++) { //Recorremos todos los gráficos
+			if (this.map.graphics.graphics[i].id && this.map.graphics.graphics[i].id.indexOf(idGrafico)>-1){//Si los graficos tienen id solo borra estos
+				graficosALimpiar.push(this.map.graphics.graphics[i]); 
+			}
+		}
+		
+		for(var i=0;i<graficosALimpiar.length;i++) {
+			this.map.graphics.remove(graficosALimpiar[i]);
+		}			
+		
+	},
+	exportarAnotaciones: function(){
+		var widgetManager;
+		var widget = this.widgetManager.appConfig.getConfigElementsByName("CHS_Anotaciones")[0];
+		
+		//si el widget de anotaciones no esta cargado lanza un error
+		if (!widget){
+			new Message({
+				titleLabel:"Aviso",
+				message: "El widget de anotaciones no está cargado en dicha aplicación"
+			});
+			return;			
+		}
+		
+		widgetManager = WidgetManager.getInstance();
+	
+		widgetManager.triggerWidgetOpen(widget.id).then(lang.hitch(this, function() { 
+
+          /** Inicialización de variables a consumir por el widget de anotaciones */
+			var elementosExportar = [];
+			
+			for (var i=0; i < this.map.graphics.graphics.length; i++){
+				if (this.map.graphics.graphics[i].id && this.map.graphics.graphics[i].id.indexOf("Etiqueta_")>-1){
+					elementosExportar.push(this.map.graphics.graphics[i])
+				}
+			}			
+			//Si no hay elementos para exportar lanza un error
+			if (elementosExportar.length==0){
+				new Message({
+					titleLabel:"Aviso",
+					message: "No hay geometrías para exportar"
+				});
+				return;
+			}
+			
+			var objJsonAnotaciones = {};
+			objJsonAnotaciones["graphics"] = [];
+			
+			for (var i=0; i < elementosExportar.length; i++){
+			
+				var obj = {};
+				obj.attributes = {};
+				//obj.attributes = elementosExportar[i].attributes;
+				obj.attributes.name = elementosExportar[i].id ;
+				obj.attributes.comment = "Rótulo importado desde el Widget de Estilo";		
+				obj.geometry = elementosExportar[i]["geometry"];
+				obj.symbol = elementosExportar[i].symbol;
+				obj.geometry.spatialReference.wkid = this.map.spatialReference.wkid;
+				obj.geometry.spatialReference.latestWkid = this.map.spatialReference.latestWkid
+				
+				objJsonAnotaciones.graphics.push(obj);
+
+			}
+			//Hay que añadir los siguientes campos al objJsonAnotaciones para que funcione correctamente
+		    objJsonAnotaciones["displayFieldName"] = "";
+            objJsonAnotaciones["fieldAliases"] = {};
+            objJsonAnotaciones["spatialReference"] = {};
+            objJsonAnotaciones["spatialReference"]["wkid"] = this.map.spatialReference.wkid;
+            objJsonAnotaciones["spatialReference"]["latestWkid"] = this.map.spatialReference.latestWkid;
+            objJsonAnotaciones["fields"] = [];
+		
+			
+			this.publishData({
+				'target': 'CHS_Anotaciones',
+				"timestamp": new Date().getTime(),
+				'elementosImportar': objJsonAnotaciones
+			}, false);
+			
+			this.limpiarRotulos();
+		}))
+	},
+	
+	actualizarPreview: function(){
+		
+		var textPreview=this.textSymChooser2.textPreview
+		textPreview.innerHTML="Texto de prueba";
+		
+		//La siguiente funcion da un error en el devTools de chrome
+		textPreview.style.fontFamily = this.selectTipoLetra.value;
+		
+		
+		if (this.bNegrita.checked){
+				textPreview.style.fontWeight = "bold"
+		}
+		else{textPreview.style.fontWeight = ""}
+			
+		if (this.bCursiva.checked){
+				textPreview.style.fontStyle="italic"
+		}
+		else{textPreview.style.fontStyle = ""}
+			
+		if (this.bSubr.checked){
+				textPreview.style.textDecoration="underline"
+		}
+		else{textPreview.style.textDecoration = ""}
+	}
+ });
+});

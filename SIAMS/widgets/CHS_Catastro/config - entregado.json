@@ -1,0 +1,11 @@
+{
+	"proxyCors": "https://www.chsegura.es/LoginChsPortal/proxy.jsp?",
+	"servicioUploadCatastro": "https://www.chsegura.es/LoginChsPortal/UploadCatastro",
+	"servicioDownloadFichero": "https://www.chsegura.es/LoginChsPortal/DownloadFichero",		
+	"urlGeometryService": "https://www.chsegura.es/rest/services/Utilities/Geometry/GeometryServer",
+	"urlServicioCatastro": "https://ovc.catastro.meh.es/INSPIRE/wfsCP.aspx?",
+	"urlServicioParcelasCatastro": "https://ovc.catastro.meh.es/ovcservweb/OVCSWLocalizacionRC/OVCCallejero.asmx/Consulta_DNPRC?",
+	"folderUrl":"./widgets/CHS_Catastro/images/",
+    "areaUmbralHa":100,
+	"numParcelasUmbral": 100
+}

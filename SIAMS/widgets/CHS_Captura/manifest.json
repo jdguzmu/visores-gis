@@ -1,0 +1,13 @@
+{
+  "name": "CHS_Captura",
+  "2D": true,
+  "3D": false,
+  "platform": "HTML",
+  "version": "1.0",
+  "wabVersion": "2.4",
+  "author": "Confederación Hidrográfica del Segura, O,A.",
+  "description": "Widget para realizar captura de pantalla en varios formatos",
+  "copyright": "Confederación Hidrográfica del Segura, O,A.",
+  "license": "http://www.apache.org/licenses/LICENSE-2.0",
+  "properties": {}
+}

@@ -1,0 +1,51 @@
+{
+  "serviceURL": "https://siams.chminosil.es/server/rest/services/geoprocesamiento/ImpresionCHMS/GPServer/Export%20Web%20Map",
+  "defaultTitle": "Mapa",
+  "defaultAuthor": "CHMS",
+  "defaultCopyright": "Confederación Hidrográfica del Miño-Sil",
+  "defaultFormat": "PDF",
+  "defaultLayout": "A3 Horizontal",
+  "defaultDpi": 96,
+  "noTitleBlockPrefix": "No TB ",
+  "outWkid": 25829,
+  "showLayout": true,
+  "showOpacitySlider": true,
+  "layoutParams": {
+    
+    "SIAMS_A4H": {
+      "alias": "A4 Horizontal",
+      "units": "esriCentimeters",
+      "params": [{ "x": 29.7, "y": 21 }, { "x": 27.7, "y": 15.9 }, { "x": 1, "y": 3.8 }, { "x": 1, "y": 1 }]
+    },
+    "SIAMS_A4V": {
+      "alias": "A4 Vertical",
+      "units": "esriCentimeters",
+      "params": [{ "x": 21, "y": 29.7 }, { "x": 19, "y": 22.3 }, { "x": 1, "y": 5.7 }, { "x": 1, "y": 1 }]
+    },
+    "SIAMS_A3H": {
+      "alias": "A3 Horizontal",
+      "units": "esriCentimeters",
+      "params": [{ "x": 42, "y": 29.7 }, { "x": 40, "y": 21.7 }, { "x": 1, "y": 6.3 }, { "x": 1, "y": 1 }]
+    },
+    "SIAMS_A3V": {
+      "alias": "A3 Vertical",
+      "units": "esriCentimeters",
+      "params": [{ "x": 29.7, "y": 42 }, { "x": 27.7, "y": 29 }, { "x": 1, "y": 11 }, { "x": 1, "y": 1 }]
+    },
+    "MAP_ONLY": {
+      "alias": "Solo mapa",
+      "units": "NaN",
+      "params": [{ "x": 0, "y": 0 }, { "x": 0, "y": 0 }, { "x": 0, "y": 0 }, { "x": 0, "y": 0 }]
+    }
+  },
+  "relativeScale": "(1&quot; = [value]')",
+  "relativeScaleFactor": 1,
+  "scalePrecision": 0,
+  "mapScales": [
+    3000000, 1600000, 800000,
+	400000,  200000, 100000,
+	50000,  25000, 10000,
+	5000,  2000, 1000,  
+	500,  250
+  ]
+}

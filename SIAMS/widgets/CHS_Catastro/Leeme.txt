@@ -1,0 +1,32 @@
+******************************************************
+						Origen:
+******************************************************
+
+- Custom widget intersección catastro 
+
+
+******************************************************
+						ChangeLog:
+******************************************************
+
+
+
+******************************************************
+						NOTAS:
+******************************************************
+- El widget se ha desarrollado desde 0, para probar en modo local y no tener problemas de cors, hay que instalar en el navegador chrome el plugins 'CORS' que se habilitará antes de indicar un punto en Pantalla. 
+
+
+
+
+- Pruebas:
+	
+	
+
+
+
+
+
+
+
+

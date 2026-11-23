@@ -1,0 +1,994 @@
+///////////////////////////////////////////////////////////////////////////
+// Copyright © 2019 - 2021 Confederación Hidrográfica del Segura, O.A.. All Rights Reserved.
+//
+// Licensed under the Apache License Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+///////////////////////////////////////////////////////////////////////////
+define([
+    'dojo/_base/declare',
+    'dijit/_WidgetsInTemplateMixin',
+    'jimu/BaseWidget',
+	'jimu/WidgetManager',
+	'./CSVUtils',
+    'jimu/LayerInfos/LayerInfos',
+    'esri/config',
+    'dojo/Deferred',
+    'jimu/exportUtils',
+    'esri/graphic',
+    'esri/symbols/SimpleMarkerSymbol',
+    'esri/geometry/Polyline',
+    'esri/symbols/SimpleLineSymbol',
+    'esri/geometry/Polygon',
+    'esri/graphicsUtils',
+    'esri/symbols/SimpleFillSymbol',
+    'esri/symbols/TextSymbol',
+    'esri/symbols/Font',
+    'esri/units',
+    "esri/toolbars/edit",
+    'esri/geometry/webMercatorUtils',
+    'esri/tasks/GeometryService',
+    'esri/tasks/AreasAndLengthsParameters',
+    'esri/tasks/LengthsParameters',
+    'esri/tasks/ProjectParameters',
+    'jimu/SpatialReference/wkidUtils',
+    'jimu/SpatialReference/utils',
+    'esri/geometry/geodesicUtils',
+    'esri/geometry/geometryEngine',
+    'dojo/_base/lang',
+    'dojo/on',
+    'dojo/_base/html',
+    'dojo/sniff',
+    'dojo/_base/Color',
+    'dojo/_base/array',
+    'dojo/dom-construct',
+    'dojo/dom',
+    'dijit/form/Select',   
+    'dijit/form/NumberSpinner',
+    'jimu/dijit/ViewStack',
+    'jimu/dijit/SymbolChooser',
+    'jimu/dijit/DrawBox',
+    'jimu/dijit/Message',
+    'jimu/utils',
+    'jimu/symbolUtils',
+    'libs/storejs/store',
+    'esri/InfoTemplate',
+    'esri/layers/GraphicsLayer',    
+    'jimu/loaderplugins/jquery-loader!https://code.jquery.com/jquery-1.7.min.js',
+    './GestorPeticiones',
+    './Peticion',
+    'dojo/io/iframe',
+    'dijit/form/Form',
+    'esri/layers/FeatureLayer',
+    'esri/geometry/Multipoint',
+    'esri/SpatialReference',
+    'esri/geometry/Circle',
+    'esri/geometry/Point',
+	
+  ],
+  function(declare, _WidgetsInTemplateMixin, BaseWidget, WidgetManager, CSVUtils, LayerInfos, esriConfig, Deferred, exportUtils, Graphic, SimpleMarkerSymbol, Polyline, SimpleLineSymbol, Polygon, graphicsUtils, SimpleFillSymbol,
+    TextSymbol, Font, esriUnits, Edit, webMercatorUtils, GeometryService, AreasAndLengthsParameters, LengthsParameters, ProjectParameters, wkidUtils, SRUtils, geodesicUtils, geometryEngine, lang, on,
+    html, has, Color, array, domConstruct, dom, Select, NumberSpinner, ViewStack, SymbolChooser, DrawBox, Message, jimuUtils, jimuSymbolUtils, localStore, InfoTemplate, GraphicsLayer, $, GestorPeticiones,
+    Peticion, iframe, FeatureLayer, Multipoint, SpatialReference, Circle, Point) {
+
+  var clazz = declare([BaseWidget, _WidgetsInTemplateMixin], {
+    name: 'CHS_Catastro',
+    baseClass: 'jimu-widget-edraw',
+    valorGeometria: null,
+    //valorTxt: null,
+    idCSV: null,
+    active: false,
+    tipoTXT:null,
+	
+	geometryEngine: geometryEngine,
+	
+	listaRC: null,
+	poligonoCorteCatastro: null,
+	
+	xmax:null,
+	xmin:null,
+	ymax:null,
+	ymin:null,
+	
+	
+	
+    constantes: {
+      FICHERO_POR_REFERENCIAS: "1",
+      FICHERO_POR_PROVINCIA: "2"      
+    },
+
+
+    _bindEvents: function() {
+  	  this.importFile = lang.hitch(this, this.importFile);
+  	  this.importFileTxt= lang.hitch(this, this.importFileTxt);
+      this.importOnFileLoad = lang.hitch(this, this.importOnFileLoad);
+      this.importOnFileTxtLoad = lang.hitch(this, this.importOnFileTxtLoad);          
+      this.importOnFileJsonLoad = lang.hitch(this, this.importOnFileJsonLoad);  	  
+    },
+    postCreate: function() {
+        this.inherited(arguments);
+        //Bind and hitch events
+        this._bindEvents();
+		
+		this.own(on(this.radioButton1, "click", lang.hitch(this, function() {
+          this.divCarga1.style.display = "block";
+		  this.divCarga2.style.display = "none";
+		  this.divCarga3.style.display = "none";
+		  //this.clear();
+        })));
+		
+		this.own(on(this.radioButton2, "click", lang.hitch(this, function() {
+          this.divCarga1.style.display = "none";
+		  this.divCarga2.style.display = "block";
+		  this.divCarga3.style.display = "none";
+		  //this.clear();
+        })));
+		
+		this.own(on(this.radioButton3, "click", lang.hitch(this, function() {
+          this.divCarga1.style.display = "none";
+		  this.divCarga2.style.display = "none";
+		  this.divCarga3.style.display = "block";
+		  //this.clear();
+        })));
+        
+    },        
+    startup: function() {
+      this.inherited(arguments);
+      
+    },
+
+    onOpen: function() { 
+	
+	    var panel = this.getPanel();
+				
+        panel.position.width = 350;
+        panel.position.height = 550;
+        panel.position.top = 70;
+        panel.setPosition(panel.position);
+        panel.panelManager.normalizePanel(panel);
+		
+		//Cargamos botones
+			//document.getElementById("imgAddShapeBtn").src="./widgets/CHS_Catastro/css/images/upload.png"	
+			document.getElementById("imgAddTxtBtn").src="./widgets/CHS_Catastro/css/images/txt.png"
+			document.getElementById("imgAddTxtBtn2").src="./widgets/CHS_Catastro/css/images/txt.png"
+			document.getElementById("imgAddAnotBtn").src="./widgets/CHS_Catastro/css/images/Annotation.png"
+			document.getElementById("imgAddAnotBtn2").src="./widgets/CHS_Catastro/css/images/Annotation.png"
+	},
+
+    
+    onClose: function() {
+      this.limpiarResultado();      
+    },
+
+    
+	setMessageError: function(textoError) {
+      this.removeLoading();
+      var b = dojo.byId("resultadosCatastro");
+      b.innerHTML = "<p class='label'><font class='fontResultado'>" + textoError + "</font></p>"; +
+      "</b>";
+    },
+
+
+    addLoading: function() {
+      var src = this.config.folderUrl + "loading2.gif";
+      this.infoArea.innerHTML = "<p class='label'><font class='fontResultado'><img class='jimu-loading' style='margin-right:10px' src='" + src + "'></img>Espere, ejecutando intersección con catastro...</font></p>";
+    },
+    removeLoading: function() {
+      this.infoArea.innerHTML = "";
+      this.map.setMapCursor("auto");
+    },
+
+    showMessage: function(msg, type) {
+
+        var class_icon = "message-info-icon";
+        switch (type) {
+          case "error":
+            class_icon = "message-error-icon";
+            break;
+          case "warning":
+            class_icon = "message-warning-icon";
+            break;
+        }
+
+        var content = '<i class="' + class_icon + '">&nbsp;</i>' + msg;
+
+        new Message({
+          message: content
+        });
+      },
+      
+	///////////////////////// IMPORT METHODS ///////////////////////////////////////////////////////////
+      
+  
+      importMessage: false,
+      importInput: false,         
+     importInputTxt:false,
+	 
+      launchImportFileTxt: function() {
+    	  if(this.idCSV!=null){
+	    	  if(this.idCSV.features.length>0){
+	    		  this.limpiarResultado();
+	    	  }
+	       }    	  
+    	  
+    	  if (!window.FileReader) {
+              this.showMessage(this.nls.importErrorMessageNavigator, 'error');
+              return false;
+            }            
+
+            var content = '<div class="eDraw-import-message" id="' + this.id + '___div_import_message">' +
+              '<form dojoType="dijit.form.Form" id="uploadForm" method="" encType="multipart/form-data" action=""><input class="file" type="file" id="' + this.id + '___input_file_import"/></form>' +
+              '</div>';           
+            this.importMessage = new Message({
+
+              message: content,
+              titleLabel: "Cargar Fichero de texto",
+              width: "400px", //Establece el ancho del panel...pero se lo lleva a la izquierda
+              buttons: [{
+                label: this.nls.importCloseButton
+              }]
+            });
+
+            this.importInputTxt = dojo.byId(this.id + '___input_file_import');
+
+            //Init file's choice up watching
+            on(this.importInputTxt, "change", this.importFileTxt);     
+      },
+	  
+      importFileTxt: function() {
+          if (!this.importInputTxt) {
+            this.showMessage(this.nls.importErrorWarningSelectFile, 'warning');
+            if (this.importMessage)
+              this.importMessage.close();
+            return false;
+          }
+
+          var input_file = this.importInputTxt.files[0];
+          if (!input_file) {
+            this.showMessage(this.nls.importErrorWarningSelectFile, 'warning');
+            return false;
+          }
+
+          
+          if (input_file.name.split(".")[1] == "txt") {
+        	  var reader = new FileReader();
+              reader.onload = this.importOnFileTxtLoad;
+              var txt = reader.readAsArrayBuffer(input_file);
+          } 
+          this.tipoTXT=this.FICHERO_POR_REFERENCIAS;
+        
+          /*var b = dojo.byId("resultadosTXT");
+          b.innerHTML = "<p class='label'><font class='fontResultado'>" + input_file.name + "</font></p>"; +
+          "</b>";*/
+		this.resultadosTXT.innerHTML = input_file.name;
+		this.resultadosTXT3.innerHTML = input_file.name;
+
+          
+        },    
+      
+	importOnFileTxtLoad: function(evt) {
+		var content = evt.target.result;
+
+		if (this._deferredUpload) {
+			this._deferredUpload.cancel();
+		}
+
+		var formData = new FormData();
+		formData.append("fichero", this.importInputTxt.files[0]);
+
+          $.ajax({
+            url: this.config.servicioUploadCatastro,
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
+            handleAs: "json",
+            type: 'POST',
+            success: dojo.hitch(this, function(data) {
+              this.valorTxt=null;
+              var resultado = JSON.parse(data);
+              if(data.indexOf("error")>0){
+            	  new Message({
+                      titleLabel: "Error",
+                      message: resultado.error
+                    });
+              }
+              this.listaRC=resultado.refcat;
+              this.importMessage.close();
+            }),
+			
+            error: dojo.hitch(this, function(data, args) {
+
+              if (data.status === 0) {
+                new Message({
+                  titleLabel: "Error",
+                  message: "Error al conectar con " + this.config.servicioDownloadFichero
+                });
+              } else if (data.status == 404) {
+                new Message({
+                  titleLabel: "Error",
+                  message: "Servicio " + this.config.servicioDownloadFichero + " no encontrado (404)"
+                });
+              } else if (data.status == 500) {
+                new Message({
+                  titleLabel: "Error",
+                  message: "Error interno del servidor (500) en " + this.config.servicioDownloadFichero
+                });
+              } else {
+                new Message({
+                  titleLabel: "Error",
+                  message: "Error al procesar la petición en " + this.config.servicioDownloadFichero + " " + data.responseText
+                });
+              }
+              this.importMessage.close();
+            })
+          });  
+		this.activarBotonLimpiar();
+        },
+		
+
+	//IMPORTACION DE POLIGONOS
+	  getPoligonos: function(selected){
+		  var layers = this.map.graphicsLayerIds;
+		  var cuentaPoligonos = null;
+
+		//geometries = new Polygon(new SpatialReference({wkid:25829}));
+		  for (l in layers) {
+			  var unLayer = this.map.getLayer(this.map.graphicsLayerIds[l])
+			  if (unLayer.graphics.length>0){
+			  	for (g in unLayer.graphics){
+                    if (unLayer.graphics[g].geometry.commonType=="polygon" && unLayer.graphics[g].checked){
+                    	cuentaPoligonos++
+                    	if (cuentaPoligonos>1){
+							new Message({
+								titleLabel:"Aviso",
+				                message: "Ha seleccionado más de una geometría"
+			                });
+			                return;
+                    	}
+                    	else{
+								 this.poligonoCorteCatastro = unLayer.graphics[g]
+                    	}
+					}  
+			  	}
+			  }
+		  }
+		if (!cuentaPoligonos || cuentaPoligonos == 0){
+			new Message({
+				titleLabel:"Aviso",
+				message: "Seleccione un polígono a importar en el widget de anotaciones"
+			});
+			this.removeLoading();
+			return;		  	
+		  }
+
+		  //Calculamos el area del poligono importado.
+		var areaPol = this.geometryEngine.planarArea(this.poligonoCorteCatastro.geometry,"hectares")
+
+		if (areaPol>this.config.areaUmbralHa){
+			new Message({
+				titleLabel:"Aviso",
+				message: "La superficie del polígono supera el umbral máximo permitido: " + this.config.areaUmbralHa + "Hectareas"
+			});
+			return;
+		}
+		else{
+			this.resultadosTXT2.innerHTML = this.poligonoCorteCatastro.attributes.name
+			this.resultadosTXT4.innerHTML = this.poligonoCorteCatastro.attributes.name
+		}
+		
+		this.activarBotonLimpiar();
+	  },
+
+
+	///////////////////////// EJECUCUIÓN ///////////////////////////////////////////////////////////
+
+     ejecutarAccion: function() {
+    	 
+		this.addLoading();
+		
+		var urlServicioCatastro = this.config.urlServicioCatastro
+		
+		//Lanzamos peticiones individuales al servicio de catastro de cada Referencia Catastral
+		if (this.radioButton1.checked){
+			
+			if (!this.listaRC || this.listaRC.length<1){
+				new Message({
+					titleLabel:"Aviso",
+					message: "No se ha cargado ningún fichero de texto con Referencias Catastrales"
+				});
+				this.removeLoading();
+				return;	
+			}
+
+			for (var i=0 ; i<this.listaRC.length ; i++ ){
+				refCat = this.listaRC[i]
+				var urlPeticion = this.config.proxyCors + urlServicioCatastro
+
+				var params = {
+					f:'json',
+					service: "wfs",
+					version: 2,
+					request: "getfeature",
+					STOREDQUERIE_ID: "GetParcel",
+					refcat: refCat,
+					SRSname : "EPSG::25829",
+				};
+
+				var peticion = Peticion();
+				var gPeticion = GestorPeticiones();
+					
+				peticion.ambito = this;
+				peticion.params = params;
+				peticion.url =  urlPeticion;
+				peticion.onSuccess = this.onReferenciaCatastralResponse;
+				peticion.onFailure = this.onReferenciaCatastralError;
+
+				peticion.type = 'get';
+				peticion.handleAs = "xml";
+				peticion.sync = true;
+				gPeticion.lanzarPeticion(peticion, false);				
+			}
+		}
+
+		//Tanto si seleccionamos la segunda opcion como la tercera empezaremos haciendo una peticion al servicio web de catastro con el BBOX y en on succes filtraremos
+		//si es necesario por las parcelas del txt
+		else{
+			
+			if (!this.poligonoCorteCatastro || this.poligonoCorteCatastro==undefined){
+				this.getPoligonos();
+			}
+			
+			var urlPeticion = this.config.proxyCors + urlServicioCatastro
+				
+			var peticion = Peticion();
+			var gPeticion = GestorPeticiones();
+			
+			var params = {
+				f:'json',
+				service: "wfs",
+				version: 2,
+				request: "getfeature",
+				Typenames: "cp.cadastralparcel",
+				SRSname : "EPSG::25829",
+				bbox: Math.round(this.poligonoCorteCatastro._extent.xmin) + "," + Math.round(this.poligonoCorteCatastro._extent.ymin) + "," + Math.round(this.poligonoCorteCatastro._extent.xmax) + "," + Math.round(this.poligonoCorteCatastro._extent.ymax)
+			};
+					
+			peticion.ambito = this;
+			peticion.params = params;
+			peticion.url =  urlPeticion;
+			peticion.onSuccess = this.onBboxCatastroResponse;
+			peticion.onFailure = this.onBboxCatastroError;
+
+			peticion.type = 'get';
+			peticion.handleAs = "xml";
+			peticion.sync = true;
+			gPeticion.lanzarPeticion(peticion, false);			
+			}
+
+		//Gestionamos el zoom, botones, loading...
+		if (this.radioButton1.checked){
+			//Aplicamos un zoom a la extension
+			var extent = new esri.geometry.Extent(this.xmin,this.ymin,this.xmax,this.ymax, new esri.SpatialReference({wkid:25829}))
+		}
+		else if(this.radioButton2.checked || this.radioButton3.checked){
+			var ex = this.poligonoCorteCatastro.geometry.cache._extent;
+			var extent = new esri.geometry.Extent(ex.xmin,ex.ymin,ex.xmax,ex.ymax, new esri.SpatialReference({wkid:25829}))
+
+		}			
+			this.map.setExtent(extent);
+			//una vez echo el extent modificamos el level para mostrar todas las entidades al completo
+			var eventExtent = this.map.on("extent-change", lang.hitch(this, function(){
+				var lev = this.map.getLevel();
+				this.map.setLevel(lev-1);
+				eventExtent.remove();
+			}));
+	
+		this.activarBotonLimpiar();
+		this.activarBotonesExport();
+		this.removeLoading();
+     },
+	 
+	 onReferenciaCatastralResponse:function(response){
+		 var coord = response.getElementsByTagName("gml:posList")[0].innerHTML
+		 
+		 //Usamos el centroide para obtener el extent y hacer zoom, de esta forma no tarda tanto como si usamos las coordenadas de los nodos del poligono
+		var cent = response.getElementsByTagName("gml:pos")[0].innerHTML
+		var cent = cent.split(" ");
+		var x = parseFloat(cent[0]);
+		var y = parseFloat(cent[1]);
+		this.extentForZoom(x,y);
+		
+		 //PREPARAMOS POLIGONO
+		 var arrayAux = coord.split(" ");
+
+		//Establecemos simbología aleatoria
+		 var red=Math.floor(Math.random() * 255)+1;
+		 var gre=Math.floor(Math.random() * 255)+1;
+		 var blu=Math.floor(Math.random() * 255)+1
+			
+		 var Symbol = {
+			color:[red,gre,blu,50],
+			outline:{
+				color:[red,gre,blu,255],
+				width:1,
+				type:"esriSLS",
+				style:"esriSLSSolid"
+				},
+			type:"esriSFS",
+			style:"esriSFSSolid"
+			};
+		 
+		 var arrayCoord = [];
+		 //Separamos las coordenadas en parejas
+		 for (var i=0 ; i<arrayAux.length; i += 2){
+			 var unArray = [];
+			 unArray.push(parseFloat(arrayAux[i]))
+			 unArray.push(parseFloat(arrayAux [i+1]))
+			 
+			 arrayCoord.push(unArray)
+		 }
+		 
+		 //Creamos el objeto poligono
+		 var unArrayPol = []
+		 unArrayPol.push(arrayCoord);
+		 var polygon={
+			type:"polygon",
+			spatialReference:{wkid:25829},
+			rings: unArrayPol	
+		};
+		//Creamos el objeto atributo
+		var attributes={
+			Origen : "Catastro",
+			RC: (response.getElementsByTagName("localId")[0].innerHTML),
+			Sup_Total: (response.getElementsByTagName("cp:areaValue")[0].innerHTML)
+		};
+		//Construimos el gráfico
+		var polygonGraphic = new Graphic({
+			attributes : attributes,
+			geometry: polygon,
+			symbol: Symbol
+		});
+		
+		polygonGraphic.isCatastro=true;
+		polygonGraphic.layer= "Parcela Catastral";
+		polygonGraphic.Nombre= polygonGraphic.layer + " " + attributes.RC
+			
+		this.map.graphics.add((polygonGraphic));		 
+	 },
+	 
+	 onReferenciaCatastralError:function(response){
+			new Message({
+				titleLabel:"Aviso",
+				message: "Error en la petción al servicio de catastro: error " + response.status
+			});
+			return;
+	 },
+	 
+	 onBboxCatastroResponse:function(response){
+		 //Obtenemos las parcelas que hay en el extent e intersectamos con el poligono de corte
+		 
+		 //Damos formato al response (Parcelas y sus coordenadas)
+		 var parcelasAux = [];
+		 var parcelas = [];
+		 var l = response.getElementsByTagName("member").length
+		 
+		 for (var i=0 ; i<=l-1; i++){
+			 var coord = response.getElementsByTagName("member")[i].getElementsByTagName("gml:posList")[0].innerHTML;
+			 var arrayAux = coord.split(" ");
+			 
+			 var arrayCoord = [];
+			//Separamos las coordenadas en parejas
+			for (var j=0 ; j<=arrayAux.length-1; j += 2){
+				var unArray = [];
+				unArray.push(parseFloat(arrayAux[j]))
+				unArray.push(parseFloat(arrayAux [j+1]))
+			 
+				arrayCoord.push(unArray)
+			}
+			 
+			 var unaParcela ={
+				refCatastral: response.getElementsByTagName("member")[i].getElementsByTagName("cp:nationalCadastralReference")[0].innerHTML,
+				coordenadas: arrayCoord
+			 }
+			 parcelasAux.push(unaParcela)
+		 }
+		 
+		//En caso de estar activo el tercer check comprobamos aquellas parcelas dentro del poligono que existen en el txt.
+        if (this.radioButton3.checked){
+        	for (var i=0 ; i<=parcelasAux.length-1; i++){
+				if(this.listaRC.includes(parcelasAux[i].refCatastral)){
+					parcelas.push(parcelasAux[i])
+				}
+			}
+        }
+        else{
+        	parcelas = parcelasAux
+        }
+ 
+		//Si no hay coincidencias entre las parcelas dentro del poligono y las parcelas del txt mostramos mensaje
+         if (parcelas.length == 0){
+        	new Message({
+				titleLabel:"Aviso",
+				message: "No hay parcelas catastrales que cumplan la condición"
+			});
+			return;
+        }
+ 
+		 var polCorte = this.poligonoCorteCatastro.geometry
+		 for (var i=0 ; i<=parcelas.length-1; i++){
+
+			var pol = new Polygon (parcelas[i].coordenadas) //Convertimos la parcela en poligono
+			var intersect = this.geometryEngine.intersect(pol,polCorte); //Intersecamos la parcela con el poligono de corte
+			
+			if (intersect){
+				//Establecemos simbología aleatoria
+				var red=Math.floor(Math.random() * 255)+1;
+				var gre=Math.floor(Math.random() * 255)+1;
+				var blu=Math.floor(Math.random() * 255)+1
+			
+				var Symbol = {
+				color:[red,gre,blu,50],
+				outline:{
+					color:[red,gre,blu,255],
+					width:1,
+					type:"esriSLS",
+					style:"esriSLSSolid"
+					},
+				type:"esriSFS",
+				style:"esriSFSSolid"
+				};
+
+				//Creamos el objeto atributo
+				var attributes={
+					Origen : "Catastro",
+					RC: (response.getElementsByTagName("localId")[i].innerHTML),
+					Sup_Total: parseInt(response.getElementsByTagName("cp:areaValue")[i].innerHTML)
+				};
+				//Creamos le gráfico
+				var polygonGraphic = new Graphic({
+					attributes : attributes,
+					geometry: intersect,
+					symbol: Symbol
+				});
+				
+				polygonGraphic.isCatastro=true;
+				polygonGraphic.layer= "Parcela Catastral";
+				polygonGraphic.Nombre= polygonGraphic.layer + " " +(i+1)
+				
+				this.map.graphics.add((polygonGraphic));
+			}
+		 }	
+	 },
+	 
+	 onBboxCatastroError:function(response){
+			new Message({
+				titleLabel:"Aviso",
+				message: "Error en la petción al servicio de catastro: error " + response.status
+			});
+			return;
+	 },
+
+
+
+
+///////////////////////// EXPORT METHODS ///////////////////////////////////////////////////////////
+    
+	exportFileCSV: function(evt) {
+
+		if (this.map.graphics.graphics.length > this.config.numParcelasUmbral){
+			new Message({
+				titleLabel:"Aviso",
+				message: "Demasiadas parcelas para recoger los atributos, debe dividir el proceso (" + this.config.numParcelasUmbral + " parcelas por petición)."
+			});
+			return;				
+		}
+		
+		this.recogeAtributos();
+		
+		var datas = [];
+		var campos = [];
+		
+		for (var i=0; i < this.map.graphics.graphics.length; i++){
+				if (this.map.graphics.graphics[i].isCatastro){
+					datas.push(this.map.graphics.graphics[i].attributes)
+				}
+			}
+		campos = Object.keys(datas[0])
+		
+		return CSVUtils.exportCSV("Catastro", datas, campos);
+	
+	},
+
+	recogeAtributos: function() {
+
+		for (var i=0; i < this.map.graphics.graphics.length; i++){
+
+			if (this.map.graphics.graphics[i].isCatastro){
+				var parcela = this.map.graphics.graphics[i]
+				
+			    var urlPeticion = this.config.proxyCors + this.config.urlServicioParcelasCatastro
+				
+			    var peticion = Peticion();
+			    var gPeticion = GestorPeticiones();
+
+			    var params = {
+				    f:'json',
+					Provincia :"",
+					Municipio :"",
+				    RC: this.map.graphics.graphics[i].attributes.RC
+				    };
+					
+			    peticion.ambito = this;
+			    peticion.params = params;
+			    peticion.url =  urlPeticion;
+			    peticion.onSuccess = dojo.hitch(this,this.atributosResponse, parcela);
+			    peticion.onFailure = this.atributosError;
+
+			    peticion.type = 'get';
+			    peticion.handleAs = "xml";
+			    peticion.sync = true;
+			    gPeticion.lanzarPeticion(peticion, false);			
+			}
+		}	
+	},
+
+	atributosResponse: function(parcela,response) {
+		
+		if (response.getElementsByTagName("np")[0]){
+			var provincia = response.getElementsByTagName("np")[0].innerHTML;
+		}
+		if (response.getElementsByTagName("nm")[0]){
+			var municipio = response.getElementsByTagName("nm")[0].innerHTML;
+		}
+		if (response.getElementsByTagName("npa")[0]){
+			var paraje = response.getElementsByTagName("npa")[0].innerHTML;
+		}
+		if (response.getElementsByTagName("ldt")[0]){
+			var localizacion = response.getElementsByTagName("ldt")[0].innerHTML;
+		}
+		if (response.getElementsByTagName("luso")[0]){
+			var uso = response.getElementsByTagName("luso")[0].innerHTML;
+		}
+		if (response.getElementsByTagName("cn")[0]){
+			var tipo = response.getElementsByTagName("cn")[0].innerHTML;
+		}
+		
+		parcela.attributes.Provincia = provincia;
+		parcela.attributes.Municipio = municipio;
+		parcela.attributes.Paraje = paraje;
+		parcela.attributes.Localizacion = localizacion;
+		parcela.attributes.Uso = uso;
+		parcela.attributes.Tipo = tipo;
+		
+		parcela.geometry.spatialReference = this.map.spatialReference
+		parcela.attributes.Sup = Math.round(this.geometryEngine.planarArea(parcela.geometry,"square-meters"));
+		parcela.attributes.CoefSup = (((parcela.attributes.Sup)/parcela.attributes.Sup_Total).toFixed(3)).toString();
+
+		if (parcela.attributes.CoefSup.indexOf(".")){
+			parcela.attributes.CoefSup = parcela.attributes.CoefSup.replace(".",",");
+		}
+	},
+
+	atributosError: function(response) {
+		new Message({
+				titleLabel:"Aviso",
+				message: "Error al recoger atributos de catastro: error " + response.status
+			});
+		return;		
+	},
+
+	exportToAnotation: function(evt){
+		
+		if (this.map.graphics.graphics.length > this.config.numParcelasUmbral){
+			new Message({
+				titleLabel:"Aviso",
+				message: "Demasiadas parcelas para hacer la petición, debe dividir el proceso (" + this.config.numParcelasUmbral + " parcelas por petición). No se exportarán los atributos"
+			});			
+		}
+		else{
+			this.recogeAtributos(); //Rellenamos todos los atributos de las parcelas antes de exportarlas a anotaciones			
+		}
+		
+		var widget = this.widgetManager.appConfig.getConfigElementsByName("CHS_Anotaciones")[0];
+		
+		//si el widget de anotaciones no esta cargado lanza un error
+		if (!widget){
+			new Message({
+				titleLabel:"Aviso",
+				message: "El widget de anotaciones no está cargado en dicha aplicación"
+			});
+			return;			
+		}
+		
+		var widgetManager = WidgetManager.getInstance();
+	
+		widgetManager.triggerWidgetOpen(widget.id).then(lang.hitch(this, function() { 
+
+          /** Inicialización de variables a consumir por el widget de anotaciones */
+			var elementosExportar = [];
+			
+			for (var i=0; i < this.map.graphics.graphics.length; i++){
+				if (this.map.graphics.graphics[i].isCatastro){
+					elementosExportar.push(this.map.graphics.graphics[i])
+				}
+			}			
+			//Si no hay elementos para exportar lanza un error
+			if (elementosExportar.length==0){
+				new Message({
+					titleLabel:"Aviso",
+					message: "No hay geometrías para exportar"
+				});
+				return;
+			}
+			
+			var objJsonAnotaciones = {};
+			objJsonAnotaciones["graphics"] = [];
+			
+			for (var i=0; i < elementosExportar.length; i++){
+			
+				var obj = {};
+				obj.attributes = {};
+				obj.attributes = elementosExportar[i].attributes;
+				for (var attr in elementosExportar[i].attributes) { //Los campos null dan error al exportar anotaciones a shape, por lo q se introducen como nulo
+					if (attr != "geometry")
+						obj.attributes[attr] = elementosExportar[i].attributes[attr] == null ? "nulo" : elementosExportar[i].attributes[attr];
+				}
+				
+				obj.attributes.name = elementosExportar[i].Nombre ;
+				obj.attributes.comment = "Anotación importada desde el widget de Catastro";
+				obj.geometry = elementosExportar[i]["geometry"];
+				obj.symbol = elementosExportar[i].symbol;
+				obj.geometry.spatialReference.wkid = this.map.spatialReference.wkid;
+				obj.geometry.spatialReference.latestWkid = this.map.spatialReference.latestWkid
+				
+				objJsonAnotaciones.graphics.push(obj);
+
+			}
+			//Hay que añadir los siguientes campos al objJsonAnotaciones para que funcione correctamente
+		    objJsonAnotaciones["displayFieldName"] = "";
+            objJsonAnotaciones["fieldAliases"] = {};
+            objJsonAnotaciones["spatialReference"] = {};
+            objJsonAnotaciones["spatialReference"]["wkid"] = this.map.spatialReference.wkid;
+            objJsonAnotaciones["spatialReference"]["latestWkid"] = this.map.spatialReference.latestWkid;
+            objJsonAnotaciones["fields"] = [];
+		
+			
+			this.publishData({
+				'target': 'CHS_Anotaciones',
+				"timestamp": new Date().getTime(),
+				'elementosImportar': objJsonAnotaciones
+			}, false);
+		}))		
+	},
+
+
+//******* FUNCIONES SECUNDARIAS *******//
+
+	//Botón de info
+	openInfo: function(){
+		var msgInfo=  "Use la primera opción para obtener la geometría de las parcelas catastrales a partir de un fichero de texto.\n\n"+
+			   "Use la segunda opción si quiere obtener las parcelas catastrales contenidas en un polígono definido en el widget de anotaciones. Recuerde que debe estar seleccionado.\n\n"+
+			   "Use la tercera opción si lo que desea es obtener las parcelas catastrales contenidas en un polígono definido en el widget de anotaciones y que a su vez estén recogidas en un fichero de texto.\n"
+		
+   		new Message({message: msgInfo});	  
+   	  },
+
+	activarBotonLimpiar: function(){
+		this.butLimpiar.style.display = "block";
+	},
+	
+	desactivarBotonLimpiar: function(){
+		this.butLimpiar.style.display = "none";
+	},
+	
+	activarBotonesExport: function(){
+		this.butToAnot.style.display = "block";
+		this.butToCSV.style.display = "block";
+	},
+	
+	desactivarBotonesExport: function(){
+		this.butToAnot.style.display = "none";
+		this.butToCSV.style.display = "none";
+	},
+	
+	clear: function() {
+      this.valorGeometria=null;
+      this.valorTxt=null;
+      this.idCSV=null;      
+      this.tipoTXT=null;
+
+        this.listaRC = null;
+        if (this.resultadosTXT){
+        	this.resultadosTXT.innerHTML = "";
+        }
+		if (this.resultadosTXT3){
+        	this.resultadosTXT3.innerHTML = "";
+        }
+		
+        this.poligonoCorteCatastro = null;
+        if (this.resultadosTXT2){
+        	this.resultadosTXT2.innerHTML = "";
+        }
+        if (this.resultadosTXT4){
+        	this.resultadosTXT4.innerHTML = "";
+        }    
+    },
+	
+    limpiarResultado: function() {
+      this.valorGeometria=null;
+      this.valorTxt=null;
+      this.idCSV=null;      
+      this.tipoTXT=null;
+      this._jobId=null;
+
+
+        this.listaRC = null;
+        if (this.resultadosTXT){
+        	this.resultadosTXT.innerHTML = "";
+        }
+		if (this.resultadosTXT3){
+        	this.resultadosTXT3.innerHTML = "";
+        }
+		
+        this.poligonoCorteCatastro = null;
+        if (this.resultadosTXT2){
+        	this.resultadosTXT2.innerHTML = "";
+        }
+        if (this.resultadosTXT4){
+        	this.resultadosTXT4.innerHTML = "";
+        }
+	  
+	  //Limpiamos los graficos
+		var graficosALimpiar = [];
+		var graficos = this.map.graphics.graphics;
+		for (g in graficos) {
+			if (graficos[g].isCatastro){
+				graficosALimpiar.push(this.map.graphics.graphics[g]);
+			}	
+		};
+	  
+		for(var i=0;i<graficosALimpiar.length;i++) {
+			this.map.graphics.remove(graficosALimpiar[i]);
+		}
+      this.desactivarBotonLimpiar();
+	  this.desactivarBotonesExport();
+	  this.removeLoading();	  
+	},
+	
+	//Obtenemos el extent de las parcelas catastrales para hacer zoom	 
+	extentForZoom:function(x,y){
+		if (!this.xmax && !this.xmin && !this.ymax && !this.ymax){
+			this.xmax = x
+			this.xmin = x
+			this.ymax = y
+			this.ymin = y
+		}
+		else{
+			if (this.xmax<x){
+				this.xmax=x
+			}
+			if (this.xmin>x){
+				this.xmin=x
+			}
+			if (this.ymax<y){
+				this.ymax=y
+			}
+			if (this.ymin>y){
+				this.ymin=y
+			}
+		}
+	},
+
+
+  });
+  return clazz;
+});

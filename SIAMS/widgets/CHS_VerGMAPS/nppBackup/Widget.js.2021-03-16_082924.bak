@@ -1,0 +1,116 @@
+define([
+    'dojo/_base/declare',
+    'jimu/BaseWidget',
+    'dojo/dom',
+    'dojo/ready',
+    'dojo/on',
+    'dojo/_base/lang',
+    "esri/geometry/Point",
+    "esri/tasks/GeometryService",
+    "esri/geometry/webMercatorUtils",
+  ],
+
+  function(
+    declare,
+    BaseWidget,
+    dom,
+    ready,
+    on,
+    lang,
+    Point,
+    GeometryService,
+    webMercatorUtils
+  ) {
+
+    //To create a widget, you need to derive from BaseWidget.
+    return declare([BaseWidget], {
+
+      // Custom widget code goes here
+
+      baseClass: 'jimu-widget-CHS_VerGMAPS',
+
+      //this property is set by the framework when widget is loaded.
+      name: 'CHS_VerGMAPS',
+
+      onOpen: function() {
+        ready(lang.hitch(this, this.resizeWindow));
+      },
+
+      resizeWindow: function() {
+        var panel = this.getPanel();
+        var id = this.id;
+        if (window.appInfo.isRunInMobile) {
+          setTimeout(function(){
+            var box = panel._getLayoutBox();
+            var height = panel.containerNode.childNodes[0].children[0].clientHeight + 60;
+            var top = (box.h / 2) + ((box.h / 2) - height);
+            if (height <= (box.h / 2)) {
+              document.querySelectorAll("div[id*="+id+"].jimu-panel.jimu-launchpad-panel")[0].style.height = height + "px";
+              document.querySelectorAll("div[id*="+id+"].jimu-panel.jimu-launchpad-panel")[0].style.top = top + "px";
+            }
+          }, 500);
+
+
+        } else {
+          //Establecemos el tamaño y posicion del panel del widget
+          var h_mapa = this.map.height
+          var w_mapa = this.map.width
+
+          panel.position.left = 10;
+          panel.position.top = 225;
+          panel.position.width = 390;
+          panel.position.height = panel.containerNode.childNodes[0].children[0].clientHeight + (panel.containerNode.childNodes[0].children[0].clientHeight / 2) + 30;
+          panel._originalBox = {
+            w: panel.position.width,
+            h: panel.position.height,
+            l: panel.position.left || 0,
+            t: panel.position.top || 0
+          };
+          panel.setPosition(panel.position);
+          panel.panelManager.normalizePanel(panel);
+        }
+      },
+
+      // Lanzamos al hacer click en el icono
+      onGMAPClick: function() {
+        this.inherited(arguments);
+        var map = this.map;
+        var Lon;
+        var Lat;
+        //Obtenemos los SR del mapa y al que queramos transformar
+        var spatialReference = new esri.SpatialReference({
+          'wkid': parseInt(this.map.spatialReference.wkid)
+        });
+        var spGeom = new esri.SpatialReference({
+          'wkid': 4326
+        });
+        //console.log("SR origen: " + spatialReference.wkid)
+        //console.log("SR destino: " + spGeom.wkid)
+
+        //Coordenadas del centro de la pantalla
+        var Punto = new esri.geometry.Point(
+          map.extent.getCenter().x,
+          map.extent.getCenter().y,
+          spatialReference
+        );
+
+        var DefaultZoom = 5; //Le tenemos que sumar 5 al nivel de zoom para qu el valor se corresponda con el de Gmaps
+        var LZoom = parseInt(map.getLevel() + DefaultZoom);
+
+        //console.log ("CentroPantalla: X=" + Punto.y + " Y=" + Punto.x);
+        //console.log ("Nivel de Zoom: " + LZoom);
+
+        //proceso asincrono que hace la transformacion de coordenadas
+        esriConfig.defaults.geometryService.project([Punto], spGeom, dojo.hitch(this, function(data, args) {
+            //console.log ("Transformadas: " + data[0].x + " "+data[0].y)
+            var url = "https://www.google.es/maps/@" + data[0].y + "," + data[0].x + "," + LZoom + "z"; //Forma la url de GM
+            window.open(url); //Abre en una pesta�a de G.Maps las coordenadas y zoom del mapa
+          }),
+
+          dojo.hitch(this, function() {
+            alert("Error proyectando");
+          })
+        );
+      },
+    });
+  });

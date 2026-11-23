@@ -1,0 +1,22 @@
+{
+  "name": "CHS_GuardarSesion",
+  "platform": "HTML",
+  "version": "1.0",
+  "wabVersion": "2.4",
+  "author": "Confederación Hidrográfica del Segura, O,A.",
+  "description": "Guardar marcadores del mapa",
+  "copyright": "Confederación Hidrográfica del Segura, O,A.",
+  "license": "http://www.apache.org/licenses/LICENSE-2.0",
+  "properties": {
+    "inPanel": true,
+    "hasLocale": false,
+    "hasStyle": true,
+    "hasConfig": true,
+    "hasUIFile": true,
+    "hasSettingPage": true,
+    "hasSettingUIFile": true,
+    "hasSettingLocale": false,
+    "hasSettingStyle": true,
+    "IsController": false
+  }
+}

@@ -1,0 +1,55 @@
+{
+"displayFieldName": "name",
+"geometryType": "esriGeometryPolygon",
+fields:[
+	{
+	   "name": "name",
+	   "type": "esriFieldTypeString",
+	   "alias": "name",
+	   "length": 50
+	},
+	{
+	   "name": "comment",
+	   "type": "esriFieldTypeString",
+	   "alias": "Toponimia",
+	   "length": 50
+	}
+],
+"features":[{
+	attribtes: {
+		"name":"Prueba",
+		"comment":"Comentario"
+	},
+	"geometry":{
+			"rings": [
+				[
+				 [
+				  -1.2171059659037358,
+				  38.110782921957799
+				 ],
+				 [
+				  -1.5796951002864354,
+				  38.115726805847601
+				 ],
+				 [
+				  -1.5751462999828432,
+				  38.349189020882349
+				 ],
+				 [
+				  -1.2113972573683756,
+				  38.344203790131473
+				 ],
+				 [
+				  -1.2171059659037358,
+				  38.110782921957799
+				 ]
+				]
+			   ],
+	}
+}
+],
+"fieldAliases":{
+	"name":"name",
+	"comment":"comment"
+}
+}

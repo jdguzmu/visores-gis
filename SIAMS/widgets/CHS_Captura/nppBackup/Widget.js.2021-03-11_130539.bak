@@ -1,0 +1,814 @@
+define([
+    'dojo/_base/declare',
+    'dijit/_WidgetsInTemplateMixin',
+    "dojo/Deferred",
+    'dojo/ready',
+    'jimu/BaseWidget',
+    'dijit/Toolbar',
+    'dijit/form/Button',
+    'dijit/ToolbarSeparator',
+    'dijit/form/FilteringSelect',
+    'dojo/_base/lang',
+    'dojo/data/ItemFileReadStore',
+    'dojo/store/DataStore',
+    'dijit/form/TextBox',
+    'dojo/_base/html',
+    'dojo/query',
+    'dojo/dom-style',
+    'esri/symbols/SimpleMarkerSymbol',
+    './GestorPeticiones',
+    './Peticion',
+    'esri/request',
+    'esri/layers/WMSLayer',
+    'jimu/dijit/Message'
+  ],
+  function(
+    declare,
+    _WidgetsInTemplateMixin,
+    Deferred,
+    ready,
+    BaseWidget,
+    Toolbar,
+    Button,
+    ToolbarSeparator,
+    FilteringSelect,
+    lang,
+    ItemFileReadStore,
+    DataStore,
+    TextBox,
+    html,
+    dojoQuery,
+    domStyle,
+    SimpleMarkerSymbol,
+    GestorPeticiones,
+    Peticion,
+    esriRequest,
+    Color,
+    WMSLayer,
+    Message
+  ) {
+    return declare([BaseWidget, _WidgetsInTemplateMixin], {
+
+      baseClass: 'jimu-widget-customwidget',
+      name: 'CHS_Captura',
+      trabajos: [],
+      isBusy: false,
+
+      startup: function() {
+        this.inherited(arguments);
+
+        this.iniciarForm();
+        this.setEventos();
+
+        if (window.appInfo.isRunInMobile) {
+          this.getPanel().setPosition(this.panel.position, this);
+        }
+      },
+      iniciarForm: function() {
+
+        this.cargarConfiguracion();
+
+      },
+      cargarConfiguracion: function() {
+
+        var gPeticion = GestorPeticiones();
+        var peticion = Peticion();
+
+        var urlServicio = this.config.proxyCors + this.config.urlServicio;
+        urlServicio = urlServicio.replace("/submitJob", "");
+        peticion.url = urlServicio;
+
+        peticion.params = {
+          f: 'json'
+        };
+
+        peticion.ambito = this;
+        peticion.type = "post";
+        peticion.cabecera = {
+          'X-Requested-With': null
+        };
+        peticion.onSuccess = this.onListaParametros;
+
+        gPeticion.lanzarPeticion(peticion, false);
+
+      },
+      onListaParametros: function(respuesta) {
+
+        var parametros = respuesta.parameters;
+        var choices = null;
+        var formats = null;
+        for (var i = 0; i < parametros.length; i++) {
+          if (parametros[i].name == "Format") {
+            formats = parametros[i].choiceList;
+          }
+        }
+
+        if (formats) {
+
+          var listaFormatos = {
+            identifier: "name",
+            label: "name",
+            url: "url",
+            items: []
+          };
+
+          for (var i = 0; i < formats.length; i++) {
+            listaFormatos.items.push({
+              name: formats[i]
+            });
+          }
+
+          var store = new dojo.data.ItemFileReadStore({
+            data: listaFormatos
+          });
+
+          if (dojo.version.major == 1 && dojo.version.minor > 6) {
+            store = new dojo.store.DataStore({
+              store: store
+            });
+
+          }
+
+          dijit.byId("cboFormato").store = store;
+        }
+
+      },
+      listaParametrosError: function(respuesta) {
+
+        if (respuesta.status === 0) {
+          new Message({
+            titleLabel: "Error",
+            message: this.nls.mensaje0 + this.config.urlServicio
+          });
+        } else if (respuesta.status == 404) {
+          new Message({
+            titleLabel: "Error",
+            message: this.nls.mensaje404 + this.config.urlServicio
+          });
+        } else if (respuesta.status == 500) {
+          new Message({
+            titleLabel: "Error",
+            message: this.nls.mensaje500 + this.config.urlServicio
+          });
+        } else {
+          new Message({
+            titleLabel: "Error",
+            message: this.nls.mensajeErrorGenerico + this.config.urlServicio + " " + respuesta.responseText
+          });
+        }
+
+      },
+      setEventos: function() {
+
+        var miBoton = dojo.byId("btnCapturaPantalla");
+
+        dojo.connect(miBoton, "onclick", dojo.hitch(this, this.exportar));
+
+      },
+      exportar: function() {
+        this.getLayersActive();
+        if (!this.isBusy) {
+          var map = this.map;
+
+          var webMapParams = {
+            mapOptions: {}
+          };
+
+          this.busy(true);
+
+          webMapParams.mapOptions.extent = this.map.extent.toJson();
+
+          webMapParams.operationalLayers = this.getCapasOperacionales(this.map.itemInfo.itemData.operationalLayers);
+          webMapParams.baseMap = this.getMapaBase(this.map.itemInfo.itemData.baseMap);
+
+          var formato = dijit.byId("cboFormato").value;
+          if (formato && formato.length > 0) {
+            formato = formato.toUpperCase();
+          } else {
+            formato = "PDF";
+          }
+
+          webMapParams.exportOptions = {
+            dpi: 96,
+            outputSize: [this.map.width, this.map.height]
+          };
+
+          var params = {
+            f: 'json',
+            Web_Map_as_JSON: dojo.toJson(webMapParams),
+            Format: formato,
+            Layout_Template: "MAP_ONLY"
+          };
+
+
+          var gPeticion = GestorPeticiones();
+          var peticion = Peticion();
+          peticion.params = params;
+          peticion.ambito = this;
+          peticion.cabecera = {
+            'X-Requested-With': null
+          };
+          peticion.onSuccess = dojo.hitch(this, this.onSuccessCaptura, webMapParams.operationalLayers, webMapParams.baseMap, formato);
+          peticion.onFailure = this.onErrorCaptura;
+          peticion.url = this.config.proxyCors + this.config.urlServicio;
+
+          gPeticion.lanzarPeticion(peticion, false);
+        }
+      },
+      getMapaBase: function(mapasBase) {
+
+        var baseMaps = {
+          title: mapasBase.title,
+          baseMapLayers: []
+        };
+
+        for (var k = 0; k < mapasBase.baseMapLayers.length; k++) {
+
+          var aux = mapasBase.baseMapLayers[k];
+
+          var tileLayer = {
+            id: aux.id,
+            url: aux.url,
+            opacity: aux.opacity
+          };
+
+          baseMaps.baseMapLayers.push(tileLayer);
+        }
+
+        return baseMaps;
+      },
+      getCapasOperacionales: function(capas) {
+
+
+        var operationalLayers = [];
+
+        /** Capas raster y wms */
+        var layerIds = this.map.layerIds;
+        for (var f = 0; f < layerIds.length; f++) {
+
+          var auxCapa = this.map.getLayer(layerIds[f]);
+
+          if (auxCapa.tileInfo) {
+            //RASTER
+            if (auxCapa.visible) {
+              var rasterLayer = {
+                id: auxCapa.id,
+                opacity: auxCapa.opacity,
+                url: auxCapa.url,
+                visibility: true
+              };
+              operationalLayers.push(rasterLayer);
+            }
+
+          } else if (auxCapa instanceof esri.layers.WMSLayer) {
+
+            //WMS
+            var imageFormat = auxCapa.imageFormat;
+            imageFormat = imageFormat.replace("image/", "");
+
+            if (imageFormat == "png") {
+              imageFormat = "png24";
+            } else if (imageFormat == "jpeg") {
+              imageFormat = "jpg";
+            }
+
+            var url = auxCapa.getMapURL;
+
+            var wmsLayer = {
+              id: auxCapa.id,
+              opacity: auxCapa.opacity,
+              url: url,
+              visibility: auxCapa.visible,
+              format: imageFormat,
+              version: auxCapa.version,
+              transparentBackground: auxCapa.imageTransparency,
+              type: 'wms'
+            };
+            wmsLayer.layers = [];
+            for (var idxLayer = 0; idxLayer < auxCapa.visibleLayers.length; idxLayer++) {
+              wmsLayer.layers.push({
+                name: auxCapa.visibleLayers[idxLayer]
+              });
+            }
+            operationalLayers.push(wmsLayer);
+
+          }
+
+
+        }
+
+        /** Capas del webmap*/
+        for (var k = 0; k < capas.length; k++) {
+
+          var controlWms = this.map.getLayer(capas[k].id);
+
+          if (controlWms instanceof esri.layers.WMSLayer == false) {
+
+            var capa = null;
+            if (controlWms instanceof esri.layers.FeatureLayer) {
+
+              var arrUrl = controlWms.url.split("MapServer/")
+
+              capa = {
+                //id: capas[k].id,
+                //layerType: capas[k].layerType,
+                opacity: 1,
+                title: capas[k].title,
+                url: arrUrl[0] + "MapServer",
+                //visibility: capas[k].visibility,
+                visibleLayers: [parseInt(arrUrl[1])]
+              }
+
+            } else {
+              if (capas[k].visibility && this.capasServ[capas[k].id]) {
+                capa = {
+                  id: capas[k].id,
+                  layerType: capas[k].layerType,
+                  opacity: capas[k].opacity,
+                  title: capas[k].title,
+                  url: capas[k].url,
+                  visibility: capas[k].visibility,
+				  layers:[]
+                  //visibleLayers: this.capasServ[capas[k].id].visibles
+                };
+				
+				for (var idx=0;idx<this.capasServ[capas[k].id].visibles.length;idx++) {
+					var idLayerInt = this.capasServ[capas[k].id].visibles[idx];
+					var idLayer = idLayerInt.toString();
+					var layerSpec = {
+						id: idLayerInt,
+						name: controlWms.layerInfos[idLayerInt].name,
+						layerDefinition: {
+							source: {
+								type:"mapLayer",
+								mapLayerId:idLayerInt
+							}
+						}
+					};
+					
+					if(controlWms.layerDrawingOptions && controlWms.layerDrawingOptions[idLayer]) {
+						layerSpec.layerDefinition.drawingInfo = {
+									renderer:controlWms.layerDrawingOptions[idLayer].renderer.toJson(),								
+									scaleSymbols:true,
+									showLabels:true
+						};
+					}
+					capa.layers.push(layerSpec);
+				}
+              }
+            }
+		
+            operationalLayers.push(capa);
+          }
+
+        }
+
+
+        /** Gr�ficos del mapa */
+        try {
+
+          var graphics = [];
+          for (var i = 0; i < this.map.graphics.graphics.length; i++) {
+            graphics.push(this.map.graphics.graphics[i]);
+          }
+
+          for (var k = 0; k < this.map.graphicsLayerIds.length; k++) {
+            if (this.map.graphicsLayerIds[k].indexOf("graphicsLayer") > -1) {
+              var aux = this.map.getLayer(this.map.graphicsLayerIds[k]);
+              for (var j = 0; j < aux.graphics.length; j++) {
+                graphics.push(aux.graphics[j]);
+              }
+            }
+          }
+
+          if (graphics.length > 0) {
+            var features = {};
+
+            var graphicLayer = {
+              id: "graphics",
+              minScale: 0,
+              maxScale: 0,
+              featureCollection: {
+                layers: []
+              }
+            };
+
+            for (var i = 0; i < graphics.length; i++) {
+
+              if (graphics[i].symbol == null) {
+                continue;
+              }
+
+              var type = graphics[i].geometry.type;
+
+              if (!features[type]) {
+                features[type] = [];
+              }
+
+              graphics[i].spatialReference = this.map.spatialReference;
+              var jsonGraphic = graphics[i].toJson();
+              jsonGraphic.attributes = {};
+              jsonGraphic.owner = graphics[i].owner;
+              features[type].push(
+                jsonGraphic
+              );
+              features[type][features[type].length - 1].spatialReference = {
+                wkid: this.map.spatialReference.wkid
+              };
+              features[type][features[type].length - 1].geometry.spatialReference = {
+                wkid: this.map.spatialReference.wkid
+              };
+            }
+
+            for (var unTipo in features) {
+              var unLayer = null;
+              if (unTipo == "polygon") {
+                unLayer = {
+                  layerDefinition: {
+                    name: "polygonLayer",
+                    geometryType: "esriGeometryPolygon"
+                  }
+                };
+
+                unLayer.featureSet = {
+                  geometryType: "esriGeometryPolygon",
+                  features: features[unTipo]
+                };
+
+              } else if (unTipo == "polyline") {
+                unLayer = {
+                  layerDefinition: {
+                    name: "polylineLayer",
+                    geometryType: "esriGeometryPolyline"
+                  }
+                };
+                unLayer.featureSet = {
+                  geometryType: "esriGeometryPolyline",
+                  features: features[unTipo]
+                };
+              } else if (unTipo == "point") {
+                unLayer = {
+                  layerDefinition: {
+                    name: "pointLayer",
+                    geometryType: "esriGeometryPoint"
+                  }
+                };
+
+                var unLayer2 = {
+                  layerDefinition: {
+                    name: "pointLayer2",
+                    geometryType: "esriGeometryPoint"
+                  }
+                };
+
+                var unLayerLabel = {
+                  layerDefinition: {
+                    name: "labelLayer",
+                    geometryType: "esriGeometryPoint"
+                  }
+                };
+
+                var unLayerLabel2 = {
+                  layerDefinition: {
+                    name: "labelLayer2",
+                    geometryType: "esriGeometryPoint"
+                  }
+                };
+
+                var featureTextos = [];
+                var featureTextos2 = [];
+                var features1 = [];
+                var features2 = [];
+
+                for (var i = 0; i < features[unTipo].length; i++) {
+
+                  var unaFeatureTexto = dojo.fromJson(dojo.toJson(features[unTipo][i]));
+
+                  var textSymbol = null;
+                  if (unaFeatureTexto.owner && unaFeatureTexto.owner.indexOf("Anotacion") > -1) {
+
+                    textSymbol = unaFeatureTexto.symbol;
+                    textSymbol.kerning = null;
+                    textSymbol.backgroundColor = null;
+                    textSymbol.borderLineSize = null;
+                    textSymbol.borderLineColor = null;
+                    textSymbol.haloColor = null;
+
+                  } else if (unaFeatureTexto.symbol.type == "esriTS") {
+
+                    textSymbol = {
+                      "type": "esriTS",
+                      "color": [78, 78, 78, 255],
+                      "backgroundColor": [0, 0, 0, 0],
+                      "verticalAlignment": "bottom",
+                      "horizontalAlignment": "center",
+                      "rightToLeft": false,
+                      "angle": 0,
+                      "xoffset": 0,
+                      "yoffset": 0,
+                      "kerning": false,
+                      "font": {
+                        "family": "Arial",
+                        "size": 12,
+                        "weight": "bold"
+                      },
+                      text: unaFeatureTexto.geometry.x + ", " + unaFeatureTexto.geometry.y
+                    };
+
+                  }
+
+                  if (unaFeatureTexto.symbol.type == "esriTS") {
+                    unaFeatureTexto.symbol = textSymbol;
+                    featureTextos2.push(unaFeatureTexto);
+
+                  } else if (unaFeatureTexto.symbol.type == "esriSMS") {
+                    unaFeatureTexto.symbol = textSymbol;
+                    features1.push(features[unTipo][i]);
+                  } else {
+                    unaFeatureTexto.symbol = textSymbol;
+                    featureTextos.push(unaFeatureTexto);
+                    features1.push(features[unTipo][i]);
+                  }
+
+
+                }
+
+
+
+                unLayer.featureSet = {
+                  geometryType: "esriGeometryPoint",
+                  features: features1
+                };
+                unLayerLabel.featureSet = {
+                  geometryType: "esriGeometryPoint",
+                  features: featureTextos
+                };
+                if (features2.length > 0) {
+                  unLayer2.featureSet = {
+                    geometryType: "esriGeometryPoint",
+                    features: features2
+                  };
+                }
+                if (featureTextos2.length > 0) {
+                  unLayerLabel2.featureSet = {
+                    geometryType: "esriGeometryPoint",
+                    features: featureTextos2
+                  };
+                }
+              }
+
+              if (unLayer != null) {
+                graphicLayer.featureCollection.layers.push(unLayer);
+              }
+
+              if (unLayerLabel != null) {
+                graphicLayer.featureCollection.layers.push(unLayerLabel);
+              }
+
+              if (unLayer2 != null) {
+                if (unLayer2.featureSet != null) {
+                  graphicLayer.featureCollection.layers.push(unLayer2);
+                }
+              }
+
+              if (unLayerLabel2 != null) {
+                if (unLayerLabel2.featureSet != null) {
+                  graphicLayer.featureCollection.layers.push(unLayerLabel2);
+                }
+              }
+
+            }
+            operationalLayers.push(graphicLayer);
+          }
+        } catch (e) {
+
+        }
+
+
+
+
+        return operationalLayers;
+
+      },
+
+      getLayersActive: function() {
+
+        this.capasServ = [];
+        this.capasGraf = [];
+
+        var layers = this.map.layerIds;
+        for (var i = 0; i < layers.length; i++) { //recorre los Servicios añadidos al mapa
+          if (this.map.getLayer(layers[i]).tileInfo == undefined && this.map.getLayer(layers[i]).visible) { //si no es un Servicio Raster entra y ademas visible
+            var lvisibles = [];
+            var layerId = this.map.getLayer(layers[i]);
+            this.capasServ[layerId.id] = {
+              visibles: []
+            };
+            lvisibles = layerId.visibleLayers //Recoje las capas visibles
+            if (lvisibles)
+              for (var j = 0; j < lvisibles.length; j++) {
+                if (lvisibles[j] != -1) { //Al recoger las capas algunas aparecen como -1, evitamos que estas se recojan
+                  var k = lvisibles[j]
+                  //Vemos si las capas visibles estan habilitadas en los rangos de escala, si no lo estan no las cargamos
+                  var esc = this.map.getScale()
+                  var e_min = layerId.layerInfos[k].minScale
+                  var e_max = layerId.layerInfos[k].maxScale
+                  if ((e_min == 0 && e_max == 0) || (e_max == 0 && e_min > esc) || (e_min == 0 && e_max < esc) || e_min > esc && esc > e_max) {
+                    this.capasServ[layerId.id].visibles.push(this.map.getLayer(layers[i]).layerInfos[k].id); //Añadimos en el array el las capas visibles
+                  } else {
+                    //console.log("La capa " + this.map.getLayer(layers[i]).layerInfos[k].name + " no está activa a esta escala")
+                  }
+                }
+              }
+          }
+        }
+        for (var i = 0; i < this.map.graphicsLayerIds.length; i++) { //recorre las layers individuales
+          if (this.map.getLayer(this.map.graphicsLayerIds[i]).name !== undefined && this.map.getLayer(this.map.graphicsLayerIds[i]).visible) { //si tienen un campo nombre
+            var layerId = this.map.getLayer(this.map.graphicsLayerIds[i]);
+            this.capasServ[layerId.id] = {
+              visibles: []
+            };
+            this.capasServ[layerId.id].visibles.push(layerId.visibleLayers); //añadimos al array
+            //console.log(this.map.getLayer(this.map.graphicsLayerIds[i]))
+          }
+        }
+      },
+
+      onErrorCaptura: function(respuesta, args) {
+
+        if (respuesta.status === 0) {
+          new Message({
+            titleLabel: "Error",
+            message: this.nls.mensaje0 + this.config.urlServicio
+          });
+        } else if (respuesta.status == 404) {
+          new Message({
+            titleLabel: "Error",
+            message: this.nls.mensaje404 + this.config.urlServicio
+          });
+        } else if (respuesta.status == 500) {
+          new Message({
+            titleLabel: "Error",
+            message: this.nls.mensaje500 + this.config.urlServicio
+          });
+        } else {
+          new Message({
+            titleLabel: "Error",
+            message: this.nls.mensajeErrorGenerico + this.config.urlServicio + " " + respuesta.responseText
+          });
+        }
+
+      },
+      busy: function(value) {
+
+        if (value) {
+          dojo.byId("processCaptura").innerHTML = this.nls.mensajeEsperando;
+          dojo.addClass(dojo.byId("btnCapturaPantalla"), "jimu-state-disabled");
+          this.isBusy = true;
+        } else {
+          dojo.byId("processCaptura").innerHTML = "";
+          dojo.removeClass(dojo.byId("btnCapturaPantalla"), "jimu-state-disabled");
+          this.isBusy = false;
+        }
+
+
+      },
+      onSuccessCaptura: function(operationalLayers, baseMap, formato, respuesta) {
+        if (respuesta.jobId) {
+
+          respuesta.operationalLayers = operationalLayers;
+          respuesta.baseMap = baseMap;
+          respuesta.formato = formato;
+          respuesta.scope = this;
+
+          this.trabajos[respuesta.jobId] = {
+            interval: setInterval(dojo.hitch(respuesta, this.consultarEstado), 1000),
+            titulo: "Captura"
+          };
+        }
+      },
+      consultarEstado: function() {
+        var gPeticion = GestorPeticiones();
+        var peticion = Peticion();
+        var urlImpresion = this.scope.config.urlServicio;
+        var urlStatus = urlImpresion.replace("submitJob", "jobs/" + this.jobId);
+        peticion.params = {
+          f: 'json'
+        };
+        peticion.cabecera = {
+          'X-Requested-With': null
+        };
+        peticion.ambito = this.scope;
+        peticion.type = 'post';
+        peticion.url = this.scope.config.proxyCors + urlStatus;
+        this.scope.urlStatus = urlStatus;
+        peticion.onSuccess = this.scope.onRespuestaEstado;
+        this.scope.jobId = this.jobId;
+        gPeticion.lanzarPeticion(peticion, false);
+      },
+      onRespuestaEstado: function(respuesta) {
+
+        if (respuesta.jobStatus && respuesta.jobStatus == "esriJobSucceeded") {
+          var gPeticion = GestorPeticiones();
+          var peticion = Peticion();
+
+          clearInterval(this.trabajos[this.jobId].interval);
+          delete this.jobId;
+          var outputFile = respuesta.results.Output_File;
+          var url = this.urlStatus + "/" + outputFile.paramUrl;
+
+          peticion.params = {
+            f: 'json'
+          };
+          peticion.ambito = this;
+          peticion.type = 'post';
+          peticion.cabecera = {
+            'X-Requested-With': null
+          };
+          peticion.url = this.config.proxyCors + url;
+          peticion.onSuccess = this.onResults;
+          gPeticion.lanzarPeticion(peticion, false);
+        } else if (respuesta.jobStatus && respuesta.jobStatus == "esriJobFailed") {
+          clearInterval(this.trabajos[this.jobId].interval);
+          delete this.trabajos[this.jobId];
+          new Message({
+            titleLabel: "Error",
+            message: this.nls.mensajeErrorCaptura
+          });
+          this.busy(false);
+        }
+
+
+      },
+      onResults: function(respuesta) {
+        var url = respuesta.value.url;
+        if (url != 'undefined') {
+          var componentes = url.split("/");
+          var filename = componentes[componentes.length - 1];
+          var posExtension = filename.indexOf(".");
+          var extension = filename.substring(posExtension);
+
+          var downloadUrl = this.config.servicioDownloadFichero + "?filename=captura" + extension + "&method=downloadFromUrl&url=" + url;
+
+          var iframeCaptura = document.getElementById("downloadCapturaPantalla");
+
+          if (iframeCaptura == null) {
+            iframeCaptura = document.createElement("iframe");
+            dojo.attr(iframeCaptura, "style", "display:none");
+            document.body.appendChild(iframeCaptura);
+
+          }
+          iframeCaptura.src = downloadUrl;
+        } else {
+          new Message({
+            titleLabel: "Error",
+            message: this.nls.mensajeErrorCaptura
+          });
+        }
+
+        this.busy(false);
+        delete this.trabajos[this.jobId];
+
+      },
+
+      onOpen: function() {
+        ready(lang.hitch(this, this.resizeWindow));
+      },
+
+      resizeWindow: function() {
+        var panel = this.getPanel();
+        var id = this.id;
+        if (window.appInfo.isRunInMobile) {
+          setTimeout(function() {
+            var box = panel._getLayoutBox();
+            var height = panel.containerNode.childNodes[0].children[0].clientHeight + 60;
+            var top = (box.h / 2) + ((box.h / 2) - height);
+            if (height <= (box.h / 2)) {
+              document.querySelectorAll("div[id*=" + id + "].jimu-panel.jimu-launchpad-panel")[0].style.height = height + "px";
+              document.querySelectorAll("div[id*=" + id + "].jimu-panel.jimu-launchpad-panel")[0].style.top = top + "px";
+            }
+          }, 500);
+
+
+        } else {
+          //Establecemos el tamaño y posicion del panel del widget
+          var h_mapa = this.map.height
+          var w_mapa = this.map.width
+
+          panel.position.left = 10;
+          panel.position.top = 225;
+          panel.position.width = 390;
+          panel.position.height = panel.containerNode.childNodes[0].children[0].clientHeight + (panel.containerNode.childNodes[0].children[0].clientHeight / 2) + 30;
+          panel._originalBox = {
+            w: panel.position.width,
+            h: panel.position.height,
+            l: panel.position.left || 0,
+            t: panel.position.top || 0
+          };
+
+          panel.setPosition(panel.position);
+          panel.panelManager.normalizePanel(panel);
+        }
+      }
+    });
+  });

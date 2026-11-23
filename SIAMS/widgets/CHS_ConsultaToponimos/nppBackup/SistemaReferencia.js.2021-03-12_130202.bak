@@ -1,0 +1,38 @@
+define([
+  'dojo/_base/declare',
+  'dojo/_base/lang',
+  'dojo/_base/array',
+  'esri/lang'
+], function(declare, lang, array, esriLang) {
+  return declare([], {
+    
+	url: null,
+	featureNS: null,
+	nombreNS: null,
+	campoGeometrico: null,
+	srsName: null,
+	
+    constructor: function(){
+		
+    },
+	transformarBBOX: function(bounds, projOrigen, projDestino) {
+
+		var bounds2 = bounds.clone();
+		bounds2.transform(projOrigen, projDestino);
+		return bounds2;
+		
+		
+	},
+	trasnformarPunto:function(point, projOrigen,projDestino) {
+		var point2=null;
+		if(point) {
+			var point2 = point.clone();
+			point2.transform(projOrigen,projDestino);
+		}
+				
+		return point2;
+	}
+	
+	
+  });
+});

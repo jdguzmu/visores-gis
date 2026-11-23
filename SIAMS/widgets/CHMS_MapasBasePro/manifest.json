@@ -1,0 +1,22 @@
+{
+  "name": "CHMS_MapasBasePro",
+  "label": "Mapas Base Pro",
+  "platform": "HTML",
+  "version": "1.0.3",
+  "wabVersion": "2.19",
+  "author": "CHMS",
+  "description": "Galería, línea temporal y comparador de mapas base para la Demarcación Miño-Sil.",
+  "2D": true,
+  "3D": false,
+  "properties": {
+    "inPanel": true,
+    "hasConfig": true,
+    "hasUIFile": true,
+    "hasStyle": true,
+    "hasLocale": true,
+    "hasSettingPage": true,
+    "hasSettingUIFile": true,
+    "hasSettingLocale": false,
+    "hasSettingStyle": false
+  }
+}

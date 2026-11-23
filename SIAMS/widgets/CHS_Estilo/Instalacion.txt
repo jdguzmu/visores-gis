@@ -1,0 +1,51 @@
+***********************************************************
+** Para que funcione correctamente En WAB for developers **
+***********************************************************
+
+-	Añada el widget Cambiar estilo.
+
+-	El Widget "Lista de capas" llama a "Cambiar estilo" al hacer click en "Editar estilo" en el menú emergente (PopupMenuInfo). Al añadir el
+	widget aparecerá en la barra de widgets de la aplicación, para ocultarlo modificaremos el css del tema en el que queramos cargarlo.
+	"themes\LaunchpadTheme\widgets\AnchorBarController\css\style.css"
+
+		div[settingid*='widgets_CHS_Estilo_Widget'] {
+			display: none;
+		}
+
+-	Modificamos tambien el Widget.js, al ocultar el icono del widget se ha quedado un hueco vacio, para eliminarlo dentro de la funcion
+	"switchToNormalStyle", justo antes del domStyle.set, incluimos:
+
+	   //Previamente en css se oculta el icono y ahora ajustamos la barra a un icono menos si existe este widget en allConfigs
+	   array.forEach(this.allConfigs, function(item){
+			if(item.name=="CHS_Estilo"){
+			widgetWidth-=ICON_SIZE;
+			}
+		});
+
+		
+***********************************************
+** Para que funcione correctamente En PORTAL **
+***********************************************
+
+-	Añada el widget Cambiar estilo.
+
+-	El Widget "Lista de capas" llama a "Cambiar estilo" al hacer click en "Editar estilo" en el menú emergente (PopupMenuInfo). Al añadir el
+	widget aparecerá en la barra de widgets de la aplicación, para ocultarlo modificaremos el css de:
+	"...\jimu.js\css\jimu-theme.css"
+
+		div[settingid*='widgets_CHS_Estilo_Widget'] {
+			display: none;
+		}
+
+-	Modificamos tambien el Widget.js, al ocultar el icono del widget se ha quedado un hueco vacio, para eliminarlo dentro de la funcion
+	"switchToNormalStyle", justo antes del domStyle.set. En portal los ficheros de código están ofuscados, con lo cual tendremos que 
+	estudiar el nombre de cada una de las variables, en el caso de "themes\LaunchpadTheme\widgets\widgets.js":
+
+	  		//Previamente en css se oculta el icono y ahora ajustamos la barra a un icono menos si existe este widget en allConfigs
+			c.forEach(this.allConfigs, function(item){
+			if(item.name=="CHS_Estilo"){
+				a-=48;
+				}
+			});				
+			
+			 

@@ -1,0 +1,12 @@
+ElevationProfileFixed - prueba de compatibilidad
+
+Cambios:
+1. Widget.js: esriFieldTypeObjectID -> esriFieldTypeOID en _getProfile.
+2. config.json: servicio ElevationSync mediante HTTPS.
+3. manifest.json: nombre distinto para coexistir con el widget original.
+
+Instalacion: descomprimir la carpeta ElevationProfileFixed en client/stemapp/widgets/ de Web AppBuilder Developer, reiniciar si hace falta y agregar el nuevo widget desde Builder. Conservar el original.
+
+Prueba: trazar una linea corta y comprobar perfil. Si persiste el error, inspeccionar la peticion de red a /Profile/execute y su InputLineFeatures. No se ha validado el servicio remoto en ejecucion.
+
+Nota: No se ha cambiado el calculo de longitud geodesica; si se usan polilineas EPSG:25829 puede requerir un ajuste independiente.

@@ -1,0 +1,14 @@
+{
+  "name": "CHS_VerGMAPS",
+  "2D": true,
+  "3D": false,
+  "platform": "HTML",
+  "version": "2.2",
+  "wabVersion": "2.2",
+  "author": "AYESA",
+  "description": "Este widget abre el mapa del visor en GoogleMaps",
+  "copyright": "",
+  "license": "http://www.apache.org/licenses/LICENSE-2.0",
+  "properties": {
+  }
+}

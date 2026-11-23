@@ -1,0 +1,6 @@
+{
+	"urlServicio": "https://www.chsegura.es/arcgis/rest/services/PrintChs/GPServer/Export%20Web%20Map/submitJob",
+	"dpi": 300,
+	"proxyCors":"http://localhost:8080/LoginChsPortal/proxy.jsp?",
+	"servicioDownloadFichero": "http://localhost:8080/LoginChsPortal/DownloadFichero"
+}

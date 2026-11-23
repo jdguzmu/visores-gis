@@ -1,0 +1,14 @@
+************************************************************ *** * * ***
+****						v.20.01.15						 *   *** ***
+************************************************************ *** * * ***
+	FICHEROS:
+	css/style.css	config.json		GestorPeticions.json	LineCursor.json		Peticion.json	Widget.html		Widget.ja
+	----------------------------------------------
+	OBJETIVO:
+	Poder rotular un campo de una capa, eliguiendo color, fuente, tamaño de letra...
+	----------------------------------------------
+	DESCRIPCIÓN:
+	Al abrir el widget y elegir la capa que vamos a modificar, nos muestra en el panel un apartado nuevo para la rotulación de campos. Nos permite escoger el campo, y aplicarle distintos estilos de texto.
+	En el select de campos sólo se muetran los campos tipo string.
+	Presionando el botón de "rotulado" la aplicación borra los rotulos generados para esa capa (si existen) y los genera aplicando el estilo introducido.
+	Se añaden además botones para eliminar los rótulos de la capa en la que se encuentra el usuario, para borrar todos los rotulos de todas las capas, y un botón que exporta los rótulos a anotaciones.

@@ -1,0 +1,183 @@
+{
+  "exportFileName": "export",
+  "confirmOnDelete": true,
+  "allowLocalStorage": true,
+  "localStorageKey": false,
+  "servicioUploadAnotaciones": "https://www.chsegura.es/LoginChsPortal/UploadAnotaciones",
+  "servicioDownloadFichero": "https://www.chsegura.es/LoginChsPortal/DownloadFichero",
+  "servicioDownloadAnotaciones": "https://www.chsegura.es/LoginChsPortal/DownloadAnotaciones",
+  "urlGeometryService": "https://siams.chminosil.es/server/rest/services/Utilities/Geometry/GeometryServer",
+  "proxyCors": "https://www.chsegura.es/LoginChsPortal/proxy/ItinerarioService",
+  "unitAreaTotal": "HECTARES",
+  "etiquetaAreaTotal": "ha",
+  "supEtiquetaAreaTotal": "",
+  "folderUrl": "/widgets/CHS_Anotaciones/images/",
+  "isOperationalLayer": true,
+  "tipoFicheros": "Puede cargar ficheros SHP, JSON, CSV y GPX",
+  "coordenadasNodos": 50,
+  "drawPlus": {
+    "fontFamilies": [
+      {
+        "label": "Courier New",
+        "value": "Courier New"
+      },
+      {
+        "label": "Helvetica",
+        "value": "Helvetica"
+      },
+      {
+        "label": "Times New Roman",
+        "value": "Times New Roman"
+      },
+      {
+        "label": "Arial",
+        "value": "Arial"
+      }
+    ]
+  },
+  "distanceUnits": [
+    {
+      "unit": "KILOMETERS",
+      "abbr": "km"
+    },
+    {
+      "unit": "METERS",
+      "abbr": "m"
+    },
+    {
+      "unit": "MILES",
+      "abbr": "mi"
+    },
+    {
+      "unit": "NAUTICAL_MILES",
+      "abbr": "nm"
+    },
+    {
+      "unit": "FEET",
+      "abbr": "ft"
+    },
+    {
+      "unit": "YARDS",
+      "abbr": "yd"
+    }
+  ],
+  "areaUnits": [
+    {
+      "unit": "HECTARES",
+      "abbr": "ha"
+    },
+    {
+      "unit": "SQUARE_KILOMETERS",
+      "abbr": "km²"
+    },
+    {
+      "unit": "SQUARE_METERS",
+      "abbr": "m²"
+    },
+    {
+      "unit": "SQUARE_MILES",
+      "abbr": "mi²"
+    },
+    {
+      "unit": "ACRES",
+      "abbr": "ac"
+    },
+    {
+      "unit": "SQUARE_FEET",
+      "abbr": "ft²"
+    },
+    {
+      "unit": "SQUARE_YARDS",
+      "abbr": "sq yd"
+    }
+  ],
+  "useGeometryEngine": true,
+  "geometryService": "//tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer",
+  "measureEnabledByDefault": false,
+  "measurePolygonLabel": "Sup = {{area}} {{areaUnit}}\nPer = {{length}} {{lengthUnit}}",
+  "measurePolylineLabel": "Lon = {{length}} {{lengthUnit}}",
+  "defaultSymbols": {
+    "SnapSymbol": {
+      "color": [
+        169,
+        50,
+        38
+      ],
+      "size": 20,
+      "angle": 45,
+      "xoffset": 0,
+      "yoffset": 0,
+      "type": "esriSMS",
+      "style": "esriSMSCross",
+      "outline": {
+        "color": [
+          255,
+          0,
+          0,
+          255
+        ],
+        "width": 2,
+        "type": "esriSLS",
+        "style": "esriSLSSolid"
+      }
+    },
+    "SimpleMarkerSymbol": {
+      "color": [
+        255,
+        199,
+        198,
+        148
+      ],
+      "size": 15,
+      "angle": 0,
+      "xoffset": 0,
+      "yoffset": 0,
+      "type": "esriSMS",
+      "style": "esriSMSCircle",
+      "outline": {
+        "color": [
+          207,
+          101,
+          99,
+          255
+        ],
+        "width": 0.75,
+        "type": "esriSLS",
+        "style": "esriSLSSolid"
+      }
+    },
+    "SimpleLineSymbol": {
+      "color": [
+        207,
+        101,
+        99,
+        255
+      ],
+      "width": 1.5,
+      "type": "esriSLS",
+      "style": "esriSLSSolid"
+    },
+    "SimpleFillSymbol": {
+      "color": [
+        255,
+        199,
+        198,
+        148
+      ],
+      "outline": {
+        "color": [
+          207,
+          101,
+          99,
+          255
+        ],
+        "width": 0.75,
+        "type": "esriSLS",
+        "style": "esriSLSSolid"
+      },
+      "type": "esriSFS",
+      "style": "esriSFSSolid"
+    },
+    "TextSymbol": false
+  }
+}

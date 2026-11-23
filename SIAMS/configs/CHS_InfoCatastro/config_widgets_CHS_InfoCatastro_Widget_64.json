@@ -1,0 +1,8 @@
+{
+  "style": "vertical",
+  "scopeSize": "medium",
+  "layers": [],
+  "swipeLayerHeight": 160,
+  "proxyCors": "https://www.chsegura.es/LoginChsPortal/proxy.jsp?",
+  "folderUrl": "./widgets/CHS_InfoCatastro/images/"
+}

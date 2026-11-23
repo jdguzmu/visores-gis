@@ -1,0 +1,23 @@
+﻿define({
+    root:({
+         _widgetLabel: "Intersecta Catastro",
+  		descriptionlabel: "Intersecta Catastro",
+  		addGeometria:"Carga geometría",
+        addTxt:"Carga txt",
+		ejecutar:"Ejecutar",
+        importTitle:"Importar",
+        importCloseButton:"Close",
+        cotmax:"Cota máxima:",
+        cotmin:"Cota mínima:",
+        area:"Área total:",
+		importErrorMessageNavigator : "Su navegador no soporta esta funcionalidad.",
+		importErrorWarningSelectFile : "Seleccione un fichero por favor.",
+		importDragAndDropMessage : "Seleccione un fichero de entrada",
+		importWarningNoDrawings : "No existen anotaciones que cargar",
+		importErrorFileStructure : "La estructura del fichero es incorrecta.",
+		importWarningNoExport0Draw : "No hay anotaciones que exportar.",
+		importCloseButton:"Cerrar",
+		nameField : "Nombre",
+		symbolField : "Símbolo"
+    }) 
+});

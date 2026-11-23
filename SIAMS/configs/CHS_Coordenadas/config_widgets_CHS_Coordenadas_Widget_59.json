@@ -1,0 +1,35 @@
+{
+  "coordenadas": {
+    "sistemasReferencia": [
+      {
+        "name": "UTM 29N ETRS-89",
+        "wkid": "25829"
+      },
+      {
+        "name": "UTM 29N ED50",
+        "wkid": "23029"
+      },
+      {
+        "name": "UTM 30N ETRS-89",
+        "wkid": "25830"
+      },
+      {
+        "name": "UTM 30N ED50",
+        "wkid": "23030"
+      },
+      {
+        "name": "WGS 84 - GOOGLE",
+        "wkid": "4326"
+      }
+    ]
+  },
+  "mensajeAviso": "(*) Si selecciona introducir coordenadas ED50 o WGS84, se transformarán a ETRS-89",
+  "size": {
+    "mode": "wh",
+    "wh": {
+      "w": 400,
+      "h": 180
+    }
+  },
+  "nivelZoom": 10
+}

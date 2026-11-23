@@ -1,0 +1,107 @@
+{
+  "spatialReferences": [
+    {
+      "wkid": "25829",
+      "isDefault": false,
+      "label": "ETRS_1989_UTM_Zone_29N",
+      "alias": "ETRS_1989_UTM_Zone_29N",
+      "outputUnit": "METER",
+      "transformationWkid": "",
+      "transformationLabel": "Nombre de transformación",
+      "transformForward": false,
+      "options": {
+        "sameSRWithMap": true,
+        "isGeographicCS": false,
+        "isGeographicUnit": false,
+        "isProjectedCS": true,
+        "isProjectUnit": true,
+        "spheroidCS": 4258,
+        "defaultUnit": "Meter",
+        "unitRate": 1
+      }
+    },
+    {
+      "wkid": "23029",
+      "isDefault": false,
+      "label": "ED_1950_UTM_Zone_29N",
+      "alias": "ED_1950_UTM_Zone_29N",
+      "outputUnit": "METER",
+      "transformationWkid": "",
+      "transformationLabel": "Nombre de transformación",
+      "transformForward": false,
+      "options": {
+        "sameSRWithMap": false,
+        "isGeographicCS": false,
+        "isGeographicUnit": false,
+        "isProjectedCS": true,
+        "isProjectUnit": true,
+        "spheroidCS": 4230,
+        "defaultUnit": "Meter",
+        "unitRate": 1
+      }
+    },
+    {
+      "wkid": "25830",
+      "isDefault": false,
+      "label": "ETRS_1989_UTM_Zone_30N",
+      "alias": "ETRS_1989_UTM_Zone_30N",
+      "outputUnit": "METER",
+      "transformationWkid": "",
+      "transformationLabel": "Nombre de transformación",
+      "transformForward": false,
+      "options": {
+        "sameSRWithMap": false,
+        "isGeographicCS": false,
+        "isGeographicUnit": false,
+        "isProjectedCS": true,
+        "isProjectUnit": true,
+        "spheroidCS": 4258,
+        "defaultUnit": "Meter",
+        "unitRate": 1
+      }
+    },
+    {
+      "wkid": "23030",
+      "isDefault": false,
+      "label": "ED_1950_UTM_Zone_30N",
+      "alias": "ED_1950_UTM_Zone_30N",
+      "outputUnit": "METER",
+      "transformationWkid": "",
+      "transformationLabel": "Nombre de transformación",
+      "transformForward": false,
+      "options": {
+        "sameSRWithMap": false,
+        "isGeographicCS": false,
+        "isGeographicUnit": false,
+        "isProjectedCS": true,
+        "isProjectUnit": true,
+        "spheroidCS": 4230,
+        "defaultUnit": "Meter",
+        "unitRate": 1
+      }
+    },
+    {
+      "wkid": "3857",
+      "isDefault": false,
+      "label": "WGS_1984_Web_Mercator_Auxiliary_Sphere",
+      "alias": "WGS_1984_Web_Mercator_Auxiliary_Sphere",
+      "outputUnit": "METER",
+      "transformationWkid": "",
+      "transformationLabel": "Nombre de transformación",
+      "transformForward": false,
+      "options": {
+        "sameSRWithMap": false,
+        "isGeographicCS": false,
+        "isGeographicUnit": false,
+        "isProjectedCS": true,
+        "isProjectUnit": true,
+        "spheroidCS": 4326,
+        "defaultUnit": "Meter",
+        "unitRate": 1
+      }
+    }
+  ],
+  "decimalPlaces": 3,
+  "addSeparator": true,
+  "displayOrderLonLat": true
+}

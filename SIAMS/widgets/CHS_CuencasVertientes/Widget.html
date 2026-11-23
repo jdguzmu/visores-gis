@@ -1,0 +1,23 @@
+<div>
+      <label>${nls.descriptionlabel}</label>
+      <div id='resultadosCuenca' class="resultado-tab-node" data-dojo-attach-point="resultado">
+      </div>
+      <div data-dojo-attach-point="infoArea"></div>
+      <div class="action-bar btns">
+        <a class="jimu-btn btn-identPoint" id="identificaPuntoButton" style="visibility:visible"
+          href="javascript:void(0)"
+          data-dojo-attach-point="identificaButton"
+          data-dojo-attach-event="onClick: identifica_Clicked"
+          >${nls.identifica}
+        </a>
+         <a class="jimu-btn btn-identPoint" id="limpiarBtn" style="visibility:visible"
+          href="javascript:void(0)"
+          data-dojo-attach-point="limpiarButton"
+          data-dojo-attach-event="onClick: limpiar_Clicked"
+          >${nls.limpiar}
+        </a>
+      </div>
+	<div style="position:relative; text-align: right; padding-right: 10px;" id="barraBotones">
+		<span title="Exportar cuenca a Anotaciones" class="botonAzul" id="exportarShape" data-dojo-attach-event="onclick:exportarAnotaciones"></span>
+	</div>	  
+</div>

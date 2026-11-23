@@ -1,0 +1,15 @@
+{
+  "servicioDownloadFichero": "https://www.chsegura.es/LoginChsPortal/DownloadFichero",
+	"servicioDownloadAnotaciones": "https://www.chsegura.es/LoginChsPortal/DownloadAnotaciones",
+  "layerInfos": [],
+  "table": {
+    "pageSizeOptions": [25, 50, 100, 1000]
+  },
+  "hideExportButton": false,
+  "initiallyExpand": false,
+  "filterByMapExtent": true,
+  "maxExportShp":10,
+  "maxExportJSON":50,
+  "maxExportKML":10,
+  "maxExportAnot":50
+}

@@ -1,0 +1,8 @@
+Para que el alto de fila en la pantalla edición no sea tan grande cambiar en 
+themes/LaunchpadThemes/styles/default/css/jimu-override.css/jimu-override
+el padding a 5px por ejemplo.
+
+.jimu-table td,
+.jimu-table th {
+  padding: 5px 5px;
+}

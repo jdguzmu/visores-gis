@@ -1,0 +1,29 @@
+define({
+  root: ({
+    zoom2message: "Haga clic en la lupa para acercarse",
+    identifylabel: "Identificar",
+    resultslabel: "Resultados",
+    descriptionlabel: "Use la herramienta para consultar los atributos de los elementos del mapa. Para consultar servicios WMS se recomienda usar la herramienta de selección puntual, si no será aplicado el centroide de la figura descrita.",
+    pointlabel: "Identificar usando un punto de consulta",
+    linelabel: "Identificar usando una lÃ­nea de cruce",
+    rectlabel: "Identificar usando una caja rectangular",
+    polylabel: "Identificar usando un polÃ­gono irregular",
+    circlelabel: "Identificar usando un cÃ­rculo",
+    ellipselabel: "Identificar usando una elipse",
+    clearlabel: "Limpiar",
+    loadinglabel: "Cargando...",
+    removeresultmessage: "Eliminar resultado",
+    idfrom: "Seleccione capa a consultar:",
+    noresultsfoundlabel: "Resultados Capas de Servicios: 0",
+    resultsfoundlabel: "Resultados Capas de Servicios: ",
+    alllayers: "Todas las capas",
+    layersremaining: "Capas restantes:",
+    copylabel: "Copiar resultados al portapapeles",
+    clear: "Limpiar",
+    widgetversion: 'Identify Widget Version Info',
+    widgetverstr: 'Widget Version',
+    wabversionmsg: 'Widget is designed to run in Web AppBuilder version',
+	exportar: "Exportar (csv)",
+	wmsResLabel: "Resultados WMS"
+  })
+});

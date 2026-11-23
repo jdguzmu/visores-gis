@@ -1,0 +1,8 @@
+{
+	"proxyCors": "https://localhost:8080/LoginChsPortal/proxy.jsp",
+	"servicioUploadCatastro": "http://localhost:8080/LoginChsPortal/UploadCatastro",
+	"servicioDownloadFichero": "http://localhost:8080/LoginChsPortal/DownloadFichero",	
+	"urlInterseccionCatastro": "http://172.18.2.172:6080/arcgis/rest/services/ServicioInterseccionCatastro/GPServer/ServicioCatastro/submitJob",	
+	"urlGeometryService": "https://www.chsegura.es/rest/services/Utilities/Geometry/GeometryServer",
+	"folderUrl":"./widgets/CHS_Catastro/images/"
+}

@@ -1,0 +1,66 @@
+<div>
+
+	<div class="optionsCatastro">
+		<div style="margin-bottom: 15px;">
+			<span class="linkOptionsTitle">Geoproceso Catastro</span>
+			<a class="addinfo-button" id="Img_Info" title="Información del Widget" style="visibility:visible; text-align:right;" href="javascript:void(0)" data-dojo-attach-event="onclick:openInfo"></a>
+		</div>
+		<div class="subTitle">Seleccionar el tipo de proceso que desea realizar para determinar las parcelas catastrales implicadas</div>
+
+			<fieldset>
+			
+				<div class="optionsRow">
+					<input data-dojo-attach-point="radioButton1" class="shareRadios jimu-float-leading jimu-radio-btn" type="radio" name="radios" >
+					<div class="labels" data-forid="labelRadioButton1">Usar <b>fichero de texto</b> con un listado de Referencias Catastrales</div>
+				</div>
+				<div data-dojo-attach-point="divCarga1" style="margin: 10px 5px 10px 30px; height: 32px; display:none">
+					<button class="buttonLoad" id="addTxtBtn" title="Cargar txt" data-dojo-attach-event="onclick:launchImportFileTxt" style=""><img id="imgAddTxtBtn" src="" style="height:24px"></button>
+					<span style="" id='resultadosTXT' data-dojo-attach-point="resultadosTXT"></span>
+				</div>
+				
+				
+				<div class="optionsRow">
+					<input data-dojo-attach-point="radioButton2" class="shareRadios jimu-float-leading jimu-radio-btn" type="radio" name="radios">
+					<div class="labels" data-forid="labelRadioButton2">Usar un <b>poligono</b> del widget de anotaciones</div>
+				</div>
+				<div data-dojo-attach-point="divCarga2" style="margin: 10px 5px 10px 30px; height: 32px; display:none">
+					<button class="buttonLoad" id="addTxtBtn2" title="Cargar Anotación" data-dojo-attach-event="onclick:getPoligonos" style=""><img id="imgAddAnotBtn" src="" style="height:24px"></button>
+					<span style="" id='resultadosTXT' data-dojo-attach-point="resultadosTXT2"></span>
+				</div>
+				
+				<div class="optionsRow">
+					<input data-dojo-attach-point="radioButton3" class="shareRadios jimu-float-leading jimu-radio-btn" type="radio" name="radios">
+					<div class="labels" data-forid="labelRadioButton3">Usar <b>fichero de texto</b> con listado de Referencias Catastrales con un <b>poligono</b> del widget de anotaciones</div>
+				</div>
+				<div data-dojo-attach-point="divCarga3" style="margin: 10px 5px 10px 30px; height: 60px; display:none">
+					<div style="height:40px;">
+						<button class="buttonLoad" id="addTxtBtn3" title="Cargar txt" data-dojo-attach-event="onclick:launchImportFileTxt" style="margin-bottom:10px"><img id="imgAddTxtBtn2" src="" style="height:24px"></button>
+						<span style="" id='resultadosTXT' data-dojo-attach-point="resultadosTXT3"></span>
+					</div>
+					<div style="height:40px;">
+						<button class="buttonLoad" id="addTxtBtn4" title="Cargar Anotación" data-dojo-attach-event="onclick:getPoligonos" style=""><img id="imgAddAnotBtn2" src="" style="height:24px"></button>
+						<span style="" id='resultadosTXT' data-dojo-attach-point="resultadosTXT4"></span>
+					</div>
+				</div>
+				
+			</fieldset>
+
+	</div>
+
+		<div style="text-align: center; padding:20px"> <a class="jimu-btn btn-identPoint" id="ejecutarBtn" style="visibility: visible" href="javascript:void(0)" data-dojo-attach-point="limpiarButton" data-dojo-attach-event="onClick: ejecutarAccion">${nls.ejecutar}</a></div>
+		<div style="text-align: center;" id='resEjecucion' data-dojo-attach-point="resEjecucion"></div>
+
+		<tr>
+			<td>
+				<div data-dojo-attach-point="infoArea"></div> 
+				<div class="footer">
+				<div style="width: calc(100% - 35px)" class="list-draw-actions" data-dojo-attach-point="allActionsNode">
+				<span style="display: none; id="Btn_Limpiar" title="limpiar" class="clear blue-button" data-dojo-attach-event="onclick:limpiarResultado" data-dojo-attach-point="butLimpiar">&nbsp;</span>
+				<span style="display: none; id="exportToAnotation" title="Enviar a Anotaciones" class="anot blue-button" data-dojo-attach-event="onclick:exportToAnotation" data-dojo-attach-point="butToAnot">&nbsp;</span>
+				<span style="display: none; id="exportJson" title="Descarga csv" class="csv blue-button" data-dojo-attach-event="onclick:exportFileCSV" data-dojo-attach-point="butToCSV">&nbsp;</span>
+				</div>  
+				</div>
+			</td>
+		</tr>
+	</table>
+</div>

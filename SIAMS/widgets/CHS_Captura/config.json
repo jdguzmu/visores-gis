@@ -1,0 +1,6 @@
+{
+	"urlServicio": "https://siams.chminosil.es/server/rest/services/geoprocesamiento/ImpresionCHMS/GPServer/Export%20Web%20Map/submitJob",
+	"dpi": 300,
+	"proxyCors":"https://siams.chminosil.es/proxy/proxy.jsp?",
+	"servicioDownloadFichero": ""
+}

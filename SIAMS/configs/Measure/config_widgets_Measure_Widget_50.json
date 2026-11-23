@@ -1,0 +1,27 @@
+{
+  "distanceUnits": [
+    {
+      "unit": "METERS",
+      "abbr": "m"
+    },
+    {
+      "unit": "KILOMETERS",
+      "abbr": "km"
+    }
+  ],
+  "areaUnits": [
+    {
+      "unit": "SQUARE_METERS",
+      "abbr": "m²"
+    },
+    {
+      "unit": "SQUARE_KILOMETERS",
+      "abbr": "km²"
+    },
+    {
+      "unit": "HECTARES",
+      "abbr": "ha"
+    }
+  ],
+  "isOperationalLayer": true
+}

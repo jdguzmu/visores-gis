@@ -1,0 +1,100 @@
+///////////////////////////////////////////////////////////////////////////
+// Copyright © 2019 - 2021 Confederación Hidrográfica del Segura, O.A.. All Rights Reserved.
+//
+// Licensed under the Apache License Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+///////////////////////////////////////////////////////////////////////////
+define({
+  root: ({
+    _widgetLabel: "Draw",
+    selectDrawMode: "Select draw mode",
+    clear: "Clear",
+    point: "Point",
+    line: "Line",
+    polyline: "Polyline",
+    freehandPolyline: "Freehand polyline",
+    triangle: "Triangle",
+    extent: "Envelope",
+    circle: "Circle",
+    ellipse: "Ellipse",
+    polygon: "Polygon",
+    freehandPolygon: "Freehand polygon",
+    text: "Text",
+    style: "Style",
+    alpha: "Transparency",
+    width: "Width",
+    size: "Size",
+    color: "Color",
+    markerColor: "Marker color",
+    outlineColor: "Outline color",
+    lineColor: "Line color",
+    fillColor: "Fill color",
+    showMeasurements: "Show measurements",
+    areaUnits: "Area units",
+    distanceUnits: "Distance units",
+    kilometers: "Kilometers",
+    miles: "Miles",
+    meters: "Meters",
+    feet: "Feet",
+    yards: "Yards",
+    nauticalmiles: "Nautical miles",
+    squareKilometers: "Square kilometers",
+    squareMiles: "Square miles",
+    acres: "Acres",
+    hectares: "Hectares",
+    squareMeters: "Square meters",
+    squareFeet: "Square feet",
+    squareYards: "Square yards",
+    undo: "Undo",
+    redo: "Redo",
+    results: "Results",
+    points: "Points",
+    lines: "Lines",
+    areas: "Areas",
+	selectSubCapaStyle:"SubCapa"
+  }),
+  "ar": 1,
+  "bs": 1,
+  "cs": 1,
+  "da": 1,
+  "de": 1,
+  "el": 1,
+  "es": 1,
+  "et": 1,
+  "fi": 1,
+  "fr": 1,
+  "he": 1,
+  "hi": 1,
+  "hr": 1,
+  "it": 1,
+  "id": 1,
+  "ja": 1,
+  "ko": 1,
+  "lt": 1,
+  "lv": 1,
+  "nb": 1,
+  "nl": 1,
+  "pl": 1,
+  "pt-br": 1,
+  "pt-pt": 1,
+  "ro": 1,
+  "ru": 1,
+  "sl": 1,
+  "sr": 1,
+  "sv": 1,
+  "th": 1,
+  "tr": 1,
+  "vi": 1,
+  "zh-cn": 1,
+  "zh-hk": 1,
+  "zh-tw": 1
+});

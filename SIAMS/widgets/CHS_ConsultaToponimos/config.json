@@ -1,0 +1,6 @@
+﻿{
+	"zoomLevel" : 8,
+	"modoBusqueda": "Buscará los topónimos en el área de la ventana",
+	"rutaServicioMuniProv": "https://siams.chminosil.es/server/rest/services/Base_division_administrativa/MapServer/4",
+	"proxyCors":"https://siams.chminosil.es/proxy/proxy.jsp?"	
+}

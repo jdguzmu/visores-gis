@@ -1,0 +1,92 @@
+.chs-basemaps {
+  color: #172a32;
+  background: #fff;
+  font: inherit;
+  padding: 10px;
+}
+.chs-basemaps button,
+.chs-basemaps input,
+.chs-basemaps select {
+  font: inherit;
+  box-sizing: border-box;
+}
+.chs-basemaps button {
+  padding: 6px 9px;
+  color: #174758;
+  border: 1px solid #b7cbd1;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+.chs-basemaps button:hover { background: #edf6f8; }
+.chs-basemaps button[aria-pressed="true"] {
+  color: #124d5e;
+  border-color: #137386;
+  background: #e8f5f7;
+}
+.chs-basemaps :focus-visible {
+  outline: 2px solid #137386;
+  outline-offset: 2px;
+}
+.chs-basemaps .chs-modes,
+.chs-basemaps .chs-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.chs-basemaps .chs-current {
+  font-weight: bold;
+  margin: 10px 0 4px;
+}
+.chs-basemaps .chs-status:not(:empty) { margin-bottom: 8px; }
+.chs-basemaps .chs-error { color: #9d2626; }
+.chs-basemaps .chs-search,
+.chs-basemaps .chs-range,
+.chs-basemaps select {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+}
+.chs-basemaps .chs-search,
+.chs-basemaps select {
+  padding: 6px;
+  color: #172a32;
+  background: #fff;
+  border: 1px solid #b7cbd1;
+  border-radius: 6px;
+}
+.chs-basemaps .chs-select { display: block; margin: 10px 0; }
+.chs-basemaps .chs-select ~ button { margin-right: 4px; }
+.chs-basemaps h3 { margin: 12px 0 4px; }
+.chs-basemaps .chs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 132px), 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.chs-basemaps .chs-card { position: relative; min-width: 0; }
+.chs-basemaps .chs-card > button:first-child {
+  width: 100%;
+  height: 100%;
+  text-align: left;
+  padding: 8px 30px 8px 8px;
+}
+.chs-basemaps .chs-card img {
+  width: 100%;
+  height: 62px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.chs-basemaps .chs-card span {
+  display: block;
+  color: #496068;
+  font-size: .88em;
+  margin-top: 3px;
+}
+.chs-basemaps .chs-star {
+  position: absolute;
+  top: 5px;
+  right: 4px;
+  padding: 2px 4px;
+  font-size: 16px;
+}

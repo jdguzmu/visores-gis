@@ -1,0 +1,13 @@
+{
+  "name": "CHS_VerGMAPS",
+  "2D": true,
+  "3D": false,
+  "platform": "HTML",
+  "version": "2.2",
+  "wabVersion": "2.2",
+  "author": "Confederación Hidrográfica del Segura, O,A.",
+  "description": "Este widget abre el mapa del visor en GoogleMaps",
+  "copyright": "Confederación Hidrográfica del Segura, O,A.",
+  "license": "http://www.apache.org/licenses/LICENSE-2.0",
+  "properties": {}
+}
